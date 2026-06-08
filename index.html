@@ -279,18 +279,33 @@ textarea{resize:vertical;min-height:100px;}
 <div class="modal-overlay" id="pick-modal" style="display:none" onclick="if(event.target.id==='pick-modal')document.getElementById('pick-modal').style.display='none'">
   <div class="modal">
     <div class="modal-handle"></div>
-    <h2>Scegli una ricetta</h2>
-    <input class="pick-search" id="pick-search" type="text" placeholder="Cerca&hellip;" oninput="renderPickList(this.value)">
-    <div style="display:flex;align-items:center;gap:12px;background:var(--sage-pale);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
-      <span style="font-size:13px;color:var(--sage);font-weight:500;flex:1;">&#x1F465; Per quante persone?</span>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button class="portions-btn" onclick="changePlannerPortions(-1)">&minus;</button>
-        <span class="portions-num" id="planner-portions-num">1</span>
-        <button class="portions-btn" onclick="changePlannerPortions(+1)">+</button>
+    <!-- STEP 1: scegli ricetta -->
+    <div id="pick-step1">
+      <h2>Scegli una ricetta</h2>
+      <input class="pick-search" id="pick-search" type="text" placeholder="Cerca&hellip;" oninput="renderPickList(this.value)">
+      <div style="display:flex;align-items:center;gap:12px;background:var(--sage-pale);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
+        <span style="font-size:13px;color:var(--sage);font-weight:500;flex:1;">&#x1F465; Per quante persone?</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="portions-btn" onclick="changePlannerPortions(-1)">&minus;</button>
+          <span class="portions-num" id="planner-portions-num">1</span>
+          <button class="portions-btn" onclick="changePlannerPortions(+1)">+</button>
+        </div>
+      </div>
+      <div id="pick-list"></div>
+      <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="clearMeal()">Rimuovi pasto</button>
+    </div>
+    <!-- STEP 2: ingredienti che hai già -->
+    <div id="pick-step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <button onclick="document.getElementById('pick-step1').style.display='block';document.getElementById('pick-step2').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--charcoal-mid)">&#8592;</button>
+        <h2 style="margin:0;font-size:18px" id="pick-step2-title">Ingredienti</h2>
+      </div>
+      <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:12px">Spunta gli ingredienti che hai <strong>già in casa</strong> &mdash; non li aggiungo alla spesa.</p>
+      <div id="pick-ing-checks" style="max-height:280px;overflow-y:auto"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmMeal()">Aggiungi al planner</button>
       </div>
     </div>
-    <div id="pick-list"></div>
-    <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="clearMeal()">Rimuovi pasto</button>
   </div>
 </div>
 
@@ -497,10 +512,36 @@ window.openPickModal=function(key,meal){
 };
 window.selectMeal=function(nome){
   if(!pickTarget)return;
+  var recipe=recipes.find(function(r){return r.nome===nome;});
+  var ings=recipe?(recipe.ingredienti||[]):[];
+  // Save name for confirmMeal
+  pickTarget.selectedNome=nome;
+  // Show step 2 if recipe has ingredients
+  if(ings.length){
+    document.getElementById('pick-step2-title').textContent=nome;
+    var existing=(planner[pickTarget.key]||{})[pickTarget.meal+'_skip']||[];
+    document.getElementById('pick-ing-checks').innerHTML=ings.map(function(i,idx){
+      var label=fmtIng(i,1);
+      var checked=existing.indexOf(i.name)>=0;
+      return'<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-name="'+i.name.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';
+    }).join('');
+    document.getElementById('pick-step1').style.display='none';
+    document.getElementById('pick-step2').style.display='block';
+  }else{
+    confirmMeal();
+  }
+};
+window.confirmMeal=function(){
+  if(!pickTarget||!pickTarget.selectedNome)return;
+  var skip=Array.from(document.querySelectorAll('#pick-ing-checks input[type=checkbox]:checked')).map(function(cb){return cb.getAttribute('data-name');});
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
-  entry[pickTarget.meal]=nome;entry[pickTarget.meal+'_porzioni']=plannerPortions;
+  entry[pickTarget.meal]=pickTarget.selectedNome;
+  entry[pickTarget.meal+'_porzioni']=plannerPortions;
+  if(skip.length)entry[pickTarget.meal+'_skip']=skip;else delete entry[pickTarget.meal+'_skip'];
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
   document.getElementById('pick-modal').style.display='none';
+  document.getElementById('pick-step1').style.display='block';
+  document.getElementById('pick-step2').style.display='none';
   syncPlannerToShop();
 };
 window.clearMeal=function(){
@@ -520,17 +561,23 @@ function getWeekKeys(){
 }
 function syncPlannerToShop(){
   var uid=currentUser.uid;
-  var mealPortions={};
+  var mealData={};
   getWeekKeys().forEach(function(key){
     var e=planner[key]||{};
-    ['pranzo','cena'].forEach(function(m){if(e[m])mealPortions[e[m]]=(mealPortions[e[m]]||0)+(e[m+'_porzioni']||1);});
+    ['pranzo','cena'].forEach(function(m){
+      if(!e[m])return;
+      if(!mealData[e[m]])mealData[e[m]]={tot:0,skip:{}};
+      mealData[e[m]].tot+=(e[m+'_porzioni']||1);
+      (e[m+'_skip']||[]).forEach(function(s){mealData[e[m]].skip[s]=true;});
+    });
   });
   shopping.filter(function(s){return s.fromPlanner;}).forEach(function(s){db.ref('users/'+uid+'/shopping/'+s.id).remove();});
-  Object.entries(mealPortions).forEach(function(entry){
-    var nome=entry[0],tot=entry[1];
+  Object.entries(mealData).forEach(function(entry){
+    var nome=entry[0],d=entry[1];
     var recipe=recipes.find(function(r){return r.nome===nome;});if(!recipe)return;
     (recipe.ingredienti||[]).forEach(function(ing){
-      db.ref('users/'+uid+'/shopping').push({text:shopTxt(ing,tot),source:nome+' (\xd7'+tot+' porz.)',checked:false,fromPlanner:true});
+      if(d.skip[ing.name])return;
+      db.ref('users/'+uid+'/shopping').push({text:shopTxt(ing,d.tot),source:nome+' (\xd7'+d.tot+' porz.)',checked:false,fromPlanner:true});
     });
   });
 }
