@@ -552,8 +552,8 @@ function fetchPageText(url){
 }
 function stripHtml(h){var t=document.createElement('div');t.innerHTML=h;['script','style','nav','header','footer','aside','iframe'].forEach(function(tag){t.querySelectorAll(tag).forEach(function(el){el.remove();});});return(t.innerText||t.textContent||'').replace(/\s+/g,' ').trim();}
 function getApiKey(){
-  var k=localStorage.getItem(‘anthropic_key’)||’’;
-  if(!k){k=prompt(‘Inserisci la tua chiave API Anthropic (viene salvata solo nel tuo browser):’);if(k)localStorage.setItem(‘anthropic_key’,k.trim());}
+  var k=localStorage.getItem(‘gemini_key’)||’’;
+  if(!k){k=prompt(‘Inserisci la tua chiave API Google Gemini (gratis su aistudio.google.com — salvata solo nel tuo browser):’);if(k)localStorage.setItem(‘gemini_key’,k.trim());}
   return k?k.trim():null;
 }
 window.extractWithAI=function(){
@@ -568,9 +568,9 @@ window.extractWithAI=function(){
     if(!text)return;
     loadMsg.textContent="L’AI sta analizzando…";
     var prompt=’Sei un assistente culinario. Analizza questo testo e restituisci SOLO JSON valido senza markdown: {"nome":"nome","tempo":"tempo","porzioni":"numero","ingredienti":[{"qty":numero_o_null,"unit":"unita","name":"nome"}],"procedimento":"passi numerati separati da \\n","note":"o vuoto"}\n\nTesto: ‘+text.substring(0,4000);
-    return fetch(‘https://api.anthropic.com/v1/messages’,{method:’POST’,headers:{‘Content-Type’:’application/json’,’x-api-key’:apiKey,’anthropic-version’:’2023-06-01’,’anthropic-dangerous-direct-browser-access’:’true’},body:JSON.stringify({model:’claude-sonnet-4-20250514’,max_tokens:1500,messages:[{role:’user’,content:prompt}]})}).then(function(res){return res.json();}).then(function(data){
-      if(data.error){if(data.error.type===’authentication_error’){localStorage.removeItem(‘anthropic_key’);alert(‘Chiave API non valida. Riprova.’);return;}throw new Error(data.error.message);}
-      var raw=(data.content||[]).map(function(c){return c.text||’’;}).join(‘’).replace(/```json|```/g,’’).trim();
+    return fetch(‘https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=’+apiKey,{method:’POST’,headers:{‘Content-Type’:’application/json’},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})}).then(function(res){return res.json();}).then(function(data){
+      if(data.error){if(data.error.code===400||data.error.code===403){localStorage.removeItem(‘gemini_key’);alert(‘Chiave API non valida. Riprova.’);return;}throw new Error(data.error.message);}
+      var raw=((((data.candidates||[])[0]||{}).content||{}).parts||[]).map(function(p){return p.text||’’;}).join(‘’).replace(/```json|```/g,’’).trim();
       aiExtracted=JSON.parse(raw.substring(raw.indexOf(‘{‘),raw.lastIndexOf(‘}’)+1));
       aiExtracted.link=link||’’;aiExtracted.fonte=aiExtracted.fonte||’internet’;aiExtracted.porzioni=parseInt(aiExtracted.porzioni)||4;
       var ings=(aiExtracted.ingredienti||[]).map(function(i){return’<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">’+fmtIng(i,1)+’</li>’;}).join(‘’);
