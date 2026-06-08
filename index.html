@@ -232,9 +232,21 @@ textarea{resize:vertical;min-height:100px;}
       <div class="ai-loading" id="ai-loading"><div class="spinner"></div><p>Sto elaborando&hellip;</p></div>
       <div id="ai-preview" style="display:none;margin-top:20px;">
         <hr style="border:none;border-top:0.5px solid var(--border);margin:16px 0">
-        <h3 style="font-size:16px;margin-bottom:12px">Anteprima estratta</h3>
-        <div id="ai-preview-content"></div>
-        <div style="display:flex;gap:8px;margin-top:16px">
+        <h3 style="font-size:16px;margin-bottom:12px">Modifica prima di salvare</h3>
+        <div class="form-group"><label>Nome ricetta</label><input type="text" id="ai-edit-nome"></div>
+        <div style="display:flex;gap:8px">
+          <div class="form-group" style="flex:1"><label>Tempo</label><input type="text" id="ai-edit-tempo" placeholder="es. 30 min"></div>
+          <div class="form-group" style="width:80px"><label>Porzioni</label><input type="number" id="ai-edit-porzioni" min="1" value="4"></div>
+        </div>
+        <div class="form-group">
+          <label>Ingredienti</label>
+          <div class="ing-header"><span class="h-qty">Qtà</span><span class="h-unit">Unità</span><span class="h-name">Ingrediente</span></div>
+          <div id="ai-ing-list"></div>
+          <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="addAIIng()">+ Aggiungi ingrediente</button>
+        </div>
+        <div class="form-group"><label>Procedimento</label><textarea id="ai-edit-proc" style="min-height:140px"></textarea></div>
+        <div class="form-group"><label>Note (opzionale)</label><textarea id="ai-edit-note" style="min-height:60px"></textarea></div>
+        <div style="display:flex;gap:8px;margin-top:4px">
           <button class="btn btn-primary" onclick="saveAIRecipe()">Salva ricetta</button>
           <button class="btn btn-outline" onclick="resetAI()">Annulla</button>
         </div>
@@ -606,17 +618,36 @@ function parseRecipeText(text){
   }
   return{nome:nome||'Nuova ricetta',tempo:tempo,porzioni:porzioni,ingredienti:ingredienti,procedimento:proc.map(function(s,i){return(i+1)+'. '+s;}).join('\n'),note:'',fonte:'internet'};
 }
+function renderAIEditForm(result){
+  document.getElementById('ai-edit-nome').value=result.nome||'';
+  document.getElementById('ai-edit-tempo').value=result.tempo||'';
+  document.getElementById('ai-edit-porzioni').value=result.porzioni||4;
+  document.getElementById('ai-edit-proc').value=result.procedimento||'';
+  document.getElementById('ai-edit-note').value=result.note||'';
+  var ingList=document.getElementById('ai-ing-list');
+  ingList.innerHTML='';
+  (result.ingredienti||[{qty:null,unit:'',name:''}]).forEach(function(i){
+    var row=document.createElement('div');row.className='ing-row';
+    row.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any" value="'+(i.qty!=null?i.qty:'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+(i.unit||'')+'"><input class="ing-name" type="text" placeholder="ingrediente" value="'+(i.name||'')+'"><button onclick="removeAIIng(this)">&minus;</button>';
+    ingList.appendChild(row);
+  });
+  document.getElementById('ai-preview').style.display='block';
+}
+window.addAIIng=function(){
+  var row=document.createElement('div');row.className='ing-row';
+  row.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeAIIng(this)">&minus;</button>';
+  document.getElementById('ai-ing-list').appendChild(row);
+};
+window.removeAIIng=function(btn){if(document.querySelectorAll('#ai-ing-list .ing-row').length>1)btn.parentElement.remove();};
 window.parseWithoutAI=function(){
   var text=document.getElementById('ai-text').value.trim();
   var link=document.getElementById('ai-link').value.trim();
   if(!text){document.getElementById('ai-text').focus();return;}
   var result=parseRecipeText(text);
-  if(!result||!result.nome){alert('Non riesco a leggere la ricetta. Prova il form manuale.');return;}
+  if(!result){alert('Non riesco a leggere la ricetta. Prova il form manuale.');return;}
   result.link=link||'';
   aiExtracted=result;
-  var ings=(result.ingredienti||[]).map(function(i){return'<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">'+fmtIng(i,1)+'</li>';}).join('');
-  document.getElementById('ai-preview-content').innerHTML='<div style="background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px"><h3 style="font-size:17px;margin-bottom:8px">'+result.nome+'</h3>'+(result.tempo?'<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+result.tempo+'</p>':'')+'<ul style="list-style:none;margin-bottom:10px">'+ings+'</ul><p style="font-size:13px;color:var(--charcoal-mid);white-space:pre-wrap;line-height:1.6">'+(result.procedimento||'')+'</p></div>';
-  document.getElementById('ai-preview').style.display='block';
+  renderAIEditForm(result);
 };
 window.extractWithAI=function(){
   var link=document.getElementById('ai-link').value.trim(),manualText=document.getElementById('ai-text').value.trim();
@@ -635,15 +666,31 @@ window.extractWithAI=function(){
       var raw=((((data.candidates||[])[0]||{}).content||{}).parts||[]).map(function(p){return p.text||'';}).join('').replace(/```json|```/g,'').trim();
       aiExtracted=JSON.parse(raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1));
       aiExtracted.link=link||'';aiExtracted.fonte=aiExtracted.fonte||'internet';aiExtracted.porzioni=parseInt(aiExtracted.porzioni)||4;
-      var ings=(aiExtracted.ingredienti||[]).map(function(i){return'<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">'+fmtIng(i,1)+'</li>';}).join('');
-      document.getElementById('ai-preview-content').innerHTML='<div style="background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px"><h3 style="font-size:17px;margin-bottom:8px">'+(aiExtracted.nome||'')+'</h3><ul style="list-style:none;margin-bottom:10px">'+ings+'</ul><p style="font-size:13px;color:var(--charcoal-mid);white-space:pre-wrap;line-height:1.6">'+(aiExtracted.procedimento||'')+'</p></div>';
-      document.getElementById('ai-preview').style.display='block';
+      renderAIEditForm(aiExtracted);
     });
   }).catch(function(err){alert('Errore estrazione: '+(err&&err.message?err.message:'riprova.'));}).then(function(){loadEl.style.display='none';loadMsg.textContent='Sto elaborando…';});
 };
 window.saveAIRecipe=function(){
   if(!aiExtracted)return;
-  db.ref('recipes').push(Object.assign({},aiExtracted,{addedBy:currentUser.displayName||currentUser.email,addedAt:Date.now()}));
+  var nome=document.getElementById('ai-edit-nome').value.trim();
+  if(!nome){document.getElementById('ai-edit-nome').focus();return;}
+  var ingredienti=Array.from(document.querySelectorAll('#ai-ing-list .ing-row')).map(function(row){
+    var qty=parseFloat(row.querySelector('.ing-qty').value)||null;
+    var unit=row.querySelector('.ing-unit').value.trim();
+    var name=row.querySelector('.ing-name').value.trim();
+    return name?{qty:qty,unit:unit,name:name}:null;
+  }).filter(Boolean);
+  var recipe=Object.assign({},aiExtracted,{
+    nome:nome,
+    tempo:document.getElementById('ai-edit-tempo').value.trim(),
+    porzioni:parseInt(document.getElementById('ai-edit-porzioni').value)||4,
+    ingredienti:ingredienti,
+    procedimento:document.getElementById('ai-edit-proc').value.trim(),
+    note:document.getElementById('ai-edit-note').value.trim(),
+    addedBy:currentUser.displayName||currentUser.email,
+    addedAt:Date.now()
+  });
+  db.ref('recipes').push(recipe);
   resetAI();alert('Ricetta salvata! La vedono tutti.');
   showPage('ricette',document.querySelectorAll('.nav-item')[0]);
 };
