@@ -551,25 +551,33 @@ function fetchPageText(url){
   return tryNext();
 }
 function stripHtml(h){var t=document.createElement('div');t.innerHTML=h;['script','style','nav','header','footer','aside','iframe'].forEach(function(tag){t.querySelectorAll(tag).forEach(function(el){el.remove();});});return(t.innerText||t.textContent||'').replace(/\s+/g,' ').trim();}
+function getApiKey(){
+  var k=localStorage.getItem(‘anthropic_key’)||’’;
+  if(!k){k=prompt(‘Inserisci la tua chiave API Anthropic (viene salvata solo nel tuo browser):’);if(k)localStorage.setItem(‘anthropic_key’,k.trim());}
+  return k?k.trim():null;
+}
 window.extractWithAI=function(){
-  var link=document.getElementById('ai-link').value.trim(),manualText=document.getElementById('ai-text').value.trim();
-  var loadEl=document.getElementById('ai-loading'),loadMsg=loadEl.querySelector('p');
-  if(!link&&!manualText){var ta=document.getElementById('ai-text');ta.focus();ta.placeholder='Incolla qui il testo della ricetta…';return;}
-  loadEl.style.display='block';document.getElementById('ai-preview').style.display='none';
-  var p=manualText?Promise.resolve(manualText):(loadMsg.textContent='Scarico la pagina…',fetchPageText(link).then(function(h){if(!h){loadEl.style.display='none';alert('Non riesco a scaricare la pagina. Prova a incollare il testo.');return null;}return stripHtml(h);}));
+  var link=document.getElementById(‘ai-link’).value.trim(),manualText=document.getElementById(‘ai-text’).value.trim();
+  var loadEl=document.getElementById(‘ai-loading’),loadMsg=loadEl.querySelector(‘p’);
+  if(!link&&!manualText){var ta=document.getElementById(‘ai-text’);ta.focus();ta.placeholder=’Incolla qui il testo della ricetta…’;return;}
+  var apiKey=getApiKey();
+  if(!apiKey)return;
+  loadEl.style.display=’block’;document.getElementById(‘ai-preview’).style.display=’none’;
+  var p=manualText?Promise.resolve(manualText):(loadMsg.textContent=’Scarico la pagina…’,fetchPageText(link).then(function(h){if(!h){loadEl.style.display=’none’;alert(‘Non riesco a scaricare la pagina. Prova a incollare il testo.’);return null;}return stripHtml(h);}));
   p.then(function(text){
     if(!text)return;
     loadMsg.textContent="L’AI sta analizzando…";
-    var prompt='Sei un assistente culinario. Analizza questo testo e restituisci SOLO JSON valido senza markdown: {"nome":"nome","tempo":"tempo","porzioni":"numero","ingredienti":[{"qty":numero_o_null,"unit":"unita","name":"nome"}],"procedimento":"passi numerati separati da \\n","note":"o vuoto"}\n\nTesto: '+text.substring(0,4000);
-    return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})}).then(function(res){return res.json();}).then(function(data){
-      var raw=(data.content||[]).map(function(c){return c.text||'';}).join('').replace(/```json|```/g,'').trim();
-      aiExtracted=JSON.parse(raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1));
-      aiExtracted.link=link||'';aiExtracted.fonte=aiExtracted.fonte||'internet';aiExtracted.porzioni=parseInt(aiExtracted.porzioni)||4;
-      var ings=(aiExtracted.ingredienti||[]).map(function(i){return'<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">'+fmtIng(i,1)+'</li>';}).join('');
-      document.getElementById('ai-preview-content').innerHTML='<div style="background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px"><h3 style="font-size:17px;margin-bottom:8px">'+(aiExtracted.nome||'')+'</h3><ul style="list-style:none;margin-bottom:10px">'+ings+'</ul><p style="font-size:13px;color:var(--charcoal-mid);white-space:pre-wrap;line-height:1.6">'+(aiExtracted.procedimento||'')+'</p></div>';
-      document.getElementById('ai-preview').style.display='block';
+    var prompt=’Sei un assistente culinario. Analizza questo testo e restituisci SOLO JSON valido senza markdown: {"nome":"nome","tempo":"tempo","porzioni":"numero","ingredienti":[{"qty":numero_o_null,"unit":"unita","name":"nome"}],"procedimento":"passi numerati separati da \\n","note":"o vuoto"}\n\nTesto: ‘+text.substring(0,4000);
+    return fetch(‘https://api.anthropic.com/v1/messages’,{method:’POST’,headers:{‘Content-Type’:’application/json’,’x-api-key’:apiKey,’anthropic-version’:’2023-06-01’,’anthropic-dangerous-direct-browser-access’:’true’},body:JSON.stringify({model:’claude-sonnet-4-20250514’,max_tokens:1500,messages:[{role:’user’,content:prompt}]})}).then(function(res){return res.json();}).then(function(data){
+      if(data.error){if(data.error.type===’authentication_error’){localStorage.removeItem(‘anthropic_key’);alert(‘Chiave API non valida. Riprova.’);return;}throw new Error(data.error.message);}
+      var raw=(data.content||[]).map(function(c){return c.text||’’;}).join(‘’).replace(/```json|```/g,’’).trim();
+      aiExtracted=JSON.parse(raw.substring(raw.indexOf(‘{‘),raw.lastIndexOf(‘}’)+1));
+      aiExtracted.link=link||’’;aiExtracted.fonte=aiExtracted.fonte||’internet’;aiExtracted.porzioni=parseInt(aiExtracted.porzioni)||4;
+      var ings=(aiExtracted.ingredienti||[]).map(function(i){return’<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">’+fmtIng(i,1)+’</li>’;}).join(‘’);
+      document.getElementById(‘ai-preview-content’).innerHTML=’<div style="background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px"><h3 style="font-size:17px;margin-bottom:8px">’+(aiExtracted.nome||’’)+’</h3><ul style="list-style:none;margin-bottom:10px">’+ings+’</ul><p style="font-size:13px;color:var(--charcoal-mid);white-space:pre-wrap;line-height:1.6">’+(aiExtracted.procedimento||’’)+’</p></div>’;
+      document.getElementById(‘ai-preview’).style.display=’block’;
     });
-  }).catch(function(){alert('Errore estrazione. Prova con il testo manuale.');}).then(function(){loadEl.style.display='none';loadMsg.textContent='Sto elaborando…';});
+  }).catch(function(err){alert(‘Errore estrazione: ‘+(err&&err.message?err.message:’riprova.’));}).then(function(){loadEl.style.display=’none’;loadMsg.textContent=’Sto elaborando…’;});
 };
 window.saveAIRecipe=function(){
   if(!aiExtracted)return;
