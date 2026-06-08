@@ -554,7 +554,7 @@ function stripHtml(h){var t=document.createElement('div');t.innerHTML=h;['script
 window.extractWithAI=function(){
   var link=document.getElementById('ai-link').value.trim(),manualText=document.getElementById('ai-text').value.trim();
   var loadEl=document.getElementById('ai-loading'),loadMsg=loadEl.querySelector('p');
-  if(!link&&manualText.length<50){alert('Inserisci un link o incolla il testo!');return;}
+  if(!link&&!manualText){var ta=document.getElementById('ai-text');ta.focus();ta.placeholder='Incolla qui il testo della ricetta…';return;}
   loadEl.style.display='block';document.getElementById('ai-preview').style.display='none';
   var p=manualText?Promise.resolve(manualText):(loadMsg.textContent='Scarico la pagina…',fetchPageText(link).then(function(h){if(!h){loadEl.style.display='none';alert('Non riesco a scaricare la pagina. Prova a incollare il testo.');return null;}return stripHtml(h);}));
   p.then(function(text){
