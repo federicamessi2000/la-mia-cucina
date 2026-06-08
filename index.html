@@ -578,29 +578,42 @@ function getApiKey(){
   if(!k){k=prompt('Inserisci la tua chiave API Google Gemini (gratis su aistudio.google.com — salvata solo nel tuo browser):');if(k)localStorage.setItem('gemini_key',k.trim());}
   return k?k.trim():null;
 }
+function parseQty(s){
+  if(!s)return null;
+  s=s.trim();
+  if(s.indexOf('/')>0){var p=s.split('/');return parseFloat(p[0])/parseFloat(p[1]);}
+  if(s.indexOf('-')>0){return parseFloat(s.split('-')[0]);}
+  return parseFloat(s.replace(',','.'));
+}
+function parseIngLine(line){
+  var qb=/^q\.b\.?\s*(.*)/i.exec(line);
+  if(qb)return{qty:null,unit:'q.b.',name:(qb[1]||'').trim()||'q.b.'};
+  var numRx=/^(\d+(?:[\/\-]\d+)?(?:[.,]\d+)?)\s*/;
+  var nm=numRx.exec(line);
+  if(!nm)return null;
+  var qty=parseQty(nm[1]);
+  var rest=line.substring(nm[0].length).trim();
+  var unitRx=/^(g|gr|kg|ml|l\b|lt|cl|dl|n°|pz|cucchiai[oa]?|cucchiaini?[oa]?|bicchieri?[eo]?|spicchi?[oa]?|fette?[ae]?|bustine?[ae]?|foglie?[ae]?|rametti?[oi]?|pizzichi?[oi]?)\s+(?:di\s+)?(.+)/i;
+  var um=unitRx.exec(rest);
+  if(um)return{qty:qty,unit:um[1].toLowerCase(),name:um[2].trim()};
+  if(rest)return{qty:qty,unit:'',name:rest};
+  return null;
+}
 function parseRecipeText(text){
   var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);
   if(!lines.length)return null;
   var nome='',tempo='',porzioni=4,ingredienti=[],proc=[],section='start';
-  var unitRx=/^(\d+[\.,\/]?\d*)\s*(g|gr|kg|ml|l|lt|cl|dl|n°|pz|cucchiai?|cucchiaini?|bicchieri?|spicchi?|fette?|bustine?|foglie?|rametti?|pizzichi?|q\.b\.?)\s+(?:di\s+)?(.+)/i;
-  var numRx=/^(\d+)\s*(?:x|persone?|porzioni?|dosi?)/i;
   lines.forEach(function(line){
-    var lc=line.toLowerCase();
     if(/^ingredienti/i.test(line)){section='ing';return;}
     if(/^(procedimento|preparazione|come si (fa|prepara)|preparate)/i.test(line)){section='proc';return;}
     if(!nome&&line.length>2&&line.length<120){nome=line;return;}
     var tm=line.match(/(?:tempo|preparazione|cottura)\s*:?\s*(.{3,25})/i);
     if(tm&&!tempo){tempo=tm[1].trim();return;}
-    var pm=line.match(numRx);
+    var pm=line.match(/^(\d+)\s*(?:x|persone?|porzioni?|dosi?)/i);
     if(pm){porzioni=parseInt(pm[1])||4;return;}
-    var m=unitRx.exec(line);
-    if(m&&(section==='ing'||section==='start')){
-      ingredienti.push({qty:parseFloat(m[1].replace(',','.').replace('/','.5'))||null,unit:m[2].toLowerCase(),name:m[3].trim()});
-      return;
-    }
-    if(/^q\.b\.?\s+(.+)/i.test(line)&&(section==='ing'||section==='start')){
-      ingredienti.push({qty:null,unit:'q.b.',name:line.replace(/^q\.b\.?\s*/i,'').trim()});
-      return;
+    if(section==='ing'||section==='start'){
+      var ing=parseIngLine(line);
+      if(ing){ingredienti.push(ing);return;}
     }
     if(section==='proc'||/^\d+[\.\)]\s/.test(line)){
       section='proc';
@@ -608,10 +621,7 @@ function parseRecipeText(text){
     }
   });
   if(!ingredienti.length){
-    lines.forEach(function(line){
-      var m=unitRx.exec(line);
-      if(m)ingredienti.push({qty:parseFloat(m[1].replace(',','.'))||null,unit:m[2].toLowerCase(),name:m[3].trim()});
-    });
+    lines.forEach(function(line){var ing=parseIngLine(line);if(ing)ingredienti.push(ing);});
   }
   if(!proc.length){
     lines.filter(function(l){return/^\d+[\.\)]\s/.test(l);}).forEach(function(s){proc.push(s.replace(/^\d+[\.\)]\s*/,''));});
