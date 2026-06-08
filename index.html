@@ -2,6 +2,9 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -295,9 +298,10 @@ textarea{resize:vertical;min-height:100px;}
 setTimeout(()=>{
   const s=document.getElementById('loading-screen');
   if(s&&s.style.display!=='none'){
-    document.getElementById('loading-msg').innerHTML='Errore di connessione.<br><span style="font-size:12px">Controlla la console (F12) o riprova.</span>';
+    document.getElementById('loading-msg').innerHTML='<span style="color:#C4622D;font-weight:600">Errore Firebase</span><br><span style="font-size:12px">Apri F12 → Console e dimmi gli errori</span>';
+    document.querySelector('.spinner').style.display='none';
   }
-},6000);
+},2000);
 </script>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
