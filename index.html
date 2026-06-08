@@ -577,7 +577,7 @@ window.extractWithAI=function(){
     if(!text)return;
     loadMsg.textContent="L'AI sta analizzando…";
     var prompt='Sei un assistente culinario. Analizza questo testo e restituisci SOLO JSON valido senza markdown: {"nome":"nome","tempo":"tempo","porzioni":"numero","ingredienti":[{"qty":numero_o_null,"unit":"unita","name":"nome"}],"procedimento":"passi numerati separati da \\n","note":"o vuoto"}\n\nTesto: '+text.substring(0,4000);
-    return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})}).then(function(res){return res.json();}).then(function(data){
+    return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})}).then(function(res){return res.json();}).then(function(data){
       if(data.error){if(data.error.code===400||data.error.code===403){localStorage.removeItem('gemini_key');alert('Chiave API non valida. Riprova.');return;}throw new Error(data.error.message);}
       var raw=((((data.candidates||[])[0]||{}).content||{}).parts||[]).map(function(p){return p.text||'';}).join('').replace(/```json|```/g,'').trim();
       aiExtracted=JSON.parse(raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1));
