@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="La Mia Cucina">
+<title>La Mia Cucina</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FAF7F2;--warm-white:#FFFDF9;--terracotta:#C4622D;--terracotta-pale:#FBF0EB;--sage:#7A8C6E;--sage-pale:#EEF2EB;--charcoal:#2C2C2A;--charcoal-mid:#5C5C58;--charcoal-light:#9C9C96;--border:rgba(44,44,42,0.12);--border-mid:rgba(44,44,42,0.2);--radius:14px;--radius-sm:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
+h1,h2,h3{font-family:'Playfair Display',serif;}
+.topbar{background:var(--warm-white);border-bottom:0.5px solid var(--border);padding:16px 20px 12px;position:sticky;top:0;z-index:100;}
+.topbar h1{font-size:22px;font-weight:500;letter-spacing:-0.3px;}
+.topbar h1 span{color:var(--terracotta);}
+.page{display:none;padding:20px 16px 100px;}
+.page.active{display:block;}
+.bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--warm-white);border-top:0.5px solid var(--border);display:flex;padding:10px 0 22px;z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;border:none;background:none;color:var(--charcoal-light);font-family:'DM Sans',sans-serif;font-size:11px;}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;}
+.nav-item.active{color:var(--terracotta);}
+.section-title{font-size:19px;font-weight:500;margin-bottom:16px;}
+.recipe-grid{display:flex;flex-direction:column;gap:12px;}
+.recipe-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;cursor:pointer;}
+.recipe-card:active{background:var(--cream);}
+.recipe-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.recipe-card h3{font-size:16px;font-weight:500;line-height:1.3;}
+.tag{font-size:11px;padding:3px 8px;border-radius:20px;white-space:nowrap;font-weight:500;flex-shrink:0;}
+.tag-mamma{background:var(--terracotta-pale);color:var(--terracotta);}
+.tag-internet{background:var(--sage-pale);color:var(--sage);}
+.recipe-meta{font-size:13px;color:var(--charcoal-light);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
+.search-bar{width:100%;padding:10px 14px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);margin-bottom:16px;outline:none;}
+.search-bar:focus{border-color:var(--terracotta);}
+.btn{padding:10px 18px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:none;}
+.btn-primary{background:var(--terracotta);color:white;}
+.btn-outline{background:none;border:0.5px solid var(--border-mid);color:var(--charcoal);}
+.btn-ai{background:#4A3D8F;color:white;}
+.btn-sm{padding:7px 12px;font-size:13px;}
+.btn-full{width:100%;text-align:center;}
+.form-group{margin-bottom:16px;}
+label{display:block;font-size:13px;font-weight:500;color:var(--charcoal-mid);margin-bottom:6px;}
+input[type=text],input[type=number],textarea,select{width:100%;padding:10px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);outline:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--terracotta);}
+textarea{resize:vertical;min-height:100px;}
+/* INGREDIENT ROWS */
+.ing-header{display:flex;gap:6px;margin-bottom:4px;}
+.ing-header span{font-size:11px;color:var(--charcoal-light);font-weight:500;}
+.h-qty{width:64px;flex-shrink:0;}
+.h-unit{width:80px;flex-shrink:0;}
+.h-name{flex:1;}
+.ing-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;}
+.ing-qty{width:64px!important;flex-shrink:0;padding:8px 8px!important;}
+.ing-unit{width:80px!important;flex-shrink:0;padding:8px 8px!important;}
+.ing-name{flex:1;}
+.ing-row button{flex-shrink:0;background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:0 10px;cursor:pointer;font-size:18px;color:var(--charcoal-light);height:38px;}
+/* PLANNER */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.month-nav h2{font-size:18px;font-weight:500;}
+.month-nav button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-size:18px;color:var(--charcoal);}
+.planner-wrap{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);overflow:hidden;}
+.planner-table{width:100%;border-collapse:collapse;}
+.planner-table th{font-size:11px;font-weight:500;color:var(--charcoal-light);text-transform:uppercase;letter-spacing:0.5px;padding:8px 8px;text-align:left;border-bottom:0.5px solid var(--border-mid);}
+.planner-table th:first-child{width:54px;}
+.planner-table td{padding:5px 6px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
+.planner-table tr:last-child td{border-bottom:none;}
+.planner-table tr.today-row td{background:var(--terracotta-pale);}
+.day-col{font-size:13px;font-weight:500;white-space:nowrap;}
+.day-col .dow{font-size:11px;color:var(--charcoal-light);display:block;}
+.meal-cell{display:flex;align-items:center;gap:4px;}
+.meal-cell-text{font-size:12px;color:var(--charcoal);flex:1;cursor:pointer;line-height:1.3;}
+.meal-cell-text.empty{color:var(--charcoal-light);font-style:italic;}
+.meal-add-btn{background:none;border:0.5px solid var(--border-mid);border-radius:50%;width:22px;height:22px;font-size:14px;color:var(--terracotta);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+/* PORTIONS */
+.portions-bar{display:flex;align-items:center;gap:12px;background:var(--sage-pale);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;}
+.portions-label{font-size:13px;color:var(--sage);font-weight:500;flex:1;}
+.portions-controls{display:flex;align-items:center;gap:10px;}
+.portions-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--sage);background:none;color:var(--sage);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:500;}
+.portions-num{font-size:16px;font-weight:500;color:var(--charcoal);min-width:24px;text-align:center;}
+/* SHOPPING */
+.shop-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--warm-white);border-radius:var(--radius-sm);border:0.5px solid var(--border);margin-bottom:8px;}
+.shop-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-mid);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+.shop-check.checked{background:var(--sage);border-color:var(--sage);}
+.shop-check.checked::after{content:'✓';color:white;font-size:11px;}
+.shop-text{flex:1;font-size:14px;}
+.shop-text.checked{color:var(--charcoal-light);text-decoration:line-through;}
+.shop-source{font-size:11px;color:var(--terracotta);margin-top:1px;}
+.shop-delete{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:18px;padding:0 4px;}
+.add-inline{display:flex;gap:8px;margin-bottom:16px;}
+.add-inline input{flex:1;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(44,44,42,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal{background:var(--warm-white);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--border-mid);border-radius:2px;margin:0 auto 20px;}
+.modal h2{font-size:18px;margin-bottom:16px;}
+.recipe-detail-body{font-size:14px;line-height:1.7;color:var(--charcoal-mid);white-space:pre-wrap;}
+.ingredients-list{list-style:none;margin-bottom:16px;}
+.ingredients-list li{padding:6px 0;border-bottom:0.5px solid var(--border);font-size:14px;}
+.ingredients-list li:last-child{border-bottom:none;}
+.source-link{font-size:12px;color:var(--sage);margin-top:4px;}
+.source-link a{color:var(--sage);text-decoration:underline;}
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-tab{padding:6px 14px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;}
+.filter-tab.active{background:var(--terracotta);color:white;border-color:var(--terracotta);}
+.today-badge{display:inline-block;background:var(--terracotta);color:white;font-size:10px;padding:2px 6px;border-radius:20px;margin-left:6px;vertical-align:middle;}
+/* ADD TABS */
+.add-tabs{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:20px;}
+.add-tab{flex:1;padding:10px;text-align:center;font-size:14px;cursor:pointer;border:none;background:none;color:var(--charcoal-light);font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;}
+.add-tab.active{color:var(--terracotta);border-bottom-color:var(--terracotta);font-weight:500;}
+.add-panel{display:none;}
+.add-panel.active{display:block;}
+/* AI BOX */
+.ai-box{background:#F0EDF8;border:0.5px solid rgba(74,61,143,0.2);border-radius:var(--radius);padding:16px;margin-bottom:20px;}
+.ai-box-title{font-size:14px;font-weight:500;color:#4A3D8F;margin-bottom:4px;}
+.ai-box-sub{font-size:12px;color:#7A72B0;margin-bottom:12px;line-height:1.5;}
+.ai-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.ai-step{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--charcoal-mid);}
+.ai-step-num{background:#4A3D8F;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;}
+.ai-loading{display:none;text-align:center;padding:20px;}
+.ai-loading p{font-size:14px;color:#4A3D8F;margin-top:8px;}
+.spinner{width:32px;height:32px;border:3px solid rgba(74,61,143,0.2);border-top-color:#4A3D8F;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* PICK MODAL SEARCH */
+.pick-search{width:100%;padding:9px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);outline:none;margin-bottom:12px;}
+.pick-search:focus{border-color:var(--terracotta);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--charcoal-light);}
+.empty-state p{font-size:15px;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="topbar"><h1>La Mia <span>Cucina</span></h1></div>
+
+<!-- RICETTE -->
+<div class="page active" id="page-ricette">
+  <input class="search-bar" type="text" placeholder="Cerca una ricetta&hellip;" id="search-input" oninput="filterRecipes()">
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="setFilter('all',this)">Tutte</button>
+    <button class="filter-tab" onclick="setFilter('mamma',this)">Della mamma</button>
+    <button class="filter-tab" onclick="setFilter('internet',this)">Da internet</button>
+  </div>
+  <div class="recipe-grid" id="recipe-list"></div>
+</div>
+
+<!-- PLANNER -->
+<div class="page" id="page-planner">
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">&#8249;</button>
+    <h2 id="month-title"></h2>
+    <button onclick="changeMonth(1)">&#8250;</button>
+  </div>
+  <div id="planner-days"></div>
+</div>
+
+<!-- SPESA -->
+<div class="page" id="page-spesa">
+  <h2 class="section-title">Lista della spesa</h2>
+  <div class="add-inline">
+    <input type="text" id="shop-input" placeholder="Aggiungi un ingrediente&hellip;" onkeydown="if(event.key==='Enter')addShopItem()">
+    <button class="btn btn-primary" onclick="addShopItem()">+</button>
+  </div>
+  <div id="shop-auto" style="margin-bottom:16px;"></div>
+  <div id="shop-list"></div>
+  <div style="margin-top:16px;display:flex;gap:8px;">
+    <button class="btn btn-outline btn-sm" onclick="clearChecked()">Rimuovi spuntati</button>
+    <button class="btn btn-outline btn-sm" onclick="clearAll()">Svuota lista</button>
+  </div>
+</div>
+
+<!-- AGGIUNGI -->
+<div class="page" id="page-aggiungi">
+  <h2 class="section-title">Aggiungi ricetta</h2>
+  <div class="add-tabs">
+    <button class="add-tab active" onclick="switchAddTab('manuale',this)">&#9998; A mano</button>
+    <button class="add-tab" onclick="switchAddTab('ai',this)">&#10024; Da sito/video</button>
+  </div>
+  <div class="add-panel active" id="panel-manuale">
+    <div class="form-group"><label>Nome della ricetta</label><input type="text" id="r-nome" placeholder="Es. Risotto ai funghi"></div>
+    <div class="form-group"><label>Fonte</label><select id="r-fonte"><option value="mamma">Della mamma</option><option value="internet">Da internet</option></select></div>
+    <div class="form-group"><label>Link originale (opzionale)</label><input type="text" id="r-link" placeholder="https://..."></div>
+    <div class="form-group"><label>Tempo di preparazione</label><input type="text" id="r-tempo" placeholder="Es. 30 min"></div>
+    <div class="form-group"><label>Porzioni base</label><input type="number" id="r-porzioni" placeholder="Es. 4" min="1"></div>
+    <div class="form-group">
+      <label>Ingredienti</label>
+      <div class="ing-header"><span class="h-qty">Qt&agrave;</span><span class="h-unit">Unit&agrave;</span><span class="h-name">Ingrediente</span></div>
+      <div id="ing-list">
+        <div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="addIng()">+ Aggiungi ingrediente</button>
+    </div>
+    <div class="form-group"><label>Procedimento</label><textarea id="r-procedimento" placeholder="Scrivi i passaggi della ricetta&hellip;"></textarea></div>
+    <div class="form-group"><label>Note</label><input type="text" id="r-note" placeholder="Es. Ottima con vino bianco"></div>
+    <button class="btn btn-primary btn-full" onclick="saveRecipe()">Salva ricetta</button>
+  </div>
+  <div class="add-panel" id="panel-ai">
+    <div class="ai-box">
+      <div class="ai-box-title">&#10024; Importa con AI</div>
+      <div class="ai-box-sub">Incolla il link e l&apos;AI scarica e struttura la ricetta automaticamente.</div>
+      <div class="ai-steps">
+        <div class="ai-step"><div class="ai-step-num">1</div><span>Incolla il link della ricetta (es. GialloZafferano)</span></div>
+        <div class="ai-step"><div class="ai-step-num">2</div><span>Premi &ldquo;Estrai ricetta&rdquo; &mdash; l&apos;AI fa il resto</span></div>
+        <div class="ai-step"><div class="ai-step-num">3</div><span>Se il link non funziona, copia il testo nel campo opzionale</span></div>
+      </div>
+    </div>
+    <div class="form-group"><label>Link della ricetta</label><input type="text" id="ai-link" placeholder="https://www.giallozafferano.it/..."></div>
+    <div class="form-group"><label>Testo (opzionale &mdash; solo se il link non funziona)</label><textarea id="ai-text" style="min-height:120px" placeholder="Incolla qui il testo copiato dal sito&hellip;"></textarea></div>
+    <button class="btn btn-ai btn-full" onclick="extractWithAI()">&#10024; Estrai ricetta con AI</button>
+    <div class="ai-loading" id="ai-loading"><div class="spinner"></div><p>Sto elaborando&hellip;</p></div>
+    <div id="ai-preview" style="display:none;margin-top:20px;">
+      <hr style="border:none;border-top:0.5px solid var(--border);margin:16px 0">
+      <h3 style="font-size:16px;margin-bottom:12px">Anteprima estratta</h3>
+      <div id="ai-preview-content"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-primary" onclick="saveAIRecipe()">Salva ricetta</button>
+        <button class="btn btn-outline" onclick="resetAI()">Annulla</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="bottomnav">
+  <button class="nav-item active" onclick="showPage('ricette',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 6.5c1.5-2 3.5-3 5.5-3 2 0 4 1 4 4 0 4-4 7-9.5 11C6.5 14.5 2.5 11.5 2.5 7.5c0-3 2-4 4-4 2 0 4 1 5.5 3z"/></svg>Ricette
+  </button>
+  <button class="nav-item" onclick="showPage('planner',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Planner
+  </button>
+  <button class="nav-item" onclick="showPage('spesa',this)">
+    <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Spesa
+  </button>
+  <button class="nav-item" onclick="showPage('aggiungi',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Aggiungi
+  </button>
+</nav>
+
+<!-- MODAL RICETTA -->
+<div class="modal-overlay" id="recipe-modal" style="display:none" onclick="if(event.target.id==='recipe-modal')closeRecipeModal()">
+  <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div></div>
+</div>
+
+<!-- MODAL PLANNER PICK -->
+<div class="modal-overlay" id="pick-modal" style="display:none" onclick="if(event.target.id==='pick-modal')document.getElementById('pick-modal').style.display='none'">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Scegli una ricetta</h2>
+    <input class="pick-search" id="pick-search" type="text" placeholder="Cerca ricetta&hellip;" oninput="renderPickList(this.value)">
+    <div id="pick-list"></div>
+    <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="clearMeal()">Rimuovi pasto</button>
+  </div>
+</div>
+
+<script>
+const RECIPES_KEY='lacmia_recipes_v3',PLANNER_KEY='lacmia_planner',SHOP_KEY='lacmia_shopping';
+let recipes=JSON.parse(localStorage.getItem(RECIPES_KEY)||'[]');
+let planner=JSON.parse(localStorage.getItem(PLANNER_KEY)||'{}');
+let shopping=JSON.parse(localStorage.getItem(SHOP_KEY)||'[]');
+let currentFilter='all',currentMonth=new Date(),pickTarget=null,aiExtracted=null;
+let currentRecipeId=null,currentPortions=4;
+
+function save(k,d){localStorage.setItem(k,JSON.stringify(d));}
+function saveRecipes(){save(RECIPES_KEY,recipes);}
+function savePlanner(){save(PLANNER_KEY,planner);}
+function saveShopping(){save(SHOP_KEY,shopping);}
+
+// ── INGREDIENT HELPERS ──────────────────────────────────────────
+function formatIng(ing,scale){
+  if(typeof ing==='string')return ing;
+  scale=scale||1;
+  let s='';
+  if(ing.qty!=null){
+    const v=ing.qty*scale;
+    s+=(v%1===0?v:+v.toFixed(2));
+    if(ing.unit)s+='\u202f'+ing.unit;
+    s+=' ';
+  } else if(ing.unit){s+=ing.unit+' ';}
+  return s+ing.name;
+}
+function ingShopText(ing,scale){
+  if(typeof ing==='string')return ing;
+  scale=scale||1;
+  let s='';
+  if(ing.qty!=null){
+    const v=ing.qty*scale;
+    s+=(v%1===0?v:+v.toFixed(2));
+    if(ing.unit&&ing.unit!=='q.b.')s+='\u202f'+ing.unit;
+    s+=' ';
+  } else if(ing.unit&&ing.unit!=='q.b.'){s+=ing.unit+' ';}
+  return s+ing.name;
+}
+
+// ── DEFAULT DATA ────────────────────────────────────────────────
+const GZ=[
+  {id:'gz1',nome:'Spaghetti alla Carbonara',fonte:'internet',tempo:'30 min',porzioni:4,link:'https://www.giallozafferano.it/ricette/spaghetti-alla-carbonara.html',
+   ingredienti:[{qty:400,unit:'g',name:'spaghetti'},{qty:200,unit:'g',name:'guanciale'},{qty:4,unit:'n\u00b0',name:'tuorli'},{qty:100,unit:'g',name:'pecorino romano'},{qty:50,unit:'g',name:'parmigiano'},{qty:null,unit:'q.b.',name:'pepe nero'}],
+   procedimento:'1. Rosolare il guanciale a listarelle senza olio fin\u00e9 croccante.\n2. Mescolare tuorli, pecorino, parmigiano e pepe abbondante.\n3. Cuocere pasta al dente, tenere acqua di cottura.\n4. Spegnere il fuoco, pasta al guanciale, poi uova mescolando rapido.\n5. Aggiungere acqua di cottura per crema. Servire subito.',note:'Mai usare panna!'},
+  {id:'gz2',nome:'Tiram\u00f9 classico',fonte:'internet',tempo:'30 min + 4h riposo',porzioni:8,link:'https://www.giallozafferano.it/ricette/tiramisu.html',
+   ingredienti:[{qty:400,unit:'g',name:'savoiardi'},{qty:500,unit:'g',name:'mascarpone'},{qty:4,unit:'n\u00b0',name:'uova'},{qty:100,unit:'g',name:'zucchero'},{qty:300,unit:'ml',name:'caff\u00e8 espresso freddo'},{qty:null,unit:'q.b.',name:'cacao amaro'}],
+   procedimento:'1. Montare tuorli con zucchero fin\u00e9 chiari. Aggiungere mascarpone.\n2. Montare albumi a neve e incorporare delicatamente.\n3. Inzuppare savoiardi nel caff\u00e8.\n4. Strati: savoiardi, crema, savoiardi, crema.\n5. Spolverare con cacao amaro. Frigo almeno 4 ore.',note:'Si conserva in frigo fino a 2 giorni.'},
+  {id:'gz3',nome:'Risotto alla Milanese',fonte:'internet',tempo:'35 min',porzioni:4,link:'https://www.giallozafferano.it/ricette/risotto-alla-milanese.html',
+   ingredienti:[{qty:320,unit:'g',name:'riso Carnaroli'},{qty:1,unit:'bustina',name:'zafferano'},{qty:1,unit:'L',name:'brodo di carne caldo'},{qty:1,unit:'n\u00b0',name:'cipolla'},{qty:80,unit:'g',name:'burro'},{qty:60,unit:'g',name:'parmigiano grattugiato'},{qty:1,unit:'bicchiere',name:'vino bianco'}],
+   procedimento:'1. Soffriggere cipolla in met\u00e0 burro.\n2. Tostare riso 2 min, sfumare con vino.\n3. Aggiungere brodo caldo un mestolo alla volta.\n4. A met\u00e0 cottura aggiungere zafferano sciolto in brodo.\n5. Mantecare con burro e parmigiano. Riposare 2 min coperto.',note:'Il riposo finale coperto \u00e8 fondamentale.'},
+  {id:'gz4',nome:'Parmigiana di melanzane',fonte:'internet',tempo:'1h 30min',porzioni:6,link:'https://www.giallozafferano.it/ricette/parmigiana-di-melanzane.html',
+   ingredienti:[{qty:1,unit:'kg',name:'melanzane'},{qty:700,unit:'g',name:'passata di pomodoro'},{qty:250,unit:'g',name:'mozzarella'},{qty:100,unit:'g',name:'parmigiano'},{qty:2,unit:'n\u00b0',name:'uova'},{qty:null,unit:'q.b.',name:'olio per friggere'},{qty:null,unit:'q.b.',name:'basilico fresco'}],
+   procedimento:'1. Melanzane a fette 5mm, salare e scolare 30 min.\n2. Passare nell\'uovo e friggere in olio abbondante.\n3. Sugo con pomodoro, aglio e basilico (15 min).\n4. Strati in teglia: sugo, melanzane, mozzarella, parmigiano.\n5. Forno 180\u00b0C per 35-40 min. Riposare 10 min.',note:'Ottima anche fredda il giorno dopo.'},
+  {id:'gz5',nome:'Pasta e fagioli',fonte:'internet',tempo:'1h',porzioni:4,link:'https://www.giallozafferano.it/ricette/pasta-e-fagioli.html',
+   ingredienti:[{qty:300,unit:'g',name:'pasta corta (ditalini)'},{qty:400,unit:'g',name:'fagioli borlotti'},{qty:2,unit:'n\u00b0',name:'pomodori pelati'},{qty:1,unit:'n\u00b0',name:'costa di sedano'},{qty:1,unit:'n\u00b0',name:'carota'},{qty:1,unit:'n\u00b0',name:'cipolla'},{qty:null,unit:'q.b.',name:'rosmarino'},{qty:null,unit:'q.b.',name:'olio EVO'}],
+   procedimento:'1. Soffriggere sedano, carota, cipolla in olio EVO.\n2. Aggiungere rosmarino, pomodori e fagioli. Coprire con acqua.\n3. Cuocere 20 min. Frullare met\u00e0 fagioli e rimettere.\n4. Portare a ebollizione, aggiungere pasta e cuocere.\n5. Servire con olio EVO a crudo.',note:'Con fagioli secchi: ammollo 12h e cottura separata.'},
+  {id:'gz6',nome:'Pollo alla cacciatora',fonte:'internet',tempo:'1h 10min',porzioni:4,link:'https://www.giallozafferano.it/ricette/pollo-alla-cacciatora.html',
+   ingredienti:[{qty:1.2,unit:'kg',name:'pollo a pezzi'},{qty:400,unit:'g',name:'pomodori pelati'},{qty:1,unit:'n\u00b0',name:'cipolla'},{qty:1,unit:'n\u00b0',name:'peperone giallo'},{qty:100,unit:'ml',name:'vino bianco'},{qty:null,unit:'q.b.',name:'olive nere'},{qty:null,unit:'q.b.',name:'capperi'},{qty:null,unit:'q.b.',name:'rosmarino'},{qty:null,unit:'q.b.',name:'olio EVO'}],
+   procedimento:'1. Dorare i pezzi di pollo. Sfumare col vino.\n2. Soffriggere cipolla e peperone.\n3. Aggiungere pomodori, olive, capperi e rosmarino.\n4. Rimettere il pollo, coprire e cuocere 40-45 min.',note:'Ancora migliore il giorno dopo riscaldato.'}
+];
+
+if(recipes.length===0){
+  recipes=[
+    {id:1,nome:'Pasta al pomodoro della mamma',fonte:'mamma',tempo:'20 min',porzioni:4,link:'',
+     ingredienti:[{qty:400,unit:'g',name:'pasta'},{qty:500,unit:'g',name:'pomodori pelati'},{qty:2,unit:'n\u00b0',name:'spicchi aglio'},{qty:null,unit:'q.b.',name:'basilico'},{qty:null,unit:'q.b.',name:'olio EVO'},{qty:null,unit:'q.b.',name:'sale'}],
+     procedimento:'1. Soffriggere l\'aglio in olio.\n2. Aggiungere i pomodori e cuocere 15 min.\n3. Cuocere la pasta, condire e servire con basilico.',note:'La nonna aggiungeva un pizzico di zucchero'},
+    {id:2,nome:'Pollo arrosto',fonte:'mamma',tempo:'1h 20min',porzioni:4,link:'',
+     ingredienti:[{qty:1,unit:'n\u00b0',name:'pollo intero'},{qty:800,unit:'g',name:'patate'},{qty:3,unit:'n\u00b0',name:'spicchi aglio'},{qty:null,unit:'q.b.',name:'rosmarino'},{qty:null,unit:'q.b.',name:'salvia'},{qty:null,unit:'q.b.',name:'olio EVO'},{qty:null,unit:'q.b.',name:'sale'}],
+     procedimento:'1. Marinare il pollo con erbe e olio.\n2. Infornare a 180\u00b0C per 1 ora.\n3. Aggiungere le patate a met\u00e0 cottura.',note:'Bagnare ogni 20 min con il fondo di cottura'},
+    ...GZ
+  ];
+  saveRecipes();
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────────
+function showPage(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='ricette')renderRecipes();
+  if(name==='planner')renderPlanner();
+  if(name==='spesa')renderShopping();
+}
+
+function switchAddTab(name,el){
+  document.querySelectorAll('.add-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.add-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ── RECIPES ─────────────────────────────────────────────────────
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  filterRecipes();
+}
+
+function filterRecipes(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  renderRecipeList(recipes.filter(r=>(currentFilter==='all'||r.fonte===currentFilter)&&r.nome.toLowerCase().includes(q)));
+}
+function renderRecipes(){filterRecipes();}
+
+function renderRecipeList(list){
+  const el=document.getElementById('recipe-list');
+  if(!list.length){el.innerHTML='<div class="empty-state"><p>Nessuna ricetta trovata.</p></div>';return;}
+  el.innerHTML=list.map(r=>`
+    <div class="recipe-card" onclick="openRecipe('${r.id}')">
+      <div class="recipe-card-header"><h3>${r.nome}</h3><span class="tag tag-${r.fonte}">${r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web'}</span></div>
+      <div class="recipe-meta">
+        ${r.tempo?'<span>&#x23F1; '+r.tempo+'</span>':''}
+        ${r.porzioni?'<span>&#x1F465; '+r.porzioni+' porz.</span>':''}
+        <span>${(r.ingredienti||[]).length} ingredienti</span>
+      </div>
+    </div>`).join('');
+}
+
+function openRecipe(id){
+  const r=recipes.find(x=>String(x.id)===String(id));
+  if(!r)return;
+  currentRecipeId=id;
+  currentPortions=parseInt(r.porzioni)||4;
+  renderRecipeModal(r,currentPortions);
+  document.getElementById('recipe-modal').style.display='flex';
+}
+
+function changePortions(d){
+  currentPortions=Math.max(1,currentPortions+d);
+  const r=recipes.find(x=>String(x.id)===String(currentRecipeId));
+  if(r)renderRecipeModal(r,currentPortions);
+}
+
+function renderRecipeModal(r,portions){
+  const base=parseInt(r.porzioni)||4;
+  const scale=portions/base;
+  const ings=(r.ingredienti||[]).map(i=>'<li>'+formatIng(i,scale)+'</li>').join('');
+  document.getElementById('modal-body').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <h2 style="flex:1;margin:0">${r.nome}</h2>
+      <span class="tag tag-${r.fonte}" style="margin-left:8px">${r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web'}</span>
+    </div>
+    <div class="recipe-meta" style="margin-bottom:12px">${r.tempo?'<span>&#x23F1; '+r.tempo+'</span>':''}</div>
+    ${r.link?'<div class="source-link" style="margin-bottom:14px">&#x1F517; <a href="'+r.link+'" target="_blank">Fonte originale</a></div>':''}
+    <div class="portions-bar">
+      <span class="portions-label">&#x1F465; Porzioni</span>
+      <div class="portions-controls">
+        <button class="portions-btn" onclick="changePortions(-1)">&minus;</button>
+        <span class="portions-num">${portions}</span>
+        <button class="portions-btn" onclick="changePortions(+1)">+</button>
+      </div>
+    </div>
+    <h3 style="font-size:15px;margin-bottom:10px">Ingredienti</h3>
+    <ul class="ingredients-list">${ings}</ul>
+    <h3 style="font-size:15px;margin-bottom:10px">Procedimento</h3>
+    <p class="recipe-detail-body">${r.procedimento||''}</p>
+    ${r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+r.note+'</div>':''}
+    <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="addToShopFromRecipe('${r.id}')">+ Aggiungi alla spesa</button>
+      <button class="btn btn-outline btn-sm" style="color:var(--charcoal-light)" onclick="deleteRecipe('${r.id}')">Elimina</button>
+    </div>`;
+}
+
+function closeRecipeModal(){document.getElementById('recipe-modal').style.display='none';}
+
+function deleteRecipe(id){
+  if(!confirm('Eliminare questa ricetta?'))return;
+  recipes=recipes.filter(r=>String(r.id)!==String(id));
+  saveRecipes();
+  closeRecipeModal();
+  renderRecipes();
+}
+
+function addToShopFromRecipe(id){
+  const r=recipes.find(x=>String(x.id)===String(id));
+  if(!r)return;
+  const base=parseInt(r.porzioni)||4;
+  const scale=currentPortions/base;
+  (r.ingredienti||[]).forEach(ing=>{
+    const text=ingShopText(ing,scale);
+    if(!shopping.find(s=>s.text===text&&s.source===r.nome))
+      shopping.push({id:Date.now()+Math.random(),text,source:r.nome,checked:false});
+  });
+  saveShopping();
+  closeRecipeModal();
+  alert('Ingredienti aggiunti alla lista della spesa!');
+}
+
+// ── ADD RECIPE ──────────────────────────────────────────────────
+function addIng(){
+  const div=document.createElement('div');
+  div.className='ing-row';
+  div.innerHTML='<input class="ing-qty" type="number" placeholder="es.200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g, ml..."><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeIng(this)">&minus;</button>';
+  document.getElementById('ing-list').appendChild(div);
+}
+function removeIng(btn){if(document.querySelectorAll('.ing-row').length>1)btn.parentElement.remove();}
+
+function saveRecipe(){
+  const nome=document.getElementById('r-nome').value.trim();
+  if(!nome){alert('Inserisci il nome della ricetta!');return;}
+  const rows=document.querySelectorAll('#ing-list .ing-row');
+  const ingredienti=Array.from(rows).map(row=>{
+    const qty=parseFloat(row.querySelector('.ing-qty').value)||null;
+    const unit=row.querySelector('.ing-unit').value.trim();
+    const name=row.querySelector('.ing-name').value.trim();
+    if(!name)return null;
+    return{qty,unit,name};
+  }).filter(Boolean);
+  recipes.push({
+    id:Date.now(),nome,
+    fonte:document.getElementById('r-fonte').value,
+    link:document.getElementById('r-link').value.trim(),
+    tempo:document.getElementById('r-tempo').value.trim(),
+    porzioni:parseInt(document.getElementById('r-porzioni').value)||4,
+    ingredienti,
+    procedimento:document.getElementById('r-procedimento').value.trim(),
+    note:document.getElementById('r-note').value.trim()
+  });
+  saveRecipes();
+  // reset form
+  ['r-nome','r-link','r-tempo','r-porzioni','r-procedimento','r-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ing-list').innerHTML='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>';
+  alert('Ricetta salvata!');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+  showPage('ricette',document.querySelectorAll('.nav-item')[0]);
+}
+
+// ── PLANNER ─────────────────────────────────────────────────────
+const MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const DAYS_IT=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+
+function changeMonth(d){currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+d,1);renderPlanner();}
+
+function renderPlanner(){
+  const year=currentMonth.getFullYear(),month=currentMonth.getMonth();
+  document.getElementById('month-title').textContent=MONTHS[month]+' '+year;
+  const days=new Date(year,month+1,0).getDate();
+  const today=new Date();
+  let rows='';
+  for(let d=1;d<=days;d++){
+    const date=new Date(year,month,d);
+    const key=year+'-'+(month+1)+'-'+d;
+    const entry=planner[key]||{};
+    const isToday=today.getDate()===d&&today.getMonth()===month&&today.getFullYear()===year;
+    rows+=`<tr class="${isToday?'today-row':''}">
+      <td><div class="day-col"><span class="dow">${DAYS_IT[date.getDay()]}</span>${d}</div></td>
+      <td><div class="meal-cell">
+        <span class="meal-cell-text ${entry.pranzo?'':'empty'}" onclick="openPickModal('${key}','pranzo')">${entry.pranzo||'&mdash;'}</span>
+        <button class="meal-add-btn" onclick="openPickModal('${key}','pranzo')">+</button>
+      </div></td>
+      <td><div class="meal-cell">
+        <span class="meal-cell-text ${entry.cena?'':'empty'}" onclick="openPickModal('${key}','cena')">${entry.cena||'&mdash;'}</span>
+        <button class="meal-add-btn" onclick="openPickModal('${key}','cena')">+</button>
+      </div></td>
+    </tr>`;
+  }
+  document.getElementById('planner-days').innerHTML=
+    '<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function renderPickList(q){
+  const filtered=recipes.filter(r=>r.nome.toLowerCase().includes((q||'').toLowerCase()));
+  document.getElementById('pick-list').innerHTML=!filtered.length
+    ?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>'
+    :filtered.map(r=>`<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal('${r.nome.replace(/'/g,"\\'")}')">
+      <div class="recipe-card-header"><span style="font-size:14px;font-weight:500">${r.nome}</span><span class="tag tag-${r.fonte}">${r.fonte==='mamma'?'Mamma':'Web'}</span></div>
+    </div>`).join('');
+}
+
+function openPickModal(key,meal){
+  pickTarget={key,meal};
+  document.getElementById('pick-search').value='';
+  renderPickList('');
+  document.getElementById('pick-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('pick-search').focus(),150);
+}
+
+function selectMeal(nome){
+  if(!pickTarget)return;
+  if(!planner[pickTarget.key])planner[pickTarget.key]={};
+  planner[pickTarget.key][pickTarget.meal]=nome;
+  savePlanner();
+  document.getElementById('pick-modal').style.display='none';
+  renderPlanner();
+  syncPlannerToShop();
+}
+
+function clearMeal(){
+  if(!pickTarget)return;
+  if(planner[pickTarget.key])delete planner[pickTarget.key][pickTarget.meal];
+  savePlanner();
+  document.getElementById('pick-modal').style.display='none';
+  renderPlanner();
+  syncPlannerToShop();
+}
+
+function getWeekKeys(){
+  const now=new Date();
+  const day=now.getDay();
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-(day===0?6:day-1));
+  const keys=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    keys.push(d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate());
+  }
+  return keys;
+}
+
+function syncPlannerToShop(){
+  const weekKeys=getWeekKeys();
+  const mealCounts={};
+  weekKeys.forEach(key=>{
+    const entry=planner[key]||{};
+    ['pranzo','cena'].forEach(meal=>{
+      if(entry[meal])mealCounts[entry[meal]]=(mealCounts[entry[meal]]||0)+1;
+    });
+  });
+  const newItems=[];
+  Object.entries(mealCounts).forEach(([nome,count])=>{
+    const recipe=recipes.find(r=>r.nome===nome);
+    if(!recipe)return;
+    (recipe.ingredienti||[]).forEach(ing=>{
+      const text=ingShopText(ing,count);
+      const ingKey=typeof ing==='string'?ing:ing.name;
+      const id='planner_'+nome+'_'+ingKey;
+      const prev=shopping.find(s=>s.id===id);
+      newItems.push({id,text,source:nome+(count>1?' \u00d7'+count:''),checked:prev?prev.checked:false,fromPlanner:true});
+    });
+  });
+  shopping=[...shopping.filter(s=>!s.fromPlanner),...newItems];
+  saveShopping();
+  if(document.getElementById('page-spesa').classList.contains('active'))renderShopping();
+}
+
+// ── SHOPPING ────────────────────────────────────────────────────
+function renderShopping(){
+  const list=document.getElementById('shop-list');
+  const autoEl=document.getElementById('shop-auto');
+  const manual=shopping.filter(s=>!s.source&&!s.fromPlanner);
+  const fromBtn=shopping.filter(s=>s.source&&!s.fromPlanner);
+  const fromPlanner=shopping.filter(s=>s.fromPlanner);
+  let html='';
+  if(fromPlanner.length){
+    const now=new Date(),day=now.getDay();
+    const monday=new Date(now);monday.setDate(now.getDate()-(day===0?6:day-1));
+    const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+    const fmt=d=>d.getDate()+'/'+(d.getMonth()+1);
+    html+='<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px;font-weight:500">DAL PLANNER &mdash; settimana '+fmt(monday)+'&ndash;'+fmt(sunday)+'</p>';
+    html+=fromPlanner.map(s=>shopItemHTML(s)).join('');
+  }
+  if(fromBtn.length){
+    html+='<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px;margin-top:'+(fromPlanner.length?'16px':'0')+';font-weight:500">DALLE RICETTE</p>';
+    html+=fromBtn.map(s=>shopItemHTML(s)).join('');
+  }
+  autoEl.innerHTML=html;
+  if(!shopping.length){
+    list.innerHTML='<div class="empty-state"><p>La lista &egrave; vuota.<br>Aggiungi pasti al planner o ingredienti a mano!</p></div>';
+  } else {
+    list.innerHTML=manual.length
+      ?'<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px;'+(html?'margin-top:16px;':'')+'font-weight:500">AGGIUNTI A MANO</p>'+manual.map(s=>shopItemHTML(s)).join('')
+      :'';
+  }
+}
+
+function shopItemHTML(s){
+  return`<div class="shop-item">
+    <div class="shop-check ${s.checked?'checked':''}" onclick="toggleShop('${s.id}')"></div>
+    <div class="shop-text ${s.checked?'checked':''}">
+      ${s.text}
+      ${s.source?'<div class="shop-source">'+s.source+'</div>':''}
+    </div>
+    <button class="shop-delete" onclick="deleteShop('${s.id}')">&times;</button>
+  </div>`;
+}
+
+function addShopItem(){
+  const inp=document.getElementById('shop-input');
+  const val=inp.value.trim();
+  if(!val)return;
+  shopping.push({id:Date.now(),text:val,source:null,checked:false});
+  saveShopping();inp.value='';renderShopping();
+}
+
+function toggleShop(id){
+  const item=shopping.find(s=>String(s.id)===String(id));
+  if(item){item.checked=!item.checked;saveShopping();renderShopping();}
+}
+function deleteShop(id){shopping=shopping.filter(s=>String(s.id)!==String(id));saveShopping();renderShopping();}
+function clearChecked(){shopping=shopping.filter(s=>!s.checked);saveShopping();renderShopping();}
+function clearAll(){if(!confirm('Svuotare tutta la lista?'))return;shopping=[];saveShopping();renderShopping();}
+
+// ── AI EXTRACTION ────────────────────────────────────────────────
+async function fetchPageText(url){
+  const proxies=[u=>'https://api.allorigins.win/get?url='+encodeURIComponent(u),u=>'https://corsproxy.io/?'+encodeURIComponent(u)];
+  for(const mk of proxies){
+    try{
+      const res=await fetch(mk(url),{signal:AbortSignal.timeout(9000)});
+      if(!res.ok)continue;
+      const ct=res.headers.get('content-type')||'';
+      let text='';
+      if(ct.includes('json')){const d=await res.json();text=d.contents||'';}
+      else{text=await res.text();}
+      if(text&&text.length>200)return text;
+    }catch(e){continue;}
+  }
+  return null;
+}
+
+function stripHtml(html){
+  const tmp=document.createElement('div');tmp.innerHTML=html;
+  ['script','style','nav','header','footer','aside','iframe'].forEach(tag=>tmp.querySelectorAll(tag).forEach(el=>el.remove()));
+  return(tmp.innerText||tmp.textContent||'').replace(/\s+/g,' ').trim();
+}
+
+async function extractWithAI(){
+  const link=document.getElementById('ai-link').value.trim();
+  const manualText=document.getElementById('ai-text').value.trim();
+  const loadEl=document.getElementById('ai-loading');
+  const loadMsg=loadEl.querySelector('p');
+  if(!link&&manualText.length<50){alert('Inserisci un link oppure incolla il testo della ricetta!');return;}
+  loadEl.style.display='block';
+  document.getElementById('ai-preview').style.display='none';
+  let text=manualText;
+  if(link&&!manualText){
+    loadMsg.textContent='Scarico la pagina\u2026';
+    const html=await fetchPageText(link);
+    if(!html){loadEl.style.display='none';alert('Non riesco a scaricare questa pagina.\n\nCopia il testo manualmente nel campo qui sotto.');return;}
+    text=stripHtml(html);
+  }
+  loadMsg.textContent='L\u2019AI sta analizzando\u2026';
+  const prompt='Sei un assistente culinario. Analizza questo testo da un sito di ricette e restituisci SOLO un oggetto JSON valido, senza markdown o testo aggiuntivo. Formato esatto: {"nome":"nome ricetta","tempo":"tempo totale","porzioni":"numero intero","ingredienti":[{"qty":numero_o_null,"unit":"unit\u00e0 o q.b.","name":"nome ingrediente"}],"procedimento":"passi numerati separati da \\n","note":"consigli o stringa vuota"}\n\nTesto: '+text.substring(0,4000);
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const raw=(data.content||[]).map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    aiExtracted=JSON.parse(raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1));
+    aiExtracted.link=link||'';
+    aiExtracted.fonte='internet';
+    aiExtracted.porzioni=parseInt(aiExtracted.porzioni)||4;
+    showAIPreview(aiExtracted);
+  }catch(err){
+    console.error(err);
+    alert('Errore nell\u2019estrazione. Prova a incollare il testo manualmente.');
+  }finally{
+    loadEl.style.display='none';
+    loadMsg.textContent='Sto elaborando\u2026';
+  }
+}
+
+function showAIPreview(r){
+  const ings=(r.ingredienti||[]).map(i=>{
+    if(typeof i==='string')return'<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">'+i+'</li>';
+    return'<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">'+formatIng(i,1)+'</li>';
+  }).join('');
+  document.getElementById('ai-preview-content').innerHTML=
+    '<div style="background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px">'+
+    '<h3 style="font-size:17px;margin-bottom:8px">'+(r.nome||'')+'</h3>'+
+    '<div class="recipe-meta" style="margin-bottom:12px">'+(r.tempo?'<span>&#x23F1; '+r.tempo+'</span>':'')+(r.porzioni?'<span>&#x1F465; '+r.porzioni+' porzioni</span>':'')+'</div>'+
+    '<p style="font-size:12px;font-weight:500;color:var(--charcoal-light);margin-bottom:6px">INGREDIENTI</p>'+
+    '<ul style="list-style:none;margin-bottom:12px">'+ings+'</ul>'+
+    '<p style="font-size:12px;font-weight:500;color:var(--charcoal-light);margin-bottom:6px">PROCEDIMENTO</p>'+
+    '<p style="font-size:13px;color:var(--charcoal-mid);white-space:pre-wrap;line-height:1.6">'+(r.procedimento||'')+'</p>'+
+    (r.note?'<div style="margin-top:10px;font-size:12px;color:var(--charcoal-light)">&#x1F4DD; '+r.note+'</div>':'')+
+    '</div>';
+  document.getElementById('ai-preview').style.display='block';
+}
+
+function saveAIRecipe(){
+  if(!aiExtracted)return;
+  recipes.push(Object.assign({id:Date.now()},aiExtracted));
+  saveRecipes();resetAI();
+  alert('Ricetta salvata!');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+  showPage('ricette',document.querySelectorAll('.nav-item')[0]);
+}
+
+function resetAI(){
+  aiExtracted=null;
+  document.getElementById('ai-text').value='';
+  document.getElementById('ai-link').value='';
+  document.getElementById('ai-preview').style.display='none';
+  document.getElementById('ai-loading').style.display='none';
+}
+
+// ── INIT ────────────────────────────────────────────────────────
+renderPlanner();renderRecipes();renderShopping();
+</script>
+</body>
+</html>
