@@ -294,6 +294,15 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 </div>
 
+<script>
+setTimeout(function(){
+  var s=document.getElementById('loading-screen');
+  if(s&&s.style.display!=='none'){
+    document.querySelector('.spinner').style.display='none';
+    document.getElementById('loading-msg').innerHTML='<span style="color:#C4622D;font-weight:600">Errore di caricamento</span><br><span style="font-size:12px">Prova a ricaricare la pagina (Ctrl+Shift+R)</span>';
+  }
+},5000);
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
