@@ -225,9 +225,10 @@ textarea{resize:vertical;min-height:100px;}
           <div class="ai-step"><div class="ai-step-num">3</div><span>Se il link non funziona, copia il testo nel campo opzionale</span></div>
         </div>
       </div>
-      <div class="form-group"><label>Link della ricetta</label><input type="text" id="ai-link" placeholder="https://www.giallozafferano.it/..."></div>
-      <div class="form-group"><label>Testo (opzionale)</label><textarea id="ai-text" style="min-height:100px" placeholder="Incolla qui il testo se il link non funziona&hellip;"></textarea></div>
-      <button class="btn btn-ai btn-full" onclick="extractWithAI()">&#10024; Estrai ricetta con AI</button>
+      <div class="form-group"><label>Link della ricetta (opzionale)</label><input type="text" id="ai-link" placeholder="https://www.giallozafferano.it/..."></div>
+      <div class="form-group"><label>Testo della ricetta</label><textarea id="ai-text" style="min-height:120px" placeholder="Incolla qui il testo copiato dal sito&hellip;"></textarea></div>
+      <button class="btn btn-ai btn-full" onclick="extractWithAI()" style="margin-bottom:8px">&#10024; Estrai con AI (richiede chiave Gemini)</button>
+      <button class="btn btn-outline btn-full" onclick="parseWithoutAI()">&#128196; Analizza testo automaticamente (senza AI)</button>
       <div class="ai-loading" id="ai-loading"><div class="spinner"></div><p>Sto elaborando&hellip;</p></div>
       <div id="ai-preview" style="display:none;margin-top:20px;">
         <hr style="border:none;border-top:0.5px solid var(--border);margin:16px 0">
@@ -565,6 +566,58 @@ function getApiKey(){
   if(!k){k=prompt('Inserisci la tua chiave API Google Gemini (gratis su aistudio.google.com — salvata solo nel tuo browser):');if(k)localStorage.setItem('gemini_key',k.trim());}
   return k?k.trim():null;
 }
+function parseRecipeText(text){
+  var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);
+  if(!lines.length)return null;
+  var nome='',tempo='',porzioni=4,ingredienti=[],proc=[],section='start';
+  var unitRx=/^(\d+[\.,\/]?\d*)\s*(g|gr|kg|ml|l|lt|cl|dl|n°|pz|cucchiai?|cucchiaini?|bicchieri?|spicchi?|fette?|bustine?|foglie?|rametti?|pizzichi?|q\.b\.?)\s+(?:di\s+)?(.+)/i;
+  var numRx=/^(\d+)\s*(?:x|persone?|porzioni?|dosi?)/i;
+  lines.forEach(function(line){
+    var lc=line.toLowerCase();
+    if(/^ingredienti/i.test(line)){section='ing';return;}
+    if(/^(procedimento|preparazione|come si (fa|prepara)|preparate)/i.test(line)){section='proc';return;}
+    if(!nome&&line.length>2&&line.length<120){nome=line;return;}
+    var tm=line.match(/(?:tempo|preparazione|cottura)\s*:?\s*(.{3,25})/i);
+    if(tm&&!tempo){tempo=tm[1].trim();return;}
+    var pm=line.match(numRx);
+    if(pm){porzioni=parseInt(pm[1])||4;return;}
+    var m=unitRx.exec(line);
+    if(m&&(section==='ing'||section==='start')){
+      ingredienti.push({qty:parseFloat(m[1].replace(',','.').replace('/','.5'))||null,unit:m[2].toLowerCase(),name:m[3].trim()});
+      return;
+    }
+    if(/^q\.b\.?\s+(.+)/i.test(line)&&(section==='ing'||section==='start')){
+      ingredienti.push({qty:null,unit:'q.b.',name:line.replace(/^q\.b\.?\s*/i,'').trim()});
+      return;
+    }
+    if(section==='proc'||/^\d+[\.\)]\s/.test(line)){
+      section='proc';
+      proc.push(line.replace(/^\d+[\.\)]\s*/,''));
+    }
+  });
+  if(!ingredienti.length){
+    lines.forEach(function(line){
+      var m=unitRx.exec(line);
+      if(m)ingredienti.push({qty:parseFloat(m[1].replace(',','.'))||null,unit:m[2].toLowerCase(),name:m[3].trim()});
+    });
+  }
+  if(!proc.length){
+    lines.filter(function(l){return/^\d+[\.\)]\s/.test(l);}).forEach(function(s){proc.push(s.replace(/^\d+[\.\)]\s*/,''));});
+  }
+  return{nome:nome||'Nuova ricetta',tempo:tempo,porzioni:porzioni,ingredienti:ingredienti,procedimento:proc.map(function(s,i){return(i+1)+'. '+s;}).join('\n'),note:'',fonte:'internet'};
+}
+window.parseWithoutAI=function(){
+  var text=document.getElementById('ai-text').value.trim();
+  var link=document.getElementById('ai-link').value.trim();
+  if(!text){document.getElementById('ai-text').focus();return;}
+  var result=parseRecipeText(text);
+  if(!result||!result.nome){alert('Non riesco a leggere la ricetta. Prova il form manuale.');return;}
+  result.link=link||'';
+  aiExtracted=result;
+  var ings=(result.ingredienti||[]).map(function(i){return'<li style="font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)">'+fmtIng(i,1)+'</li>';}).join('');
+  document.getElementById('ai-preview-content').innerHTML='<div style="background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px"><h3 style="font-size:17px;margin-bottom:8px">'+result.nome+'</h3>'+(result.tempo?'<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+result.tempo+'</p>':'')+'<ul style="list-style:none;margin-bottom:10px">'+ings+'</ul><p style="font-size:13px;color:var(--charcoal-mid);white-space:pre-wrap;line-height:1.6">'+(result.procedimento||'')+'</p></div>';
+  document.getElementById('ai-preview').style.display='block';
+};
 window.extractWithAI=function(){
   var link=document.getElementById('ai-link').value.trim(),manualText=document.getElementById('ai-text').value.trim();
   var loadEl=document.getElementById('ai-loading'),loadMsg=loadEl.querySelector('p');
@@ -577,8 +630,8 @@ window.extractWithAI=function(){
     if(!text)return;
     loadMsg.textContent="L'AI sta analizzando…";
     var prompt='Sei un assistente culinario. Analizza questo testo e restituisci SOLO JSON valido senza markdown: {"nome":"nome","tempo":"tempo","porzioni":"numero","ingredienti":[{"qty":numero_o_null,"unit":"unita","name":"nome"}],"procedimento":"passi numerati separati da \\n","note":"o vuoto"}\n\nTesto: '+text.substring(0,4000);
-    return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})}).then(function(res){return res.json();}).then(function(data){
-      if(data.error){if(data.error.code===400||data.error.code===403){localStorage.removeItem('gemini_key');alert('Chiave API non valida. Riprova.');return;}throw new Error(data.error.message);}
+    return fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})}).then(function(res){return res.json();}).then(function(data){
+      if(data.error){if(data.error.code===400||data.error.code===403){localStorage.removeItem('gemini_key');alert('Chiave API non valida. Riprova.');return;}if(data.error.code===429||data.error.status==='RESOURCE_EXHAUSTED'){alert('Troppo veloce! L\'AI ha un limite di richieste al minuto.\nAspetta 1 minuto e riprova.');return;}throw new Error(data.error.message);}
       var raw=((((data.candidates||[])[0]||{}).content||{}).parts||[]).map(function(p){return p.text||'';}).join('').replace(/```json|```/g,'').trim();
       aiExtracted=JSON.parse(raw.substring(raw.indexOf('{'),raw.lastIndexOf('}')+1));
       aiExtracted.link=link||'';aiExtracted.fonte=aiExtracted.fonte||'internet';aiExtracted.porzioni=parseInt(aiExtracted.porzioni)||4;
