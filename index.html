@@ -272,7 +272,7 @@ textarea{resize:vertical;min-height:100px;}
       <span style="font-size:13px;color:var(--sage);font-weight:500;flex:1;">&#x1F465; Per quante persone?</span>
       <div style="display:flex;align-items:center;gap:10px;">
         <button class="portions-btn" onclick="changePlannerPortions(-1)">&minus;</button>
-        <span class="portions-num" id="planner-portions-num">4</span>
+        <span class="portions-num" id="planner-portions-num">1</span>
         <button class="portions-btn" onclick="changePlannerPortions(+1)">+</button>
       </div>
     </div>
@@ -303,7 +303,7 @@ const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.Goo
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentFilter='all',currentMonth=new Date(),pickTarget=null,aiExtracted=null;
-let currentRecipeId=null,currentPortions=4,plannerPortions=4;
+let currentRecipeId=null,currentPortions=4,plannerPortions=1;
 
 function fmtIng(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit)r+=' '+i.unit;r+=' ';}else if(i.unit)r+=i.unit+' ';return r+i.name;}
 function shopTxt(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit&&i.unit!=='q.b.')r+=' '+i.unit;r+=' ';}else if(i.unit&&i.unit!=='q.b.')r+=i.unit+' ';return r+i.name;}
@@ -467,7 +467,7 @@ window.renderPickList=function(q){
 window.changePlannerPortions=function(d){plannerPortions=Math.max(1,plannerPortions+d);document.getElementById('planner-portions-num').textContent=plannerPortions;};
 window.openPickModal=function(key,meal){
   pickTarget={key:key,meal:meal};
-  plannerPortions=(planner[key]||{})[meal+'_porzioni']||4;
+  plannerPortions=(planner[key]||{})[meal+'_porzioni']||1;
   document.getElementById('planner-portions-num').textContent=plannerPortions;
   document.getElementById('pick-search').value='';renderPickList('');
   document.getElementById('pick-modal').style.display='flex';
