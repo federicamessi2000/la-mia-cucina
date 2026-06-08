@@ -139,7 +139,7 @@ textarea{resize:vertical;min-height:100px;}
 </head>
 <body>
 
-<div id="loading-screen"><div class="spinner"></div><p>Carico la cucina&hellip;</p></div>
+<div id="loading-screen"><div class="spinner"></div><p id="loading-msg">Carico la cucina&hellip;</p></div>
 
 <div id="login-screen">
   <h1>La Mia <span>Cucina</span></h1>
@@ -291,6 +291,14 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 </div>
 
+<script>
+setTimeout(()=>{
+  const s=document.getElementById('loading-screen');
+  if(s&&s.style.display!=='none'){
+    document.getElementById('loading-msg').innerHTML='Errore di connessione.<br><span style="font-size:12px">Controlla la console (F12) o riprova.</span>';
+  }
+},6000);
+</script>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import{getAuth,signInWithPopup,GoogleAuthProvider,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
