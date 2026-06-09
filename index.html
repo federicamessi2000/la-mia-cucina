@@ -466,7 +466,7 @@ let currentUser=null,recipes=[],planner={},shopping=[];
 let currentFilter='all',currentMonth=new Date(),pickTarget=null,aiExtracted=null;
 let currentRecipeId=null,currentPortions=4,plannerPortions=1;
 var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null;
-var userCatOrder=CATS.map(function(_,i){return i;});
+var userCatOrder=[];
 
 function fmtIng(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit)r+=' '+i.unit;r+=' ';}else if(i.unit)r+=i.unit+' ';return r+i.name;}
 function shopTxt(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit&&i.unit!=='q.b.')r+=' '+i.unit;r+=' ';}else if(i.unit&&i.unit!=='q.b.')r+=i.unit+' ';return r+i.name;}
@@ -483,6 +483,7 @@ var SEED=[
 ];
 
 var CATS=["Frutta","Verdura e Funghi","Carne e Salumi","Pesce e Frutti di Mare","Latticini, Uova e Formaggi","Pasta, Riso e Cereali","Pane, Farine e Lievitati","Legumi","Conserve e Salse","Condimenti, Oli e Aceti","Spezie ed Erbe","Dolcificanti","Dolci e Snack","Semi e Frutta Secca","Surgelati","Bevande","Prodotti per la Casa","Igiene Personale","Altro"];
+userCatOrder=CATS.map(function(_,i){return i;});
 var CAT_EMOJI=["🍎","🥬","🥩","🐟","🧀","🍝","🍞","🫘","🥫","🫙","🌿","🍯","🍫","🌰","🧊","🧃","🧹","🧴","🛒"];
 
 var CATALOG_SEED=[
