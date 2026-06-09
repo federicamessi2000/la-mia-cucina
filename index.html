@@ -449,8 +449,9 @@ textarea{resize:vertical;min-height:100px;}
       <div id="user-modal-avatar"></div>
       <div><div class="user-info-name" id="user-modal-name"></div><div class="user-info-email" id="user-modal-email"></div></div>
     </div>
-    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:20px;line-height:1.6;">Le ricette che aggiungi sono visibili a tutti.<br>Il tuo planner e la spesa sono solo tuoi.</p>
-    <button class="btn btn-danger btn-full" onclick="doSignOut()">Esci dall&apos;account</button>
+    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;">Le ricette che aggiungi sono visibili a tutti.<br>Il tuo planner è privato.</p>
+    <div id="family-section"></div>
+    <button class="btn btn-danger btn-full" onclick="doSignOut()" style="margin-top:4px">Esci dall&apos;account</button>
   </div>
 </div>
 
@@ -519,6 +520,7 @@ let currentRecipeId=null,currentPortions=4,plannerPortions=1;
 var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null;
 var userCatOrder=[],freezer=[],userFavorites={},freezerEditId=null,shopEditGroup=null;
 var editingRecipeId=null,recipeTagFilter=null;
+var familyCode=null,_shopListener=null;
 
 function fmtIng(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit)r+=' '+i.unit;r+=' ';}else if(i.unit)r+=i.unit+' ';return r+i.name;}
 function shopTxt(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit&&i.unit!=='q.b.')r+=' '+i.unit;r+=' ';}else if(i.unit&&i.unit!=='q.b.')r+=i.unit+' ';return r+i.name;}
@@ -579,7 +581,51 @@ function ingCategory(ingName){
 
 window.signInWithGoogle=function(){auth.signInWithPopup(provider).catch(function(e){alert('Errore: '+e.message);});};
 window.doSignOut=function(){auth.signOut();document.getElementById('user-modal').style.display='none';};
-window.openUserModal=function(){document.getElementById('user-modal').style.display='flex';};
+function renderFamilySection(){
+  var el=document.getElementById('family-section');if(!el)return;
+  if(!familyCode){
+    el.innerHTML='<div style="border-top:0.5px solid var(--border);padding-top:16px;margin-bottom:16px">'+
+      '<p style="font-size:13px;font-weight:500;color:var(--charcoal);margin-bottom:6px">&#127968; Spesa condivisa</p>'+
+      '<p style="font-size:12px;color:var(--charcoal-mid);margin-bottom:12px;line-height:1.5">Condividi la lista della spesa in tempo reale con un\'altra persona (es. il tuo partner).</p>'+
+      '<button class="btn btn-outline btn-full btn-sm" onclick="createFamily()" style="margin-bottom:10px">Crea codice famiglia</button>'+
+      '<div style="display:flex;gap:8px;align-items:center">'+
+      '<input id="family-join-input" type="text" placeholder="Hai un codice? (es. ABC123)" style="flex:1;padding:8px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-size:12px;font-family:\'DM Sans\',sans-serif;background:var(--warm-white);outline:none">'+
+      '<button class="btn btn-primary btn-sm" onclick="joinFamily()">Unisciti</button></div></div>';
+  } else {
+    db.ref('families/'+familyCode+'/members').once('value',function(snap){
+      var members=[];if(snap.exists())snap.forEach(function(c){var v=c.val();members.push(v.name||v.email||'?');});
+      el.innerHTML='<div style="border-top:0.5px solid var(--border);padding-top:16px;margin-bottom:16px">'+
+        '<p style="font-size:13px;font-weight:500;color:var(--charcoal);margin-bottom:6px">&#127968; Spesa condivisa</p>'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+        '<span style="font-size:12px;color:var(--charcoal-mid)">Codice: <strong style="font-family:monospace;letter-spacing:1px;color:var(--charcoal)">'+familyCode+'</strong></span>'+
+        '<button onclick="navigator.clipboard.writeText(\''+familyCode+'\').then(function(){alert(\'Codice copiato!\');})" style="background:none;border:0.5px solid var(--border-mid);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--charcoal-mid);font-family:\'DM Sans\',sans-serif">Copia</button></div>'+
+        '<p style="font-size:12px;color:var(--charcoal-mid);margin-bottom:12px">Membri: '+members.join(' &middot; ')+'</p>'+
+        '<button class="btn btn-danger btn-sm" onclick="leaveFamily()" style="font-size:12px">Lascia la famiglia</button></div>';
+    });
+  }
+}
+window.createFamily=function(){
+  if(!currentUser)return;
+  var code=currentUser.uid.substring(0,6).toUpperCase(),uid=currentUser.uid;
+  db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''});
+  db.ref('users/'+uid+'/familyCode').set(code);
+};
+window.joinFamily=function(){
+  var code=(document.getElementById('family-join-input').value||'').trim().toUpperCase();
+  if(!code)return;
+  var uid=currentUser.uid;
+  db.ref('families/'+code+'/members').once('value',function(snap){
+    if(!snap.exists()){alert('Codice non trovato. Chiedi il codice corretto all\'altra persona.');return;}
+    db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''});
+    db.ref('users/'+uid+'/familyCode').set(code);
+  });
+};
+window.leaveFamily=function(){
+  if(!confirm('Lasci la lista condivisa? La tua spesa tornerà ad essere privata.'))return;
+  db.ref('families/'+familyCode+'/members/'+currentUser.uid).remove();
+  db.ref('users/'+currentUser.uid+'/familyCode').remove();
+};
+window.openUserModal=function(){document.getElementById('user-modal').style.display='flex';renderFamilySection();};
 
 auth.onAuthStateChanged(function(user){
   document.getElementById('loading-screen').style.display='none';
@@ -641,10 +687,16 @@ function initRecipes(){
   });
 }
 
+function shopRef(){return familyCode?db.ref('families/'+familyCode+'/shopping'):db.ref('users/'+currentUser.uid+'/shopping');}
+function setupShopListener(){
+  if(_shopListener)_shopListener.off();
+  _shopListener=shopRef();
+  _shopListener.on('value',function(snap){shopping=[];if(snap.exists())snap.forEach(function(c){shopping.push(Object.assign({id:c.key},c.val()));});renderShopping();});
+}
 function initPrivate(){
   var uid=currentUser.uid;
   db.ref('users/'+uid+'/planner').on('value',function(snap){planner=snap.exists()?snap.val():{};renderPlanner();});
-  db.ref('users/'+uid+'/shopping').on('value',function(snap){shopping=[];if(snap.exists())snap.forEach(function(c){shopping.push(Object.assign({id:c.key},c.val()));});renderShopping();});
+  db.ref('users/'+uid+'/familyCode').on('value',function(snap){familyCode=snap.val()||null;setupShopListener();renderFamilySection();});
   db.ref('users/'+uid+'/favorites').on('value',function(snap){userFavorites=snap.exists()?snap.val():{};renderRecipes();});
   db.ref('users/'+uid+'/freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){
@@ -770,7 +822,7 @@ window.confirmShopAdd=function(){
     var ingUnit=(cb.getAttribute('data-unit')||'').toLowerCase();
     var ingQty=parseFloat(cb.getAttribute('data-qty'))||null;
     if(!shopping.find(function(s){return s.text===text&&s.source===nome;}))
-      db.ref('users/'+uid+'/shopping').push({text:text,ingName:ingName,ingUnit:ingUnit,ingQty:ingQty,category:ingCategory(ingName),source:nome,checked:false});
+      shopRef().push({text:text,ingName:ingName,ingUnit:ingUnit,ingQty:ingQty,category:ingCategory(ingName),source:nome,checked:false});
   });
   closeShopAddModal();closeRecipeModal();
 };
@@ -1020,14 +1072,14 @@ function syncPlannerToShop(){
       (e[m+'_skip']||[]).forEach(function(s){mealData[e[m]].skip[s]=true;});
     });
   });
-  shopping.filter(function(s){return s.fromPlanner;}).forEach(function(s){db.ref('users/'+uid+'/shopping/'+s.id).remove();});
+  shopping.filter(function(s){return s.fromPlanner;}).forEach(function(s){shopRef().child(s.id).remove();});
   Object.entries(mealData).forEach(function(entry){
     var nome=entry[0],d=entry[1];
     var recipe=recipes.find(function(r){return r.nome===nome;});if(!recipe)return;
     (recipe.ingredienti||[]).forEach(function(ing){
       if(d.skip[ing.name])return;
       var ingQty=(ing.qty!=null?ing.qty*d.tot:null);
-      db.ref('users/'+uid+'/shopping').push({
+      shopRef().push({
         text:shopTxt(ing,d.tot),
         ingName:ing.name.toLowerCase(),
         ingUnit:(ing.unit||'').toLowerCase(),
@@ -1089,11 +1141,10 @@ function shopGroupHTML(g){
 window.toggleShopGroup=function(idsStr){
   var uid=currentUser.uid,ids=idsStr.split(',');
   var allChecked=ids.every(function(id){var s=shopping.find(function(x){return x.id===id;});return s&&s.checked;});
-  ids.forEach(function(id){db.ref('users/'+uid+'/shopping/'+id+'/checked').set(!allChecked);});
+  ids.forEach(function(id){shopRef().child(id+'/checked').set(!allChecked);});
 };
 window.deleteShopGroup=function(idsStr){
-  var uid=currentUser.uid;
-  idsStr.split(',').forEach(function(id){db.ref('users/'+uid+'/shopping/'+id).remove();});
+  idsStr.split(',').forEach(function(id){shopRef().child(id).remove();});
 };
 function closeShopSuggest(){document.getElementById('shop-suggest').style.display='none';}
 window.onShopInput=function(val){
@@ -1121,7 +1172,7 @@ window.addShopFree=function(){
   var val=document.getElementById('shop-input').value.trim();if(!val)return;
   var nm=val.toLowerCase();
   var cat=ingCategory(nm);
-  db.ref('users/'+currentUser.uid+'/shopping').push({text:val,ingName:nm,ingUnit:'',ingQty:null,source:null,category:cat,checked:false});
+  shopRef().push({text:val,ingName:nm,ingUnit:'',ingQty:null,source:null,category:cat,checked:false});
   document.getElementById('shop-input').value='';closeShopSuggest();
 };
 window.addShopItem=function(){
@@ -1130,8 +1181,8 @@ window.addShopItem=function(){
   if(exact){selectShopSuggest(exact[0],exact[1],exact[2]);}else{addShopFree();}
 };
 document.addEventListener('click',function(e){if(!e.target.closest('.shop-input-wrap'))closeShopSuggest();});
-window.clearChecked=function(){shopping.filter(function(s){return s.checked;}).forEach(function(s){db.ref('users/'+currentUser.uid+'/shopping/'+s.id).remove();});};
-window.clearAll=function(){if(!confirm('Svuotare?'))return;db.ref('users/'+currentUser.uid+'/shopping').set(null);};
+window.clearChecked=function(){shopping.filter(function(s){return s.checked;}).forEach(function(s){shopRef().child(s.id).remove();});};
+window.clearAll=function(){if(!confirm('Svuotare?'))return;shopRef().set(null);};
 
 var _catDetailIdx=-1;
 window.openCatOrder=function(){
@@ -1236,7 +1287,7 @@ window.confirmCatalogAdd=function(){
   var cat=CATS[catalogAddItem.catIdx];
   var vs=(qty!=null?(qty%1===0?qty:+qty.toFixed(2)):'');
   var txt=(vs?vs+' ':'')+( unit&&unit!=='q.b.'?unit+' ':'')+name;
-  db.ref('users/'+uid+'/shopping').push({
+  shopRef().push({
     text:txt,ingName:name.toLowerCase(),ingUnit:(unit||'').toLowerCase(),ingQty:qty,
     category:cat,note:note||null,source:'catalogo',checked:false
   });
@@ -1271,8 +1322,8 @@ window.confirmShopEdit=function(){
   var nm=shopEditGroup.ingName;
   var vs=(qty!=null?(qty%1===0?qty:+qty.toFixed(2)):'');
   var txt=(vs?vs+' ':'')+(unit&&unit!=='q.b.'?unit+' ':'')+nm;
-  shopEditGroup.ids.forEach(function(id){db.ref('users/'+uid+'/shopping/'+id).remove();});
-  db.ref('users/'+uid+'/shopping').push({text:txt,ingName:nm,ingUnit:(unit||'').toLowerCase(),ingQty:qty,category:shopEditGroup.category,note:note||null,source:null,checked:false});
+  shopEditGroup.ids.forEach(function(id){shopRef().child(id).remove();});
+  shopRef().push({text:txt,ingName:nm,ingUnit:(unit||'').toLowerCase(),ingQty:qty,category:shopEditGroup.category,note:note||null,source:null,checked:false});
   document.getElementById('shop-edit-modal').style.display='none';
   shopEditGroup=null;
 };
