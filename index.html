@@ -143,10 +143,17 @@ textarea{resize:vertical;min-height:100px;}
 .week-label{font-size:13px;font-weight:500;color:var(--sage);flex:1;text-align:center;}
 .shop-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
 .shop-note{font-size:11px;color:var(--charcoal-light);margin-top:2px;}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0;}
+.cat-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:18px 10px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;transition:background 0.1s;}
+.cat-card:active{background:var(--terracotta-pale);}
+.cat-card-emoji{font-size:30px;line-height:1;}
+.cat-card-name{font-size:12px;font-weight:500;color:var(--charcoal);line-height:1.3;}
+.cat-card-count{font-size:11px;color:var(--charcoal-light);}
 .cat-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
 .cat-item-name{font-size:14px;color:var(--charcoal);}
 .cat-item-unit{font-size:12px;color:var(--charcoal-light);margin-left:4px;}
 .cat-add-btn{background:var(--terracotta);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
+.cat-search-result-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
 .nav-item{font-size:10px;}
 </style>
 </head>
@@ -377,6 +384,20 @@ textarea{resize:vertical;min-height:100px;}
       <button class="btn btn-primary" style="flex:1" onclick="confirmCatalogAdd()">Aggiungi alla spesa</button>
       <button class="btn btn-outline" onclick="document.getElementById('catalog-add-modal').style.display='none'">Annulla</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL DETTAGLIO CATEGORIA -->
+<div class="modal-overlay" id="cat-detail-modal" style="display:none" onclick="if(event.target.id==='cat-detail-modal')document.getElementById('cat-detail-modal').style.display='none'">
+  <div class="modal" style="max-height:82vh">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span id="cat-detail-emoji" style="font-size:26px"></span>
+      <h2 style="margin:0;font-size:18px;flex:1" id="cat-detail-title"></h2>
+      <button onclick="document.getElementById('cat-detail-modal').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--charcoal-light)">&times;</button>
+    </div>
+    <input class="pick-search" id="cat-detail-search" type="text" placeholder="Cerca in questa categoria&hellip;" oninput="filterCatDetail(this.value)">
+    <div id="cat-detail-list" style="max-height:52vh;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -957,21 +978,50 @@ window.saveAIRecipe=function(){
 };
 window.resetAI=function(){aiExtracted=null;['ai-text','ai-link'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('ai-preview').style.display='none';document.getElementById('ai-loading').style.display='none';};
 
+var _catDetailIdx=-1;
 window.renderCatalog=function(query){
   query=(query||'').toLowerCase().trim();
   var el=document.getElementById('catalog-list');
-  var html='';
-  CATS.forEach(function(cat,catIdx){
-    var items=CATALOG_SEED.filter(function(c){return c[1]===catIdx&&(!query||c[0].toLowerCase().includes(query));});
-    if(!items.length)return;
-    html+='<div class="shop-cat-header">'+CAT_EMOJI[catIdx]+' '+cat+'</div>';
-    html+=items.map(function(c){
-      var safeN=c[0].replace(/'/g,"\\'");
-      return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit">'+c[2]+'</span></span><button class="cat-add-btn" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
-    }).join('');
-  });
-  if(!html)html='<div class="empty-state"><p>Nessun ingrediente trovato.</p></div>';
-  el.innerHTML=html;
+  if(query){
+    // Search mode: flat list grouped by category
+    var html='';
+    CATS.forEach(function(cat,catIdx){
+      var items=CATALOG_SEED.filter(function(c){return c[1]===catIdx&&c[0].toLowerCase().includes(query);});
+      if(!items.length)return;
+      html+='<div class="cat-search-result-header">'+CAT_EMOJI[catIdx]+' '+cat+'</div>';
+      html+=items.map(function(c){
+        var safeN=c[0].replace(/'/g,"\\'");
+        return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
+      }).join('');
+    });
+    el.innerHTML=html||'<div class="empty-state"><p>Nessun ingrediente trovato.</p></div>';
+  }else{
+    // Grid mode: category cards
+    var html='<div class="cat-grid">';
+    CATS.forEach(function(cat,catIdx){
+      var count=CATALOG_SEED.filter(function(c){return c[1]===catIdx;}).length;
+      html+='<div class="cat-card" onclick="openCatDetail('+catIdx+')"><div class="cat-card-emoji">'+CAT_EMOJI[catIdx]+'</div><div class="cat-card-name">'+cat+'</div><div class="cat-card-count">'+count+' ingredienti</div></div>';
+    });
+    html+='</div>';
+    el.innerHTML=html;
+  }
+};
+window.openCatDetail=function(catIdx){
+  _catDetailIdx=catIdx;
+  document.getElementById('cat-detail-emoji').textContent=CAT_EMOJI[catIdx];
+  document.getElementById('cat-detail-title').textContent=CATS[catIdx];
+  document.getElementById('cat-detail-search').value='';
+  filterCatDetail('');
+  document.getElementById('cat-detail-modal').style.display='flex';
+};
+window.filterCatDetail=function(q){
+  q=(q||'').toLowerCase().trim();
+  var items=CATALOG_SEED.filter(function(c){return c[1]===_catDetailIdx&&(!q||c[0].toLowerCase().includes(q));});
+  var html=items.map(function(c){
+    var safeN=c[0].replace(/'/g,"\\'");
+    return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
+  }).join('');
+  document.getElementById('cat-detail-list').innerHTML=html||'<div class="empty-state"><p>Nessun risultato.</p></div>';
 };
 window.openCatalogAdd=function(name,catIdx,unit){
   catalogAddItem={name:name,catIdx:catIdx,unit:unit};
@@ -980,6 +1030,7 @@ window.openCatalogAdd=function(name,catIdx,unit){
   document.getElementById('cat-qty').value='';
   document.getElementById('cat-unit').value=unit;
   document.getElementById('cat-note').value='';
+  document.getElementById('cat-detail-modal').style.display='none';
   document.getElementById('catalog-add-modal').style.display='flex';
   setTimeout(function(){document.getElementById('cat-qty').focus();},150);
 };
