@@ -1287,7 +1287,7 @@ window.shareShopList=function(){
   });
   order.forEach(function(k){
     var g=groups[k];
-    if(g.ingName&&g.ingQty!=null){var v=g.ingQty,vs=(v%1===0?v:+v.toFixed(2));g.text=(vs?vs+' ')+(g.ingUnit&&g.ingUnit!=='q.b.'?g.ingUnit+' ':'')+g.ingName;}
+    if(g.ingName&&g.ingQty!=null){var v=g.ingQty,vs=(v%1===0?v:+v.toFixed(2));g.text=(vs?vs+' ':'')+(g.ingUnit&&g.ingUnit!=='q.b.'?g.ingUnit+' ':'')+g.ingName;}
   });
   var lines=['🛒 *Lista della spesa*'];
   userCatOrder.forEach(function(catIdx){
