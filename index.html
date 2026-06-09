@@ -308,6 +308,7 @@ textarea{resize:vertical;min-height:100px;}
       <div class="form-group"><label>Nome della ricetta</label><input type="text" id="r-nome" placeholder="Es. Risotto ai funghi"></div>
       <div class="form-group"><label>Foto (URL, opzionale)</label><input type="text" id="r-foto" placeholder="https://...immagine.jpg"></div>
       <div class="form-group"><label>Fonte</label><select id="r-fonte"><option value="mamma">Della mamma</option><option value="internet">Da internet</option></select></div>
+      <div class="form-group"><label>Autore</label><input type="text" id="r-autore" placeholder="Chi ha fatto questa ricetta?" list="autori-list" autocomplete="off"><datalist id="autori-list"><option value="Federica"><option value="Pietro"><option value="Daniele"><option value="Michele"></datalist></div>
       <div class="form-group"><label>Link originale (opzionale)</label><input type="text" id="r-link" placeholder="https://..."></div>
       <div class="form-group"><label>Tempo</label><input type="text" id="r-tempo" placeholder="Es. 30 min"></div>
       <div class="form-group"><label>Porzioni base</label><input type="number" id="r-porzioni" placeholder="Es. 4" min="1"></div>
@@ -1090,7 +1091,7 @@ window.selectUnit=function(u){
   setTimeout(function(){if(_unitTarget)_unitTarget.closest('.ing-row').querySelector('.ing-name').focus();},50);
 };
 function resetRecipeForm(){
-  ['r-nome','r-foto','r-link','r-tempo','r-porzioni','r-procedimento','r-note'].forEach(function(id){document.getElementById(id).value='';});
+  ['r-nome','r-foto','r-link','r-tempo','r-porzioni','r-procedimento','r-note','r-autore'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('r-fonte').value='mamma';
   document.getElementById('ing-list').innerHTML='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>';
   document.querySelectorAll('#r-tags-selection .tag-toggle').forEach(function(b){b.classList.remove('active');});
@@ -1129,6 +1130,7 @@ window.openEditRecipe=function(id){
   document.getElementById('r-nome').value=r.nome||'';
   document.getElementById('r-foto').value=r.foto||'';
   document.getElementById('r-fonte').value=r.fonte||'mamma';
+  document.getElementById('r-autore').value=r.addedBy||'';
   document.getElementById('r-link').value=r.link||'';
   document.getElementById('r-tempo').value=r.tempo||'';
   document.getElementById('r-porzioni').value=r.porzioni||4;
@@ -1161,7 +1163,8 @@ window.saveRecipe=function(){
     resetRecipeForm();
     showPage('ricette',document.querySelectorAll('.nav-item')[0]);
   }else{
-    data.addedBy=currentUser.displayName||currentUser.email;data.addedAt=Date.now();
+    var autore=document.getElementById('r-autore').value.trim();
+    data.addedBy=autore||(currentUser.displayName||currentUser.email);data.addedAt=Date.now();
     db.ref('recipes').push(data);
     resetRecipeForm();
     alert('Ricetta salvata! La vedono tutti.');
