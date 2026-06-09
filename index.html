@@ -189,10 +189,16 @@ textarea{resize:vertical;min-height:100px;}
 .extra-chip{background:var(--sage-pale);color:var(--sage);font-size:11px;padding:3px 6px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;}
 .extra-chip button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--sage);padding:0;line-height:1;opacity:0.7;}
 .extra-add-btn{background:none;border:0.5px dashed var(--border-mid);border-radius:var(--radius-sm);font-size:11px;color:var(--charcoal-light);font-family:'Inter',sans-serif;padding:4px 8px;cursor:pointer;width:100%;text-align:left;}
+.ing-ac{position:fixed;background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);box-shadow:0 4px 20px rgba(0,0,0,0.13);z-index:400;overflow:hidden;max-height:220px;overflow-y:auto;}
+.ing-ac-item{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ing-ac-item:last-child{border-bottom:none;}
+.ing-ac-item:active{background:var(--cream);}
+.ing-ac-unit{font-size:11px;color:var(--charcoal-light);background:var(--cream);padding:1px 6px;border-radius:10px;}
 </style>
 </head>
 <body>
 
+<div id="ing-ac" style="display:none"></div>
 <div id="loading-screen"><div class="spinner"></div><p id="loading-msg">Carico la cucina&hellip;</p></div>
 
 <div id="login-screen">
@@ -1029,6 +1035,40 @@ window.confirmShopAdd=function(){
 
 window.addIng=function(){var d=document.createElement('div');d.className='ing-row';d.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);};
 window.removeIng=function(btn){if(document.querySelectorAll('.ing-row').length>1)btn.parentElement.remove();};
+var _acTarget=null;
+document.addEventListener('input',function(e){
+  if(!e.target.classList.contains('ing-name'))return;
+  _acTarget=e.target;
+  var val=e.target.value.trim();
+  if(val.length<1){hideIngAc();return;}
+  var matches=CATALOG_SEED.filter(function(c){return c[0].toLowerCase().includes(val.toLowerCase());}).slice(0,8);
+  if(!matches.length){hideIngAc();return;}
+  var ac=document.getElementById('ing-ac');
+  var rect=e.target.getBoundingClientRect();
+  ac.style.left=rect.left+'px';
+  ac.style.top=(rect.bottom+2)+'px';
+  ac.style.width=Math.max(rect.width,180)+'px';
+  ac.innerHTML=matches.map(function(c){
+    return'<div class="ing-ac-item" onmousedown="selectIngAc(\''+c[0].replace(/'/g,"\\'")+'\',\''+c[2]+'\')">'+c[0]+'<span class="ing-ac-unit">'+c[2]+'</span></div>';
+  }).join('');
+  ac.style.display='block';
+});
+document.addEventListener('focusout',function(e){
+  if(e.target.classList.contains('ing-name'))setTimeout(hideIngAc,150);
+});
+function hideIngAc(){document.getElementById('ing-ac').style.display='none';_acTarget=null;}
+window.selectIngAc=function(name,unit){
+  if(!_acTarget)return;
+  _acTarget.value=name;
+  var row=_acTarget.closest('.ing-row');
+  if(row){
+    var u=row.querySelector('.ing-unit');
+    if(u&&!u.value)u.value=unit;
+    var q=row.querySelector('.ing-qty');
+    if(q)setTimeout(function(){q.focus();},50);
+  }
+  hideIngAc();
+};
 function resetRecipeForm(){
   ['r-nome','r-foto','r-link','r-tempo','r-porzioni','r-procedimento','r-note'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('r-fonte').value='mamma';
