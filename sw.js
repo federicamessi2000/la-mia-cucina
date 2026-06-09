@@ -1,5 +1,5 @@
-var CACHE = 'cucina-v1';
-var PRECACHE = ['./index.html', './manifest.json'];
+var CACHE = 'cucina-v2';
+var PRECACHE = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(PRECACHE); }));
