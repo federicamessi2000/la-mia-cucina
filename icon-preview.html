@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Icon Preview</title>
+<style>
+  body{margin:0;background:#444;display:flex;align-items:center;justify-content:center;gap:32px;min-height:100vh;flex-wrap:wrap;}
+  .label{color:#aaa;font-size:12px;font-family:sans-serif;text-align:center;margin-top:8px;}
+  .wrap{display:flex;flex-direction:column;align-items:center;}
+
+  .icon{
+    position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon .bg{
+    position:absolute;inset:0;
+    background:#C4A47C;
+  }
+  .icon .mul{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon .mul img{
+    width:90%;height:90%;object-fit:contain;
+    mix-blend-mode:multiply;
+  }
+
+  .s512{width:220px;height:220px;border-radius:46px;}
+  .s192{width:96px;height:96px;border-radius:20px;}
+  .s60{width:60px;height:60px;border-radius:13px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="icon s512">
+      <div class="bg"></div>
+      <div class="mul"><img src="pngaaa.com-1539701.png"></div>
+    </div>
+    <div class="label">512×512</div>
+  </div>
+  <div class="wrap">
+    <div class="icon s192">
+      <div class="bg"></div>
+      <div class="mul"><img src="pngaaa.com-1539701.png"></div>
+    </div>
+    <div class="label">192×192</div>
+  </div>
+  <div class="wrap">
+    <div class="icon s60">
+      <div class="bg"></div>
+      <div class="mul"><img src="pngaaa.com-1539701.png"></div>
+    </div>
+    <div class="label">60×60</div>
+  </div>
+</body>
+</html>
