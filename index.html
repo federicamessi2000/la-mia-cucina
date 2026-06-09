@@ -167,6 +167,14 @@ textarea{resize:vertical;min-height:100px;}
 .cat-add-btn{background:var(--terracotta);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
 .cat-search-result-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
 .nav-item{font-size:10px;}
+.freezer-item{background:var(--warm-white);border-radius:var(--radius-sm);border:0.5px solid var(--border);padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;}
+.freezer-item:active{background:var(--cream);}
+.freezer-item-name{font-size:14px;font-weight:500;color:var(--charcoal);}
+.freezer-item-qty{font-size:13px;color:var(--charcoal-mid);flex-shrink:0;}
+.freezer-item-meta{font-size:11px;color:var(--charcoal-light);margin-top:3px;}
+.freezer-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
+.fav-btn{background:none;border:none;cursor:pointer;padding:2px 6px;font-size:16px;line-height:1;flex-shrink:0;}
+.shop-edit-btn{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:14px;padding:0 5px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -195,6 +203,7 @@ textarea{resize:vertical;min-height:100px;}
       <button class="filter-tab active" onclick="setFilter('all',this)">Tutte</button>
       <button class="filter-tab" onclick="setFilter('mamma',this)">Della mamma</button>
       <button class="filter-tab" onclick="setFilter('internet',this)">Da internet</button>
+      <button class="filter-tab" onclick="setFilter('preferiti',this)">&#10084; Preferiti</button>
     </div>
     <div class="recipe-grid" id="recipe-list"></div>
   </div>
@@ -211,7 +220,10 @@ textarea{resize:vertical;min-height:100px;}
   <div class="page" id="page-spesa">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h2 class="section-title" style="margin:0">Lista della spesa</h2>
-      <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;">&#9881; Ordine</button>
+      <div style="display:flex;gap:6px">
+        <button onclick="shareShopList()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;">&#128279; Condividi</button>
+        <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;">&#9881; Ordine</button>
+      </div>
     </div>
     <div class="shop-week-nav">
       <button onclick="changeShopWeek(-1)">&#8592;</button>
@@ -241,6 +253,14 @@ textarea{resize:vertical;min-height:100px;}
     <div style="margin-top:16px;padding-bottom:20px">
       <button class="btn btn-outline btn-full" onclick="openCustomCatalogAdd()">+ Aggiungi ingrediente non trovato</button>
     </div>
+  </div>
+
+  <div class="page" id="page-congelatore">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 class="section-title" style="margin:0">&#10052; Congelatore</h2>
+      <button class="btn btn-primary btn-sm" onclick="openFreezerModal(null)">+ Aggiungi</button>
+    </div>
+    <div id="freezer-list"></div>
   </div>
 
   <div class="page" id="page-aggiungi">
@@ -316,6 +336,9 @@ textarea{resize:vertical;min-height:100px;}
     </button>
     <button class="nav-item" onclick="showPage('ingredienti',this)">
       <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>Ingredienti
+    </button>
+    <button class="nav-item" onclick="showPage('congelatore',this)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/><circle cx="12" cy="12" r="3"/></svg>Freezer
     </button>
     <button class="nav-item" onclick="showPage('aggiungi',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Aggiungi
@@ -446,6 +469,48 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 </div>
 
+<!-- MODAL CONGELATORE -->
+<div class="modal-overlay" id="freezer-modal" style="display:none" onclick="if(event.target.id==='freezer-modal')closeFreezerModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="freezer-modal-title" style="margin-bottom:16px">Aggiungi al congelatore</h2>
+    <div class="form-group"><label>Nome</label><input type="text" id="frz-name" placeholder="es. Pollo marinato, Ragù" autocomplete="off"></div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1"><label>Quantit&agrave;</label><input type="number" id="frz-qty" placeholder="1" min="0" step="any"></div>
+      <div class="form-group" style="width:90px"><label>Unit&agrave;</label><input type="text" id="frz-unit" placeholder="kg"></div>
+    </div>
+    <div class="form-group"><label>Categoria</label><select id="frz-cat">
+      <option>Carne</option><option>Pesce</option><option>Piatti pronti</option><option>Verdure</option><option>Pane e Dolci</option><option>Altro</option>
+    </select></div>
+    <div class="form-group"><label>Data congelamento</label><input type="date" id="frz-date"></div>
+    <div class="form-group"><label>Nota (opzionale)</label><input type="text" id="frz-note" placeholder="es. per 2 persone, gi&agrave; marinato"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="confirmFreezerItem()">Salva</button>
+      <button class="btn btn-outline" onclick="closeFreezerModal()">Annulla</button>
+    </div>
+    <div id="frz-delete-wrap" style="display:none;margin-top:8px">
+      <button class="btn btn-danger btn-full" onclick="deleteFreezerItem()">Elimina dal congelatore</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFICA ITEM SPESA -->
+<div class="modal-overlay" id="shop-edit-modal" style="display:none" onclick="if(event.target.id==='shop-edit-modal')document.getElementById('shop-edit-modal').style.display='none'">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="shop-edit-title" style="margin-bottom:16px">Modifica</h2>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1"><label>Quantit&agrave;</label><input type="number" id="shop-edit-qty" min="0" step="any"></div>
+      <div class="form-group" style="width:90px"><label>Unit&agrave;</label><input type="text" id="shop-edit-unit"></div>
+    </div>
+    <div class="form-group"><label>Nota</label><input type="text" id="shop-edit-note" placeholder="es. Barilla, senza glutine&hellip;"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="confirmShopEdit()">Salva</button>
+      <button class="btn btn-outline" onclick="document.getElementById('shop-edit-modal').style.display='none'">Annulla</button>
+    </div>
+  </div>
+</div>
+
 <script>
 setTimeout(function(){
   var s=document.getElementById('loading-screen');
@@ -466,7 +531,7 @@ let currentUser=null,recipes=[],planner={},shopping=[];
 let currentFilter='all',currentMonth=new Date(),pickTarget=null,aiExtracted=null;
 let currentRecipeId=null,currentPortions=4,plannerPortions=1;
 var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null;
-var userCatOrder=[];
+var userCatOrder=[],freezer=[],userFavorites={},freezerEditId=null,shopEditGroup=null;
 
 function fmtIng(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit)r+=' '+i.unit;r+=' ';}else if(i.unit)r+=i.unit+' ';return r+i.name;}
 function shopTxt(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit&&i.unit!=='q.b.')r+=' '+i.unit;r+=' ';}else if(i.unit&&i.unit!=='q.b.')r+=i.unit+' ';return r+i.name;}
@@ -571,6 +636,8 @@ function initPrivate(){
   var uid=currentUser.uid;
   db.ref('users/'+uid+'/planner').on('value',function(snap){planner=snap.exists()?snap.val():{};renderPlanner();});
   db.ref('users/'+uid+'/shopping').on('value',function(snap){shopping=[];if(snap.exists())snap.forEach(function(c){shopping.push(Object.assign({id:c.key},c.val()));});renderShopping();});
+  db.ref('users/'+uid+'/favorites').on('value',function(snap){userFavorites=snap.exists()?snap.val():{};renderRecipes();});
+  db.ref('users/'+uid+'/freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){
     if(snap.exists()){
       var saved=snap.val();
@@ -591,6 +658,7 @@ window.showPage=function(name,el){
   el.classList.add('active');
   if(name==='ingredienti')renderCatalog(document.getElementById('cat-search').value||'');
   if(name==='spesa')renderShopWeekNav();
+  if(name==='congelatore')renderFreezer();
 };
 window.switchAddTab=function(name,el){
   document.querySelectorAll('.add-tab').forEach(function(t){t.classList.remove('active');});
@@ -600,12 +668,16 @@ window.switchAddTab=function(name,el){
 };
 
 window.setFilter=function(f,el){currentFilter=f;document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');filterRecipes();};
-function filterRecipes(){var q=document.getElementById('search-input').value.toLowerCase();renderRecipeList(recipes.filter(function(r){return(currentFilter==='all'||r.fonte===currentFilter)&&r.nome.toLowerCase().includes(q);}));}
+function filterRecipes(){var q=document.getElementById('search-input').value.toLowerCase();renderRecipeList(recipes.filter(function(r){if(currentFilter==='preferiti')return!!userFavorites[r.id]&&r.nome.toLowerCase().includes(q);return(currentFilter==='all'||r.fonte===currentFilter)&&r.nome.toLowerCase().includes(q);}));}
 function renderRecipes(){filterRecipes();}
+window.toggleFavorite=function(recipeId,e){e.stopPropagation();if(!currentUser)return;var ref=db.ref('users/'+currentUser.uid+'/favorites/'+recipeId);if(userFavorites[recipeId]){ref.remove();}else{ref.set(true);}};
 function renderRecipeList(list){
   var el=document.getElementById('recipe-list');
   if(!list.length){el.innerHTML='<div class="empty-state"><p>Nessuna ricetta trovata.</p></div>';return;}
-  el.innerHTML=list.map(function(r){return'<div class="recipe-card" onclick="openRecipe(\''+r.id+'\')"><div class="recipe-card-header"><h3>'+r.nome+'</h3><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web')+'</span></div><div class="recipe-meta">'+(r.tempo?'<span>&#x23F1; '+r.tempo+'</span>':'')+(r.porzioni?'<span>&#x1F465; '+r.porzioni+' porz.</span>':'')+'<span>'+(r.ingredienti||[]).length+' ing.</span></div>'+(r.addedBy?'<div class="recipe-author">Aggiunta da: '+r.addedBy+'</div>':'')+'</div>';}).join('');
+  el.innerHTML=list.map(function(r){
+    var fav=userFavorites[r.id];
+    return'<div class="recipe-card" onclick="openRecipe(\''+r.id+'\')"><div class="recipe-card-header"><h3 style="flex:1">'+r.nome+'</h3><button class="fav-btn" onclick="toggleFavorite(\''+r.id+'\',event)">'+(fav?'&#10084;&#65039;':'&#129293;')+'</button><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web')+'</span></div><div class="recipe-meta">'+(r.tempo?'<span>&#x23F1; '+r.tempo+'</span>':'')+(r.porzioni?'<span>&#x1F465; '+r.porzioni+' porz.</span>':'')+'<span>'+(r.ingredienti||[]).length+' ing.</span></div>'+(r.addedBy?'<div class="recipe-author">Aggiunta da: '+r.addedBy+'</div>':'')+'</div>';
+  }).join('');
 }
 
 window.openRecipe=function(id){
@@ -862,7 +934,8 @@ function shopGroupHTML(g){
   var ids=g.ids.join(',');
   var src=g.sources.length?'<div class="shop-source">'+g.sources.join(' \xb7 ')+'</div>':'';
   var note=g.note?'<div class="shop-note">'+g.note+'</div>':'';
-  return'<div class="shop-item"><div class="shop-check '+(g.checked?'checked':'')+'" onclick="toggleShopGroup(\''+ids+'\')"></div><div class="shop-text '+(g.checked?'checked':'')+'">'+g.text+note+src+'</div><button class="shop-delete" onclick="deleteShopGroup(\''+ids+'\')">&times;</button></div>';
+  var editBtn=(!g.checked&&g.ingName)?'<button class="shop-edit-btn" onclick="openShopEdit(\''+ids+'\')">&#9998;</button>':'';
+  return'<div class="shop-item"><div class="shop-check '+(g.checked?'checked':'')+'" onclick="toggleShopGroup(\''+ids+'\')"></div><div class="shop-text '+(g.checked?'checked':'')+'">'+g.text+note+src+'</div>'+editBtn+'<button class="shop-delete" onclick="deleteShopGroup(\''+ids+'\')">&times;</button></div>';
 }
 window.toggleShopGroup=function(idsStr){
   var uid=currentUser.uid,ids=idsStr.split(',');
@@ -1167,6 +1240,145 @@ window.confirmCatalogAdd=function(){
   });
   document.getElementById('catalog-add-modal').style.display='none';
   document.querySelectorAll('.nav-item')[2].click();
+};
+
+// ── SHOP EDIT ───────────────────────────────────────────────
+window.openShopEdit=function(idsStr){
+  var ids=idsStr.split(',');
+  var items=ids.map(function(id){return shopping.find(function(s){return s.id===id;});}).filter(Boolean);
+  if(!items.length)return;
+  var merged={ids:ids,ingName:items[0].ingName,ingUnit:items[0].ingUnit||'',ingQty:null,category:items[0].category||'Altro',note:''};
+  items.forEach(function(s){
+    if(s.ingQty!=null){if(merged.ingQty!=null)merged.ingQty+=s.ingQty;else merged.ingQty=s.ingQty;}
+    if(s.note&&(!merged.note||merged.note.indexOf(s.note)<0)){merged.note=merged.note?(merged.note+' — '+s.note):s.note;}
+  });
+  shopEditGroup=merged;
+  document.getElementById('shop-edit-title').textContent=merged.ingName||items[0].text||'Modifica';
+  document.getElementById('shop-edit-qty').value=merged.ingQty!=null?merged.ingQty:'';
+  document.getElementById('shop-edit-unit').value=merged.ingUnit||'';
+  document.getElementById('shop-edit-note').value=merged.note||'';
+  document.getElementById('shop-edit-modal').style.display='flex';
+  setTimeout(function(){document.getElementById('shop-edit-qty').focus();},150);
+};
+window.confirmShopEdit=function(){
+  if(!shopEditGroup)return;
+  var uid=currentUser.uid;
+  var qty=parseFloat(document.getElementById('shop-edit-qty').value)||null;
+  var unit=document.getElementById('shop-edit-unit').value.trim();
+  var note=document.getElementById('shop-edit-note').value.trim();
+  var nm=shopEditGroup.ingName;
+  var vs=(qty!=null?(qty%1===0?qty:+qty.toFixed(2)):'');
+  var txt=(vs?vs+' ':'')+(unit&&unit!=='q.b.'?unit+' ':'')+nm;
+  shopEditGroup.ids.forEach(function(id){db.ref('users/'+uid+'/shopping/'+id).remove();});
+  db.ref('users/'+uid+'/shopping').push({text:txt,ingName:nm,ingUnit:(unit||'').toLowerCase(),ingQty:qty,category:shopEditGroup.category,note:note||null,source:null,checked:false});
+  document.getElementById('shop-edit-modal').style.display='none';
+  shopEditGroup=null;
+};
+
+// ── CONDIVIDI LISTA SPESA ────────────────────────────────────
+window.shareShopList=function(){
+  var unchecked=shopping.filter(function(s){return!s.checked;});
+  if(!unchecked.length){alert('La lista è vuota.');return;}
+  var groups={},order=[];
+  unchecked.forEach(function(s){
+    var key=s.ingName?(s.ingName+'|'+(s.ingUnit||'')):('__'+s.id);
+    if(!groups[key]){groups[key]={ingQty:s.ingQty,ingUnit:s.ingUnit||'',ingName:s.ingName||null,text:s.text,category:s.category||'Altro'};order.push(key);}
+    else{if(s.ingQty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=s.ingQty;else groups[key].ingQty=s.ingQty;}}
+  });
+  order.forEach(function(k){
+    var g=groups[k];
+    if(g.ingName&&g.ingQty!=null){var v=g.ingQty,vs=(v%1===0?v:+v.toFixed(2));g.text=(vs?vs+' ')+(g.ingUnit&&g.ingUnit!=='q.b.'?g.ingUnit+' ':'')+g.ingName;}
+  });
+  var lines=['🛒 *Lista della spesa*'];
+  userCatOrder.forEach(function(catIdx){
+    var cat=CATS[catIdx];
+    var keys=order.filter(function(k){return groups[k].category===cat;});
+    if(!keys.length)return;
+    lines.push('\n'+CAT_EMOJI[catIdx]+' *'+cat+'*');
+    keys.forEach(function(k){lines.push('• '+groups[k].text);});
+  });
+  var text=lines.join('\n');
+  if(navigator.share){navigator.share({title:'Lista della spesa',text:text});}
+  else{navigator.clipboard.writeText(text).then(function(){showToast('Lista copiata negli appunti!');}).catch(function(){alert(text);});}
+};
+function showToast(msg){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:white;padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)document.body.removeChild(t);},2200);
+}
+
+// ── CONGELATORE ──────────────────────────────────────────────
+var FREEZE_CATS=["Carne","Pesce","Piatti pronti","Verdure","Pane e Dolci","Altro"];
+var FREEZE_EMOJI=["🥩","🐟","🍱","🥦","🍞","📦"];
+function formatDateIT(s){
+  if(!s)return'';
+  var p=s.split('-');if(p.length<3)return s;
+  var months=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  return parseInt(p[2])+' '+months[parseInt(p[1])-1]+' '+p[0];
+}
+function renderFreezer(){
+  var el=document.getElementById('freezer-list');if(!el)return;
+  if(!freezer.length){el.innerHTML='<div class="empty-state"><p>Il congelatore è vuoto.</p><p style="font-size:13px;margin-top:6px">Premi + Aggiungi per inserire qualcosa.</p></div>';return;}
+  var cats={};
+  freezer.forEach(function(f){var c=f.category||'Altro';if(!cats[c])cats[c]=[];cats[c].push(f);});
+  var html='';
+  FREEZE_CATS.forEach(function(cat,i){
+    var items=cats[cat]||[];if(!items.length)return;
+    html+='<div class="freezer-cat-header">'+FREEZE_EMOJI[i]+' '+cat+'</div>';
+    items.forEach(function(f){html+=freezerItemHTML(f);});
+  });
+  Object.keys(cats).forEach(function(cat){
+    if(FREEZE_CATS.indexOf(cat)<0&&cats[cat].length){
+      html+='<div class="freezer-cat-header">📦 '+cat+'</div>';
+      cats[cat].forEach(function(f){html+=freezerItemHTML(f);});
+    }
+  });
+  el.innerHTML=html;
+}
+function freezerItemHTML(f){
+  var qty=f.qty!=null?(f.qty%1===0?f.qty:+f.qty.toFixed(2)):'';
+  var qtyStr=qty?(qty+(f.unit?' '+f.unit:'')):'';
+  var meta=[];
+  if(f.frozenDate)meta.push('Congelato il '+formatDateIT(f.frozenDate));
+  if(f.note)meta.push(f.note);
+  return'<div class="freezer-item" onclick="openFreezerModal(\''+f.id+'\')">'+
+    '<div style="flex:1"><div class="freezer-item-name">'+f.name+'</div>'+
+    (meta.length?'<div class="freezer-item-meta">'+meta.join(' \xb7 ')+'</div>':'')+'</div>'+
+    (qtyStr?'<div class="freezer-item-qty">'+qtyStr+'</div>':'')+
+    '</div>';
+}
+window.openFreezerModal=function(id){
+  freezerEditId=id;
+  var f=id?freezer.find(function(x){return x.id===id;}):null;
+  document.getElementById('freezer-modal-title').textContent=id?'Modifica':'Aggiungi al congelatore';
+  document.getElementById('frz-name').value=f?f.name:'';
+  document.getElementById('frz-qty').value=f&&f.qty!=null?f.qty:'';
+  document.getElementById('frz-unit').value=f?f.unit||'':'';
+  document.getElementById('frz-cat').value=f?f.category||'Altro':'Altro';
+  document.getElementById('frz-date').value=f?f.frozenDate||'':'';
+  document.getElementById('frz-note').value=f?f.note||'':'';
+  document.getElementById('frz-delete-wrap').style.display=id?'block':'none';
+  document.getElementById('freezer-modal').style.display='flex';
+  setTimeout(function(){document.getElementById('frz-name').focus();},150);
+};
+window.closeFreezerModal=function(){document.getElementById('freezer-modal').style.display='none';freezerEditId=null;};
+window.confirmFreezerItem=function(){
+  var name=document.getElementById('frz-name').value.trim();if(!name)return;
+  var qty=parseFloat(document.getElementById('frz-qty').value)||null;
+  var unit=document.getElementById('frz-unit').value.trim();
+  var cat=document.getElementById('frz-cat').value;
+  var date=document.getElementById('frz-date').value;
+  var note=document.getElementById('frz-note').value.trim();
+  var data={name:name,qty:qty,unit:unit||null,category:cat,frozenDate:date||null,note:note||null};
+  var ref=db.ref('users/'+currentUser.uid+'/freezer');
+  if(freezerEditId){ref.child(freezerEditId).update(data);}else{ref.push(data);}
+  closeFreezerModal();
+};
+window.deleteFreezerItem=function(){
+  if(!freezerEditId||!confirm('Eliminare questo prodotto dal congelatore?'))return;
+  db.ref('users/'+currentUser.uid+'/freezer/'+freezerEditId).remove();
+  closeFreezerModal();
 };
 </script>
 </body>
