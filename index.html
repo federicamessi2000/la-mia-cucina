@@ -185,6 +185,7 @@ textarea{resize:vertical;min-height:100px;}
       <input type="text" id="shop-input" placeholder="Aggiungi un ingrediente&hellip;" onkeydown="if(event.key==='Enter')addShopItem()">
       <button class="btn btn-primary" onclick="addShopItem()">+</button>
     </div>
+    <button class="btn btn-outline btn-full" style="margin-bottom:16px" onclick="openShopAddModal(null)">&#128203; Aggiungi ingredienti da ricetta</button>
     <div id="shop-auto" style="margin-bottom:16px;"></div>
     <div id="shop-list"></div>
     <div style="margin-top:16px;display:flex;gap:8px;">
@@ -304,6 +305,29 @@ textarea{resize:vertical;min-height:100px;}
       <div id="pick-ing-checks" style="max-height:280px;overflow-y:auto"></div>
       <div style="display:flex;gap:8px;margin-top:16px">
         <button class="btn btn-primary" style="flex:1" onclick="confirmMeal()">Aggiungi al planner</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGGIUNGI ALLA SPESA DA RICETTA -->
+<div class="modal-overlay" id="shop-add-modal" style="display:none" onclick="if(event.target.id==='shop-add-modal')closeShopAddModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="shop-add-step1">
+      <h2>Aggiungi alla spesa</h2>
+      <input class="pick-search" id="shop-add-search" type="text" placeholder="Cerca ricetta&hellip;" oninput="renderShopPickList(this.value)">
+      <div id="shop-add-list"></div>
+    </div>
+    <div id="shop-add-step2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <button onclick="document.getElementById('shop-add-step1').style.display='block';document.getElementById('shop-add-step2').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--charcoal-mid)">&#8592;</button>
+        <h2 style="margin:0;font-size:18px" id="shop-add-title"></h2>
+      </div>
+      <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:12px">Spunta gli ingredienti che hai <strong>già in casa</strong> &mdash; non li aggiungo alla lista.</p>
+      <div id="shop-add-checks" style="max-height:300px;overflow-y:auto"></div>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary btn-full" onclick="confirmShopAdd()">+ Aggiungi alla spesa</button>
       </div>
     </div>
   </div>
@@ -445,21 +469,49 @@ function renderRecipeModal(r,portions){
     '<h3 style="font-size:15px;margin-bottom:10px">Ingredienti</h3><ul class="ingredients-list">'+ings+'</ul>'+
     '<h3 style="font-size:15px;margin-bottom:10px">Procedimento</h3><p class="recipe-detail-body">'+(r.procedimento||'')+'</p>'+
     (r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+r.note+'</div>':'')+
-    '<div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="addToShopFromRecipe(\''+r.id+'\')">+ Aggiungi alla spesa</button>'+(canDel?'<button class="btn btn-danger btn-sm" onclick="deleteRecipe(\''+r.id+'\')">Elimina</button>':'')+'</div>';
+    '<div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="openShopAddModal(\''+r.id+'\')">+ Aggiungi alla spesa</button>'+(canDel?'<button class="btn btn-danger btn-sm" onclick="deleteRecipe(\''+r.id+'\')">Elimina</button>':'')+'</div>';
 }
 window.closeRecipeModal=function(){document.getElementById('recipe-modal').style.display='none';};
 window.deleteRecipe=function(id){if(!confirm('Eliminare? Rimossa per tutti.'))return;db.ref('recipes/'+id).remove();closeRecipeModal();};
-window.addToShopFromRecipe=function(id){
+var shopAddRecipeId=null;
+function showShopIngChecklist(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
-  var scale=currentPortions/(parseInt(r.porzioni)||4);
+  shopAddRecipeId=id;
+  document.getElementById('shop-add-title').textContent=r.nome;
+  var scale=(id===currentRecipeId?currentPortions:parseInt(r.porzioni)||4)/(parseInt(r.porzioni)||4);
+  document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i){
+    var label=fmtIng(i,scale);
+    return'<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-ing="'+i.name.replace(/"/g,'&quot;')+'" data-text="'+shopTxt(i,scale).replace(/"/g,'&quot;')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';
+  }).join('');
+  document.getElementById('shop-add-step1').style.display='none';
+  document.getElementById('shop-add-step2').style.display='block';
+  document.getElementById('shop-add-modal').style.display='flex';
+}
+window.openShopAddModal=function(id){
+  document.getElementById('shop-add-step1').style.display='block';
+  document.getElementById('shop-add-step2').style.display='none';
+  document.getElementById('shop-add-search').value='';
+  renderShopPickList('');
+  if(id){showShopIngChecklist(id);}
+  else{document.getElementById('shop-add-modal').style.display='flex';setTimeout(function(){document.getElementById('shop-add-search').focus();},150);}
+};
+window.closeShopAddModal=function(){document.getElementById('shop-add-modal').style.display='none';};
+window.renderShopPickList=function(q){
+  var f=recipes.filter(function(r){return r.nome.toLowerCase().includes((q||'').toLowerCase());});
+  document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="showShopIngChecklist(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+r.nome+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('');
+};
+window.confirmShopAdd=function(){
   var uid=currentUser.uid;
-  (r.ingredienti||[]).forEach(function(ing){
-    var text=shopTxt(ing,scale);
-    if(!shopping.find(function(s){return s.text===text&&s.source===r.nome;}))
-      db.ref('users/'+uid+'/shopping').push({text:text,source:r.nome,checked:false});
+  var checked=document.querySelectorAll('#shop-add-checks input[type=checkbox]:not(:checked)');
+  checked.forEach(function(cb){
+    var text=cb.getAttribute('data-text');
+    var r=recipes.find(function(x){return x.id===shopAddRecipeId;});
+    var nome=r?r.nome:'';
+    if(!shopping.find(function(s){return s.text===text&&s.source===nome;}))
+      db.ref('users/'+uid+'/shopping').push({text:text,source:nome,checked:false});
   });
+  closeShopAddModal();
   closeRecipeModal();
-  showPage('spesa',document.querySelectorAll('.nav-item')[2]);
 };
 
 window.addIng=function(){var d=document.createElement('div');d.className='ing-row';d.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);};
