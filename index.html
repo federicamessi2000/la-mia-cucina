@@ -143,6 +143,13 @@ textarea{resize:vertical;min-height:100px;}
 .week-label{font-size:13px;font-weight:500;color:var(--sage);flex:1;text-align:center;}
 .shop-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
 .shop-note{font-size:11px;color:var(--charcoal-light);margin-top:2px;}
+.shop-input-wrap{position:relative;flex:1;}
+.shop-suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);z-index:150;max-height:240px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,0.12);display:none;}
+.shop-suggest-item{padding:10px 12px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:0.5px solid var(--border);}
+.shop-suggest-item:last-child{border-bottom:none;}
+.shop-suggest-item:active{background:var(--cream);}
+.shop-suggest-cat{font-size:11px;color:var(--charcoal-light);white-space:nowrap;flex-shrink:0;}
+.shop-suggest-free{color:var(--sage);font-style:italic;font-size:13px;}
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0;}
 .cat-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:18px 10px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;transition:background 0.1s;}
 .cat-card:active{background:var(--terracotta-pale);}
@@ -204,7 +211,10 @@ textarea{resize:vertical;min-height:100px;}
       <button onclick="changeShopWeek(1)">&#8594;</button>
     </div>
     <div class="add-inline">
-      <input type="text" id="shop-input" placeholder="Aggiungi un ingrediente&hellip;" onkeydown="if(event.key==='Enter')addShopItem()">
+      <div class="shop-input-wrap">
+        <input type="text" id="shop-input" placeholder="Cerca ingrediente&hellip;" oninput="onShopInput(this.value)" onkeydown="onShopInputKey(event)" autocomplete="off">
+        <div id="shop-suggest" class="shop-suggest"></div>
+      </div>
       <button class="btn btn-primary" onclick="addShopItem()">+</button>
     </div>
     <button class="btn btn-outline btn-full" style="margin-bottom:16px" onclick="openShopAddModal(null)">&#128203; Aggiungi ingredienti da ricetta</button>
@@ -827,7 +837,39 @@ window.deleteShopGroup=function(idsStr){
   var uid=currentUser.uid;
   idsStr.split(',').forEach(function(id){db.ref('users/'+uid+'/shopping/'+id).remove();});
 };
-window.addShopItem=function(){var inp=document.getElementById('shop-input'),val=inp.value.trim();if(!val)return;db.ref('users/'+currentUser.uid+'/shopping').push({text:val,source:null,category:'Altro',checked:false});inp.value='';};
+function closeShopSuggest(){document.getElementById('shop-suggest').style.display='none';}
+window.onShopInput=function(val){
+  val=val.trim();
+  var sg=document.getElementById('shop-suggest');
+  if(!val){sg.style.display='none';return;}
+  var matches=CATALOG_SEED.filter(function(c){return c[0].toLowerCase().includes(val.toLowerCase());}).slice(0,9);
+  var html=matches.map(function(c){
+    var safeN=c[0].replace(/'/g,"\\'");
+    return'<div class="shop-suggest-item" onclick="selectShopSuggest(\''+safeN+'\','+c[1]+',\''+c[2]+'\')"><span>'+c[0]+'</span><span class="shop-suggest-cat">'+CAT_EMOJI[c[1]]+'</span></div>';
+  }).join('');
+  var safeVal=val.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  html+='<div class="shop-suggest-item" onclick="addShopFree()"><span class="shop-suggest-free">+ Aggiungi &ldquo;'+val+'&rdquo; come voce libera</span></div>';
+  sg.innerHTML=html;sg.style.display='block';
+};
+window.onShopInputKey=function(e){
+  if(e.key==='Escape')closeShopSuggest();
+  if(e.key==='Enter'){e.preventDefault();addShopItem();}
+};
+window.selectShopSuggest=function(name,catIdx,unit){
+  document.getElementById('shop-input').value='';closeShopSuggest();
+  openCatalogAdd(name,catIdx,unit);
+};
+window.addShopFree=function(){
+  var val=document.getElementById('shop-input').value.trim();if(!val)return;
+  db.ref('users/'+currentUser.uid+'/shopping').push({text:val,source:null,category:'Altro',checked:false});
+  document.getElementById('shop-input').value='';closeShopSuggest();
+};
+window.addShopItem=function(){
+  var val=document.getElementById('shop-input').value.trim();if(!val)return;
+  var exact=CATALOG_SEED.find(function(c){return c[0].toLowerCase()===val.toLowerCase();});
+  if(exact){selectShopSuggest(exact[0],exact[1],exact[2]);}else{addShopFree();}
+};
+document.addEventListener('click',function(e){if(!e.target.closest('.shop-input-wrap'))closeShopSuggest();});
 window.clearChecked=function(){shopping.filter(function(s){return s.checked;}).forEach(function(s){db.ref('users/'+currentUser.uid+'/shopping/'+s.id).remove();});};
 window.clearAll=function(){if(!confirm('Svuotare?'))return;db.ref('users/'+currentUser.uid+'/shopping').set(null);};
 
