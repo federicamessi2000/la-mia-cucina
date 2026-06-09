@@ -832,6 +832,7 @@ function renderShopping(){
       groups[key].ids.push(s.id);
       if(s.source&&groups[key].sources.indexOf(s.source)<0)groups[key].sources.push(s.source);
       if(s.ingQty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=s.ingQty;else groups[key].ingQty=s.ingQty;}
+      if(s.note&&(!groups[key].note||groups[key].note.indexOf(s.note)<0)){groups[key].note=groups[key].note?(groups[key].note+' — '+s.note):s.note;}
       if(!s.checked)groups[key].checked=false;
     }
   });
