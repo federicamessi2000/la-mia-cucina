@@ -280,6 +280,13 @@ textarea{resize:vertical;min-height:100px;}
       <button onclick="cancelEditRecipe()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--terracotta);font-family:'DM Sans',sans-serif;font-weight:500;">&#10005; Annulla</button>
     </div>
     <div id="panel-manuale">
+      <details style="margin-bottom:20px;background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px">
+        <summary style="cursor:pointer;font-size:14px;font-weight:500;color:var(--charcoal);list-style:none;display:flex;align-items:center;gap:6px"><span>&#128196;</span> Importa da testo</summary>
+        <div style="margin-top:12px">
+          <div class="form-group" style="margin-bottom:10px"><textarea id="parse-text" style="min-height:110px;font-size:13px" placeholder="Incolla qui il testo della ricetta copiato da un sito o da un libro&hellip;"></textarea></div>
+          <button class="btn btn-outline btn-sm" onclick="parseFromText()">&#128269; Analizza e compila il form</button>
+        </div>
+      </details>
       <div class="form-group"><label>Nome della ricetta</label><input type="text" id="r-nome" placeholder="Es. Risotto ai funghi"></div>
       <div class="form-group"><label>Foto (URL, opzionale)</label><input type="text" id="r-foto" placeholder="https://...immagine.jpg"></div>
       <div class="form-group"><label>Fonte</label><select id="r-fonte"><option value="mamma">Della mamma</option><option value="internet">Da internet</option></select></div>
@@ -781,6 +788,26 @@ function resetRecipeForm(){
   document.getElementById('aggiungi-title').textContent='Aggiungi ricetta';
 }
 window.toggleRecipeTag=function(btn){btn.classList.toggle('active');};
+function parseQty(s){if(!s)return null;s=s.trim();if(s.indexOf('/')>0){var p=s.split('/');return parseFloat(p[0])/parseFloat(p[1]);}if(s.indexOf('-')>0)return parseFloat(s.split('-')[0]);return parseFloat(s.replace(',','.'));}
+function parseIngLine(line){var qb=/^q\.b\.?\s*(.*)/i.exec(line);if(qb)return{qty:null,unit:'q.b.',name:(qb[1]||'').trim()||'q.b.'};var numRx=/^(\d+(?:[\/\-]\d+)?(?:[.,]\d+)?)\s*/;var nm=numRx.exec(line);if(!nm)return null;var qty=parseQty(nm[1]);var rest=line.substring(nm[0].length).trim();var um=/^(g|gr|kg|ml|l\b|lt|cl|dl|n°|pz|cucchiai[oa]?|cucchiaini?[oa]?|bicchieri?[eo]?|spicchi?[oa]?|fette?[ae]?|bustine?[ae]?|foglie?[ae]?|rametti?[oi]?|pizzichi?[oi]?)\s+(?:di\s+)?(.+)/i.exec(rest);if(um)return{qty:qty,unit:um[1].toLowerCase(),name:um[2].trim()};if(rest)return{qty:qty,unit:'',name:rest};return null;}
+function parseRecipeText(text){var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);if(!lines.length)return null;var nome='',tempo='',porzioni=4,ingredienti=[],proc=[],section='start';lines.forEach(function(line){if(/^ingredienti/i.test(line)){section='ing';return;}if(/^(procedimento|preparazione|come si (fa|prepara)|preparate)/i.test(line)){section='proc';return;}if(!nome&&line.length>2&&line.length<120){nome=line;return;}var tm=line.match(/(?:tempo|preparazione|cottura)\s*:?\s*(.{3,25})/i);if(tm&&!tempo){tempo=tm[1].trim();return;}var pm=line.match(/^(\d+)\s*(?:x|persone?|porzioni?|dosi?)/i);if(pm){porzioni=parseInt(pm[1])||4;return;}if(section==='ing'||section==='start'){var ing=parseIngLine(line);if(ing){ingredienti.push(ing);return;}}if(section==='proc'||/^\d+[\.\)]\s/.test(line)){section='proc';proc.push(line.replace(/^\d+[\.\)]\s*/,''));}});if(!ingredienti.length)lines.forEach(function(line){var ing=parseIngLine(line);if(ing)ingredienti.push(ing);});if(!proc.length)lines.filter(function(l){return/^\d+[\.\)]\s/.test(l);}).forEach(function(s){proc.push(s.replace(/^\d+[\.\)]\s*/,''));});return{nome:nome||'Nuova ricetta',tempo:tempo,porzioni:porzioni,ingredienti:ingredienti,procedimento:proc.map(function(s,i){return(i+1)+'. '+s;}).join('\n')};}
+window.parseFromText=function(){
+  var text=document.getElementById('parse-text').value.trim();
+  if(!text){document.getElementById('parse-text').focus();return;}
+  var r=parseRecipeText(text);
+  if(!r||(!r.ingredienti.length&&!r.procedimento)){alert('Non riesco a leggere la ricetta. Prova ad aggiungere manualmente.');return;}
+  if(r.nome)document.getElementById('r-nome').value=r.nome;
+  if(r.tempo)document.getElementById('r-tempo').value=r.tempo;
+  document.getElementById('r-porzioni').value=r.porzioni||4;
+  if(r.procedimento)document.getElementById('r-procedimento').value=r.procedimento;
+  if(r.ingredienti.length){
+    document.getElementById('ing-list').innerHTML=r.ingredienti.map(function(i){
+      return'<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any" value="'+(i.qty!=null?i.qty:'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+(i.unit||'')+'"><input class="ing-name" type="text" placeholder="ingrediente" value="'+(i.name||'')+'"><button onclick="removeIng(this)">&minus;</button></div>';
+    }).join('');
+  }
+  document.getElementById('parse-text').value='';
+  alert('Ricetta analizzata! Controlla e correggi il form prima di salvare.');
+};
 function getSelectedTags(){return Array.from(document.querySelectorAll('#r-tags-selection .tag-toggle.active')).map(function(b){return b.dataset.tag;});}
 function setSelectedTags(tags){document.querySelectorAll('#r-tags-selection .tag-toggle').forEach(function(b){b.classList.toggle('active',(tags||[]).indexOf(b.dataset.tag)>=0);});}
 window.openEditRecipe=function(id){
