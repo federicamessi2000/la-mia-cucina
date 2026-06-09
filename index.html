@@ -138,6 +138,16 @@ textarea{resize:vertical;min-height:100px;}
 .user-info img{width:48px;height:48px;border-radius:50%;}
 .user-info-name{font-size:16px;font-weight:500;}
 .user-info-email{font-size:13px;color:var(--charcoal-light);}
+.shop-week-nav{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;}
+.shop-week-nav button{background:none;border:0.5px solid rgba(122,140,110,0.4);border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;font-size:13px;color:var(--sage);font-family:'DM Sans',sans-serif;}
+.week-label{font-size:13px;font-weight:500;color:var(--sage);flex:1;text-align:center;}
+.shop-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
+.shop-note{font-size:11px;color:var(--charcoal-light);margin-top:2px;}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
+.cat-item-name{font-size:14px;color:var(--charcoal);}
+.cat-item-unit{font-size:12px;color:var(--charcoal-light);margin-left:4px;}
+.cat-add-btn{background:var(--terracotta);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
+.nav-item{font-size:10px;}
 </style>
 </head>
 <body>
@@ -180,17 +190,30 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 
   <div class="page" id="page-spesa">
-    <h2 class="section-title">Lista della spesa</h2>
+    <div class="shop-week-nav">
+      <button onclick="changeShopWeek(-1)">&#8592;</button>
+      <span class="week-label" id="shop-week-label"></span>
+      <button id="shop-week-today-btn" onclick="changeShopWeek(0)" style="display:none">Oggi</button>
+      <button onclick="changeShopWeek(1)">&#8594;</button>
+    </div>
     <div class="add-inline">
       <input type="text" id="shop-input" placeholder="Aggiungi un ingrediente&hellip;" onkeydown="if(event.key==='Enter')addShopItem()">
       <button class="btn btn-primary" onclick="addShopItem()">+</button>
     </div>
     <button class="btn btn-outline btn-full" style="margin-bottom:16px" onclick="openShopAddModal(null)">&#128203; Aggiungi ingredienti da ricetta</button>
-    <div id="shop-auto" style="margin-bottom:16px;"></div>
     <div id="shop-list"></div>
     <div style="margin-top:16px;display:flex;gap:8px;">
       <button class="btn btn-outline btn-sm" onclick="clearChecked()">Rimuovi spuntati</button>
       <button class="btn btn-outline btn-sm" onclick="clearAll()">Svuota lista</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-ingredienti">
+    <h2 class="section-title">Ingredienti</h2>
+    <input class="search-bar" type="text" id="cat-search" placeholder="Cerca ingrediente&hellip;" oninput="renderCatalog(this.value)">
+    <div id="catalog-list"></div>
+    <div style="margin-top:16px;padding-bottom:20px">
+      <button class="btn btn-outline btn-full" onclick="openCustomCatalogAdd()">+ Aggiungi ingrediente non trovato</button>
     </div>
   </div>
 
@@ -265,6 +288,9 @@ textarea{resize:vertical;min-height:100px;}
     <button class="nav-item" onclick="showPage('spesa',this)">
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Spesa
     </button>
+    <button class="nav-item" onclick="showPage('ingredienti',this)">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>Ingredienti
+    </button>
     <button class="nav-item" onclick="showPage('aggiungi',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Aggiungi
     </button>
@@ -333,6 +359,27 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 </div>
 
+<!-- MODAL AGGIUNGI DA CATALOGO -->
+<div class="modal-overlay" id="catalog-add-modal" style="display:none" onclick="if(event.target.id==='catalog-add-modal')document.getElementById('catalog-add-modal').style.display='none'">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="catalog-add-title" style="margin-bottom:16px">Aggiungi alla spesa</h2>
+    <div class="form-group" id="cat-name-group" style="display:none">
+      <label>Nome ingrediente</label>
+      <input type="text" id="cat-name" placeholder="es. Semola di grano duro">
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="form-group" style="flex:1"><label>Quantit&agrave;</label><input type="number" id="cat-qty" placeholder="200" min="0" step="any"></div>
+      <div class="form-group" style="width:90px"><label>Unit&agrave;</label><input type="text" id="cat-unit" placeholder="g"></div>
+    </div>
+    <div class="form-group"><label>Nota (marca, gusto&hellip;)</label><input type="text" id="cat-note" placeholder="es. Mulino Bianco"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="confirmCatalogAdd()">Aggiungi alla spesa</button>
+      <button class="btn btn-outline" onclick="document.getElementById('catalog-add-modal').style.display='none'">Annulla</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL UTENTE -->
 <div class="modal-overlay" id="user-modal" style="display:none" onclick="if(event.target.id==='user-modal')document.getElementById('user-modal').style.display='none'">
   <div class="modal">
@@ -365,6 +412,7 @@ const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.Goo
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentFilter='all',currentMonth=new Date(),pickTarget=null,aiExtracted=null;
 let currentRecipeId=null,currentPortions=4,plannerPortions=1;
+var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null;
 
 function fmtIng(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit)r+=' '+i.unit;r+=' ';}else if(i.unit)r+=i.unit+' ';return r+i.name;}
 function shopTxt(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit&&i.unit!=='q.b.')r+=' '+i.unit;r+=' ';}else if(i.unit&&i.unit!=='q.b.')r+=i.unit+' ';return r+i.name;}
@@ -379,6 +427,48 @@ var SEED=[
   {nome:"Pasta al pomodoro",fonte:"mamma",tempo:"20 min",porzioni:4,link:"",addedBy:"La mamma",ingredienti:[{qty:400,unit:"g",name:"pasta"},{qty:500,unit:"g",name:"pomodori pelati"},{qty:2,unit:"n°",name:"spicchi aglio"},{qty:null,unit:"q.b.",name:"basilico"},{qty:null,unit:"q.b.",name:"olio EVO"}],procedimento:"1. Soffriggere l'aglio in olio.\n2. Pomodori e cuocere 15 min.\n3. Cuocere la pasta e condire con basilico.",note:"Un pizzico di zucchero come la nonna."},
   {nome:"Pollo arrosto",fonte:"mamma",tempo:"1h 20min",porzioni:4,link:"",addedBy:"La mamma",ingredienti:[{qty:1,unit:"n°",name:"pollo intero"},{qty:800,unit:"g",name:"patate"},{qty:3,unit:"n°",name:"spicchi aglio"},{qty:null,unit:"q.b.",name:"rosmarino"},{qty:null,unit:"q.b.",name:"salvia"},{qty:null,unit:"q.b.",name:"olio EVO"}],procedimento:"1. Marinare con erbe e olio.\n2. Forno 180°C per 1 ora.\n3. Patate a metà cottura.",note:"Bagnare ogni 20 min con il fondo."}
 ];
+
+var CATS=["Frutta","Verdura e Funghi","Carne e Salumi","Pesce e Frutti di Mare","Latticini, Uova e Formaggi","Pasta, Riso e Cereali","Pane, Farine e Lievitati","Legumi","Conserve e Salse","Condimenti, Oli e Aceti","Spezie ed Erbe","Dolcificanti","Dolci e Snack","Semi e Frutta Secca","Surgelati","Bevande","Prodotti per la Casa","Igiene Personale","Altro"];
+var CAT_EMOJI=["🍎","🥬","🥩","🐟","🧀","🍝","🍞","🫘","🥫","🫙","🌿","🍯","🍫","🌰","🧊","🧃","🧹","🧴","🛒"];
+
+var CATALOG_SEED=[
+["Mele",0,"kg"],["Pere",0,"kg"],["Banane",0,"kg"],["Arance",0,"kg"],["Limoni",0,"n°"],["Mandarini",0,"kg"],["Clementine",0,"kg"],["Pesche",0,"kg"],["Albicocche",0,"kg"],["Fragole",0,"g"],["Uva",0,"kg"],["Kiwi",0,"n°"],["Ananas",0,"n°"],["Mango",0,"n°"],["Avocado",0,"n°"],["Melone",0,"n°"],["Anguria",0,"n°"],["Ciliegie",0,"kg"],["Prugne",0,"kg"],["Pompelmo",0,"n°"],["Lime",0,"n°"],["Fichi",0,"n°"],["Lamponi",0,"g"],["Mirtilli",0,"g"],["More",0,"g"],["Datteri",0,"g"],
+["Pomodori",1,"g"],["Pomodorini",1,"g"],["Melanzane",1,"n°"],["Peperoni",1,"n°"],["Zucchine",1,"n°"],["Zucca",1,"kg"],["Cetrioli",1,"n°"],["Carote",1,"kg"],["Sedano",1,"n°"],["Cipolle",1,"kg"],["Cipolla rossa",1,"n°"],["Aglio",1,"n°"],["Scalogno",1,"n°"],["Porri",1,"n°"],["Spinaci",1,"g"],["Lattuga",1,"n°"],["Radicchio",1,"n°"],["Rucola",1,"g"],["Broccoli",1,"n°"],["Cavolfiore",1,"n°"],["Cavolo nero",1,"n°"],["Verza",1,"n°"],["Cavolini di Bruxelles",1,"g"],["Carciofi",1,"n°"],["Patate",1,"kg"],["Patate dolci",1,"kg"],["Finocchio",1,"n°"],["Asparagi",1,"g"],["Fagiolini",1,"g"],["Mais",1,"n°"],["Bietole",1,"g"],["Funghi champignon",1,"g"],["Funghi porcini",1,"g"],["Pleurotus",1,"g"],["Peperoncino",1,"n°"],["Zenzero fresco",1,"g"],["Barbabietole",1,"n°"],
+["Petto di pollo",2,"g"],["Cosce di pollo",2,"g"],["Pollo intero",2,"n°"],["Pollo",2,"g"],["Tacchino",2,"g"],["Manzo macinato",2,"g"],["Bistecca",2,"g"],["Vitello",2,"g"],["Maiale",2,"g"],["Costine di maiale",2,"g"],["Agnello",2,"g"],["Salsiccia",2,"g"],["Pancetta",2,"g"],["Guanciale",2,"g"],["Prosciutto crudo",2,"g"],["Prosciutto cotto",2,"g"],["Salame",2,"g"],["Bresaola",2,"g"],["Mortadella",2,"g"],["Speck",2,"g"],["Lardo",2,"g"],["Wurstel",2,"n°"],["Coppa",2,"g"],
+["Salmone",3,"g"],["Tonno fresco",3,"g"],["Merluzzo",3,"g"],["Orata",3,"n°"],["Branzino",3,"n°"],["Trota",3,"n°"],["Sgombro",3,"n°"],["Sardine",3,"g"],["Acciughe",3,"g"],["Gamberi",3,"g"],["Mazzancolle",3,"g"],["Scampi",3,"g"],["Cozze",3,"kg"],["Vongole",3,"kg"],["Calamari",3,"g"],["Polpo",3,"g"],["Seppie",3,"g"],["Baccala",3,"g"],["Pesce spada",3,"g"],
+["Latte intero",4,"L"],["Latte scremato",4,"L"],["Latte di soia",4,"L"],["Latte di avena",4,"L"],["Latte di mandorla",4,"L"],["Panna da cucina",4,"ml"],["Panna da montare",4,"ml"],["Burro",4,"g"],["Yogurt bianco",4,"g"],["Yogurt greco",4,"g"],["Uova",4,"n°"],["Mozzarella",4,"g"],["Burrata",4,"n°"],["Ricotta",4,"g"],["Mascarpone",4,"g"],["Parmigiano Reggiano",4,"g"],["Parmigiano",4,"g"],["Grana Padano",4,"g"],["Pecorino",4,"g"],["Pecorino Romano",4,"g"],["Gorgonzola",4,"g"],["Emmental",4,"g"],["Provolone",4,"g"],["Feta",4,"g"],["Stracchino",4,"g"],["Brie",4,"g"],["Kefir",4,"ml"],
+["Spaghetti",5,"g"],["Penne",5,"g"],["Rigatoni",5,"g"],["Fusilli",5,"g"],["Farfalle",5,"g"],["Tagliatelle",5,"g"],["Lasagne",5,"g"],["Tortellini",5,"g"],["Gnocchi",5,"g"],["Pasta integrale",5,"g"],["Pasta senza glutine",5,"g"],["Pasta",5,"g"],["Riso Carnaroli",5,"g"],["Riso Arborio",5,"g"],["Riso basmati",5,"g"],["Riso Venere",5,"g"],["Riso integrale",5,"g"],["Riso",5,"g"],["Farro",5,"g"],["Orzo",5,"g"],["Quinoa",5,"g"],["Bulgur",5,"g"],["Cous cous",5,"g"],["Polenta",5,"g"],["Avena in chicchi",5,"g"],["Miglio",5,"g"],["Fiocchi d'avena",5,"g"],["Granola",5,"g"],["Corn flakes",5,"g"],["Muesli",5,"g"],
+["Pane fresco",6,"n°"],["Pane in cassetta",6,"n°"],["Fette biscottate",6,"n°"],["Grissini",6,"n°"],["Crackers",6,"n°"],["Pangrattato",6,"g"],["Farina 00",6,"g"],["Farina 0",6,"g"],["Farina integrale",6,"g"],["Farina",6,"g"],["Semola rimacinata",6,"g"],["Farina di riso",6,"g"],["Farina di mais",6,"g"],["Farina di ceci",6,"g"],["Farina di mandorle",6,"g"],["Fecola di patate",6,"g"],["Amido di mais",6,"g"],["Bicarbonato",6,"g"],["Lievito di birra",6,"n°"],["Lievito chimico",6,"bustine"],["Lievito",6,"bustine"],["Biscotti secchi",6,"g"],["Frollini",6,"g"],["Savoiardi",6,"g"],
+["Fagioli borlotti",7,"g"],["Fagioli cannellini",7,"g"],["Fagioli",7,"g"],["Ceci",7,"g"],["Lenticchie rosse",7,"g"],["Lenticchie verdi",7,"g"],["Lenticchie",7,"g"],["Piselli",7,"g"],["Fave",7,"g"],["Lupini",7,"g"],["Soia",7,"g"],["Edamame",7,"g"],
+["Passata di pomodoro",8,"ml"],["Pomodori pelati",8,"g"],["Pomodori a cubetti",8,"g"],["Concentrato di pomodoro",8,"g"],["Tonno in scatola",8,"g"],["Sardine sott'olio",8,"g"],["Pesto",8,"g"],["Maionese",8,"g"],["Senape",8,"g"],["Ketchup",8,"g"],["Salsa di soia",8,"ml"],["Pasta di miso",8,"g"],["Tahina",8,"g"],["Brodo vegetale",8,"ml"],["Brodo di carne",8,"ml"],["Brodo",8,"ml"],["Acciughe sott'olio",8,"g"],
+["Olio EVO",9,"ml"],["Olio di girasole",9,"ml"],["Olio di sesamo",9,"ml"],["Olio di arachidi",9,"ml"],["Olio",9,"ml"],["Aceto di vino rosso",9,"ml"],["Aceto di vino bianco",9,"ml"],["Aceto balsamico",9,"ml"],["Aceto di mele",9,"ml"],["Aceto",9,"ml"],
+["Sale fino",10,"g"],["Sale grosso",10,"g"],["Sale",10,"g"],["Pepe nero",10,"g"],["Pepe bianco",10,"g"],["Peperoncino in polvere",10,"g"],["Paprika",10,"g"],["Paprika affumicata",10,"g"],["Curcuma",10,"g"],["Cannella",10,"g"],["Noce moscata",10,"n°"],["Zafferano",10,"bustine"],["Chiodi di garofano",10,"g"],["Cumino",10,"g"],["Curry",10,"g"],["Vaniglia",10,"n°"],["Origano",10,"g"],["Basilico",10,"g"],["Rosmarino",10,"g"],["Timo",10,"g"],["Prezzemolo",10,"g"],["Salvia",10,"g"],["Alloro",10,"n°"],["Menta",10,"g"],["Erba cipollina",10,"g"],["Zenzero in polvere",10,"g"],
+["Zucchero semolato",11,"g"],["Zucchero di canna",11,"g"],["Zucchero a velo",11,"g"],["Zucchero",11,"g"],["Miele",11,"g"],["Sciroppo d'acero",11,"ml"],["Sciroppo d'agave",11,"ml"],["Stevia",11,"g"],
+["Cioccolato fondente",12,"g"],["Cioccolato al latte",12,"g"],["Nutella",12,"g"],["Marmellata",12,"g"],["Patatine",12,"g"],["Wafer",12,"g"],["Pop corn",12,"g"],["Merendine",12,"n°"],["Cornetti",12,"n°"],
+["Semi di sesamo",13,"g"],["Semi di chia",13,"g"],["Semi di lino",13,"g"],["Semi di zucca",13,"g"],["Semi di girasole",13,"g"],["Pinoli",13,"g"],["Noci",13,"g"],["Mandorle",13,"g"],["Nocciole",13,"g"],["Pistacchi",13,"g"],["Arachidi",13,"g"],["Anacardi",13,"g"],["Castagne",13,"g"],
+["Verdure surgelate miste",14,"g"],["Piselli surgelati",14,"g"],["Spinaci surgelati",14,"g"],["Broccoli surgelati",14,"g"],["Pesce surgelato",14,"g"],["Gamberetti surgelati",14,"g"],["Pizza surgelata",14,"n°"],["Gelato",14,"g"],
+["Acqua naturale",15,"L"],["Acqua frizzante",15,"L"],["Succo d'arancia",15,"ml"],["Succo di mela",15,"ml"],["Caffe",15,"g"],["Caffe in cialde",15,"n°"],["Te in bustine",15,"n°"],["Camomilla",15,"n°"],["Vino rosso",15,"ml"],["Vino bianco",15,"ml"],["Prosecco",15,"n°"],["Birra",15,"n°"],["Rum",15,"ml"],["Marsala",15,"ml"],
+["Detersivo piatti",16,"ml"],["Pastiglie lavastoviglie",16,"n°"],["Detersivo lavatrice",16,"ml"],["Ammorbidente",16,"ml"],["Smacchiatore",16,"ml"],["Sgrassatore",16,"ml"],["Detergente pavimenti",16,"ml"],["Anticalcare spray",16,"ml"],["Detergente WC",16,"ml"],["Carta igienica",16,"n°"],["Scottex",16,"n°"],["Pellicola trasparente",16,"n°"],["Alluminio in rotolo",16,"n°"],["Carta forno",16,"n°"],["Sacchetti pattumiera",16,"n°"],["Spugne",16,"n°"],["Panni microfibra",16,"n°"],
+["Shampoo",17,"ml"],["Balsamo",17,"ml"],["Bagnoschiuma",17,"ml"],["Sapone liquido",17,"ml"],["Saponetta",17,"n°"],["Crema corpo",17,"ml"],["Crema mani",17,"ml"],["Dentifricio",17,"n°"],["Collutorio",17,"ml"],["Filo interdentale",17,"n°"],["Deodorante",17,"n°"],["Schiuma da barba",17,"ml"],["Dischetti struccanti",17,"n°"],["Cotton fioc",17,"n°"]
+];
+
+var _catLookup=CATALOG_SEED.map(function(c){return[c[0].toLowerCase(),CATS[c[1]]];}).sort(function(a,b){return b[0].length-a[0].length;});
+function ingCategory(ingName){
+  if(!ingName)return "Altro";
+  var lower=ingName.toLowerCase().trim();
+  for(var i=0;i<_catLookup.length;i++){if(lower===_catLookup[i][0])return _catLookup[i][1];}
+  var words=lower.split(/\s+/).filter(function(w){return w.length>=4;});
+  if(words.length){
+    for(var i=0;i<_catLookup.length;i++){
+      var cw=_catLookup[i][0].split(/\s+/);
+      for(var j=0;j<words.length;j++){
+        var p=words[j].substring(0,4);
+        for(var k=0;k<cw.length;k++){if(cw[k].substring(0,4)===p)return _catLookup[i][1];}
+      }
+    }
+  }
+  return "Altro";
+}
 
 window.signInWithGoogle=function(){auth.signInWithPopup(provider).catch(function(e){alert('Errore: '+e.message);});};
 window.doSignOut=function(){auth.signOut();document.getElementById('user-modal').style.display='none';};
@@ -426,6 +516,7 @@ function initPrivate(){
   var uid=currentUser.uid;
   db.ref('users/'+uid+'/planner').on('value',function(snap){planner=snap.exists()?snap.val():{};renderPlanner();});
   db.ref('users/'+uid+'/shopping').on('value',function(snap){shopping=[];if(snap.exists())snap.forEach(function(c){shopping.push(Object.assign({id:c.key},c.val()));});renderShopping();});
+  renderShopWeekNav();
 }
 
 window.showPage=function(name,el){
@@ -433,6 +524,8 @@ window.showPage=function(name,el){
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
   el.classList.add('active');
+  if(name==='ingredienti')renderCatalog(document.getElementById('cat-search').value||'');
+  if(name==='spesa')renderShopWeekNav();
 };
 window.switchAddTab=function(name,el){
   document.querySelectorAll('.add-tab').forEach(function(t){t.classList.remove('active');});
@@ -473,7 +566,6 @@ function renderRecipeModal(r,portions){
 }
 window.closeRecipeModal=function(){document.getElementById('recipe-modal').style.display='none';};
 window.deleteRecipe=function(id){if(!confirm('Eliminare? Rimossa per tutti.'))return;db.ref('recipes/'+id).remove();closeRecipeModal();};
-var shopAddRecipeId=null;
 function showShopIngChecklist(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
   shopAddRecipeId=id;
@@ -481,7 +573,8 @@ function showShopIngChecklist(id){
   var scale=(id===currentRecipeId?currentPortions:parseInt(r.porzioni)||4)/(parseInt(r.porzioni)||4);
   document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i){
     var label=fmtIng(i,scale);
-    return'<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-ing="'+i.name.replace(/"/g,'&quot;')+'" data-text="'+shopTxt(i,scale).replace(/"/g,'&quot;')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';
+    var q=(i.qty!=null?i.qty*scale:null);
+    return'<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-ing="'+i.name.replace(/"/g,'&quot;')+'" data-text="'+shopTxt(i,scale).replace(/"/g,'&quot;')+'" data-unit="'+(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';
   }).join('');
   document.getElementById('shop-add-step1').style.display='none';
   document.getElementById('shop-add-step2').style.display='block';
@@ -502,16 +595,17 @@ window.renderShopPickList=function(q){
 };
 window.confirmShopAdd=function(){
   var uid=currentUser.uid;
-  var checked=document.querySelectorAll('#shop-add-checks input[type=checkbox]:not(:checked)');
-  checked.forEach(function(cb){
+  var r=recipes.find(function(x){return x.id===shopAddRecipeId;});
+  var nome=r?r.nome:'';
+  document.querySelectorAll('#shop-add-checks input[type=checkbox]:not(:checked)').forEach(function(cb){
     var text=cb.getAttribute('data-text');
-    var r=recipes.find(function(x){return x.id===shopAddRecipeId;});
-    var nome=r?r.nome:'';
+    var ingName=(cb.getAttribute('data-ing')||'').toLowerCase();
+    var ingUnit=(cb.getAttribute('data-unit')||'').toLowerCase();
+    var ingQty=parseFloat(cb.getAttribute('data-qty'))||null;
     if(!shopping.find(function(s){return s.text===text&&s.source===nome;}))
-      db.ref('users/'+uid+'/shopping').push({text:text,source:nome,checked:false});
+      db.ref('users/'+uid+'/shopping').push({text:text,ingName:ingName,ingUnit:ingUnit,ingQty:ingQty,category:ingCategory(ingName),source:nome,checked:false});
   });
-  closeShopAddModal();
-  closeRecipeModal();
+  closeShopAddModal();closeRecipeModal();
 };
 
 window.addIng=function(){var d=document.createElement('div');d.className='ing-row';d.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);};
@@ -606,15 +700,32 @@ window.clearMeal=function(){
   syncPlannerToShop();
 };
 
-function getWeekKeys(){
-  var now=new Date(),day=now.getDay(),mon=new Date(now);
+function getWeekKeys(refDate){
+  var now=refDate||new Date(),day=now.getDay(),mon=new Date(now);
   mon.setDate(now.getDate()-(day===0?6:day-1));
   return Array.from({length:7},function(_,i){var d=new Date(mon);d.setDate(mon.getDate()+i);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();});
 }
+var MONTHS_SHORT=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+function renderShopWeekNav(){
+  var day=shopWeek.getDay(),mon=new Date(shopWeek);
+  mon.setDate(shopWeek.getDate()-(day===0?6:day-1));
+  var sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  var fmt=function(d){return d.getDate()+' '+MONTHS_SHORT[d.getMonth()];};
+  document.getElementById('shop-week-label').textContent=fmt(mon)+' – '+fmt(sun);
+  var today=new Date();
+  var curMon=new Date(today);curMon.setDate(today.getDate()-(today.getDay()===0?6:today.getDay()-1));
+  var isCurrentWeek=(mon.toDateString()===curMon.toDateString());
+  document.getElementById('shop-week-today-btn').style.display=isCurrentWeek?'none':'block';
+}
+window.changeShopWeek=function(delta){
+  if(delta===0){shopWeek=new Date();}else{shopWeek=new Date(shopWeek);shopWeek.setDate(shopWeek.getDate()+delta*7);}
+  renderShopWeekNav();
+  syncPlannerToShop();
+};
 function syncPlannerToShop(){
   var uid=currentUser.uid;
   var mealData={};
-  getWeekKeys().forEach(function(key){
+  getWeekKeys(shopWeek).forEach(function(key){
     var e=planner[key]||{};
     ['pranzo','cena'].forEach(function(m){
       if(!e[m])return;
@@ -629,32 +740,73 @@ function syncPlannerToShop(){
     var recipe=recipes.find(function(r){return r.nome===nome;});if(!recipe)return;
     (recipe.ingredienti||[]).forEach(function(ing){
       if(d.skip[ing.name])return;
-      db.ref('users/'+uid+'/shopping').push({text:shopTxt(ing,d.tot),source:nome+' (\xd7'+d.tot+' porz.)',checked:false,fromPlanner:true});
+      var ingQty=(ing.qty!=null?ing.qty*d.tot:null);
+      db.ref('users/'+uid+'/shopping').push({
+        text:shopTxt(ing,d.tot),
+        ingName:ing.name.toLowerCase(),
+        ingUnit:(ing.unit||'').toLowerCase(),
+        ingQty:ingQty,
+        category:ingCategory(ing.name),
+        source:nome+' (\xd7'+d.tot+' porz.)',
+        checked:false,fromPlanner:true
+      });
     });
   });
 }
 
 function renderShopping(){
-  var list=document.getElementById('shop-list'),auto=document.getElementById('shop-auto');
-  var manual=shopping.filter(function(s){return!s.source&&!s.fromPlanner;});
-  var fromBtn=shopping.filter(function(s){return s.source&&!s.fromPlanner;});
-  var fromPl=shopping.filter(function(s){return s.fromPlanner;});
+  var list=document.getElementById('shop-list');
+  if(!shopping.length){list.innerHTML='<div class="empty-state"><p>La lista \xe8 vuota.</p></div>';return;}
+  var groups={},order=[];
+  shopping.forEach(function(s){
+    var key=s.ingName?(s.ingName+'|'+(s.ingUnit||'')):('__'+s.id);
+    if(!groups[key]){
+      groups[key]={ids:[s.id],ingQty:s.ingQty,ingUnit:s.ingUnit||'',ingName:s.ingName||null,text:s.text,sources:s.source?[s.source]:[],category:s.category||'Altro',checked:s.checked,note:s.note||''};
+      order.push(key);
+    }else{
+      groups[key].ids.push(s.id);
+      if(s.source&&groups[key].sources.indexOf(s.source)<0)groups[key].sources.push(s.source);
+      if(s.ingQty!=null&&groups[key].ingQty!=null)groups[key].ingQty+=s.ingQty;
+      if(!s.checked)groups[key].checked=false;
+    }
+  });
+  order.forEach(function(key){
+    var g=groups[key];
+    if(g.ingName&&g.ingQty!=null){var v=g.ingQty,vs=(v%1===0?v:+v.toFixed(2));g.text=(vs?vs+' ':'')+( g.ingUnit&&g.ingUnit!=='q.b.'?g.ingUnit+' ':'')+g.ingName;}
+  });
+  var unchecked=order.filter(function(k){return!groups[k].checked;});
+  var checked=order.filter(function(k){return groups[k].checked;});
+  var catMap={};
+  unchecked.forEach(function(k){var c=groups[k].category;if(!catMap[c])catMap[c]=[];catMap[c].push(k);});
   var html='';
-  if(fromPl.length){
-    var now=new Date(),day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1));
-    var sun=new Date(mon);sun.setDate(mon.getDate()+6);
-    var fmt=function(d){return d.getDate()+'/'+(d.getMonth()+1);};
-    html+='<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px;font-weight:500">DAL PLANNER &mdash; '+fmt(mon)+'&ndash;'+fmt(sun)+'</p>';
-    html+=fromPl.map(shopHTML).join('');
+  CATS.forEach(function(cat,i){
+    var keys=catMap[cat]||[];
+    if(!keys.length)return;
+    html+='<div class="shop-cat-header">'+CAT_EMOJI[i]+' '+cat+'</div>';
+    html+=keys.map(function(k){return shopGroupHTML(groups[k]);}).join('');
+  });
+  if(checked.length){
+    html+='<div class="shop-cat-header" style="margin-top:20px">&#x2713; GI\xc0 NEL CARRELLO</div>';
+    html+=checked.map(function(k){return shopGroupHTML(groups[k]);}).join('');
   }
-  if(fromBtn.length){html+='<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px;margin-top:'+(fromPl.length?'16px':'0')+';font-weight:500">DALLE RICETTE</p>';html+=fromBtn.map(shopHTML).join('');}
-  auto.innerHTML=html;
-  list.innerHTML=!shopping.length?'<div class="empty-state"><p>La lista &egrave; vuota.</p></div>':manual.length?'<p style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px;'+(html?'margin-top:16px;':'')+'font-weight:500">AGGIUNTI A MANO</p>'+manual.map(shopHTML).join(''):'';
+  list.innerHTML=html;
 }
-function shopHTML(s){return'<div class="shop-item"><div class="shop-check '+(s.checked?'checked':'')+'" onclick="toggleShop(\''+s.id+'\')"></div><div class="shop-text '+(s.checked?'checked':'')+'">'+s.text+(s.source?'<div class="shop-source">'+s.source+'</div>':'')+'</div><button class="shop-delete" onclick="deleteShop(\''+s.id+'\')">&times;</button></div>';}
-window.addShopItem=function(){var inp=document.getElementById('shop-input'),val=inp.value.trim();if(!val)return;db.ref('users/'+currentUser.uid+'/shopping').push({text:val,source:null,checked:false});inp.value='';};
-window.toggleShop=function(id){var item=shopping.find(function(s){return s.id===id;});if(item)db.ref('users/'+currentUser.uid+'/shopping/'+id+'/checked').set(!item.checked);};
-window.deleteShop=function(id){db.ref('users/'+currentUser.uid+'/shopping/'+id).remove();};
+function shopGroupHTML(g){
+  var ids=g.ids.join(',');
+  var src=g.sources.length?'<div class="shop-source">'+g.sources.join(' \xb7 ')+'</div>':'';
+  var note=g.note?'<div class="shop-note">'+g.note+'</div>':'';
+  return'<div class="shop-item"><div class="shop-check '+(g.checked?'checked':'')+'" onclick="toggleShopGroup(\''+ids+'\')"></div><div class="shop-text '+(g.checked?'checked':'')+'">'+g.text+note+src+'</div><button class="shop-delete" onclick="deleteShopGroup(\''+ids+'\')">&times;</button></div>';
+}
+window.toggleShopGroup=function(idsStr){
+  var uid=currentUser.uid,ids=idsStr.split(',');
+  var allChecked=ids.every(function(id){var s=shopping.find(function(x){return x.id===id;});return s&&s.checked;});
+  ids.forEach(function(id){db.ref('users/'+uid+'/shopping/'+id+'/checked').set(!allChecked);});
+};
+window.deleteShopGroup=function(idsStr){
+  var uid=currentUser.uid;
+  idsStr.split(',').forEach(function(id){db.ref('users/'+uid+'/shopping/'+id).remove();});
+};
+window.addShopItem=function(){var inp=document.getElementById('shop-input'),val=inp.value.trim();if(!val)return;db.ref('users/'+currentUser.uid+'/shopping').push({text:val,source:null,category:'Altro',checked:false});inp.value='';};
 window.clearChecked=function(){shopping.filter(function(s){return s.checked;}).forEach(function(s){db.ref('users/'+currentUser.uid+'/shopping/'+s.id).remove();});};
 window.clearAll=function(){if(!confirm('Svuotare?'))return;db.ref('users/'+currentUser.uid+'/shopping').set(null);};
 
@@ -804,6 +956,63 @@ window.saveAIRecipe=function(){
   showPage('ricette',document.querySelectorAll('.nav-item')[0]);
 };
 window.resetAI=function(){aiExtracted=null;['ai-text','ai-link'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('ai-preview').style.display='none';document.getElementById('ai-loading').style.display='none';};
+
+window.renderCatalog=function(query){
+  query=(query||'').toLowerCase().trim();
+  var el=document.getElementById('catalog-list');
+  var html='';
+  CATS.forEach(function(cat,catIdx){
+    var items=CATALOG_SEED.filter(function(c){return c[1]===catIdx&&(!query||c[0].toLowerCase().includes(query));});
+    if(!items.length)return;
+    html+='<div class="shop-cat-header">'+CAT_EMOJI[catIdx]+' '+cat+'</div>';
+    html+=items.map(function(c){
+      var safeN=c[0].replace(/'/g,"\\'");
+      return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit">'+c[2]+'</span></span><button class="cat-add-btn" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
+    }).join('');
+  });
+  if(!html)html='<div class="empty-state"><p>Nessun ingrediente trovato.</p></div>';
+  el.innerHTML=html;
+};
+window.openCatalogAdd=function(name,catIdx,unit){
+  catalogAddItem={name:name,catIdx:catIdx,unit:unit};
+  document.getElementById('catalog-add-title').textContent=name;
+  document.getElementById('cat-name-group').style.display='none';
+  document.getElementById('cat-qty').value='';
+  document.getElementById('cat-unit').value=unit;
+  document.getElementById('cat-note').value='';
+  document.getElementById('catalog-add-modal').style.display='flex';
+  setTimeout(function(){document.getElementById('cat-qty').focus();},150);
+};
+window.openCustomCatalogAdd=function(){
+  catalogAddItem={name:'',catIdx:CATS.length-1,unit:''};
+  document.getElementById('catalog-add-title').textContent='Ingrediente personalizzato';
+  document.getElementById('cat-name-group').style.display='block';
+  document.getElementById('cat-name').value='';
+  document.getElementById('cat-qty').value='';
+  document.getElementById('cat-unit').value='';
+  document.getElementById('cat-note').value='';
+  document.getElementById('catalog-add-modal').style.display='flex';
+  setTimeout(function(){document.getElementById('cat-name').focus();},150);
+};
+window.confirmCatalogAdd=function(){
+  if(!catalogAddItem)return;
+  var uid=currentUser.uid;
+  var isCustom=document.getElementById('cat-name-group').style.display!=='none';
+  var name=isCustom?document.getElementById('cat-name').value.trim():catalogAddItem.name;
+  if(!name)return;
+  var qty=parseFloat(document.getElementById('cat-qty').value)||null;
+  var unit=document.getElementById('cat-unit').value.trim();
+  var note=document.getElementById('cat-note').value.trim();
+  var cat=CATS[catalogAddItem.catIdx];
+  var vs=(qty!=null?(qty%1===0?qty:+qty.toFixed(2)):'');
+  var txt=(vs?vs+' ':'')+( unit&&unit!=='q.b.'?unit+' ':'')+name;
+  db.ref('users/'+uid+'/shopping').push({
+    text:txt,ingName:name.toLowerCase(),ingUnit:(unit||'').toLowerCase(),ingQty:qty,
+    category:cat,note:note||null,source:'catalogo',checked:false
+  });
+  document.getElementById('catalog-add-modal').style.display='none';
+  document.querySelectorAll('.nav-item')[2].click();
+};
 </script>
 </body>
 </html>
