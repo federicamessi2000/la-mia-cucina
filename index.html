@@ -214,7 +214,7 @@ textarea{resize:vertical;min-height:100px;}
       <button class="filter-tab" onclick="setFilter('internet',this)">Da internet</button>
       <button class="filter-tab" onclick="setFilter('preferiti',this)">&#10084; Preferiti</button>
     </div>
-    <div id="tag-filter-row" style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;"></div>
+    <div id="tag-filter-row" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
     <div class="recipe-grid" id="recipe-list"></div>
   </div>
 
@@ -642,6 +642,16 @@ auth.onAuthStateChanged(function(user){
   }
 });
 
+var SEED_TAGS={
+  'Spaghetti alla Carbonara':['pasta','carne'],
+  'Tiramisù classico':['dolce'],'Tiramiù classico':['dolce'],
+  'Risotto alla Milanese':['piatto-unico'],
+  'Parmigiana di melanzane':['vegetariano','piatto-unico'],
+  'Pasta e fagioli':['pasta','vegetariano'],
+  'Pollo alla cacciatora':['carne','piatto-unico'],
+  'Pasta al pomodoro':['pasta','vegetariano','veloce','facile'],
+  'Pollo arrosto':['carne']
+};
 function initRecipes(){
   // Render tag chips in add form
   document.getElementById('r-tags-selection').innerHTML=RECIPE_TAGS.map(function(t){
@@ -650,6 +660,14 @@ function initRecipes(){
   db.ref('recipes').get().then(function(snap){
     if(!snap.exists()){
       SEED.forEach(function(r){db.ref('recipes').push(r);});
+    }else{
+      // One-time migration: add tags to seed recipes that don't have them
+      snap.forEach(function(c){
+        var r=c.val();
+        if((!r.tags||!r.tags.length)&&SEED_TAGS[r.nome]){
+          db.ref('recipes/'+c.key+'/tags').set(SEED_TAGS[r.nome]);
+        }
+      });
     }
   });
   db.ref('recipes').on('value',function(snap){
@@ -739,7 +757,6 @@ window.changePortions=function(d){currentPortions=Math.max(1,currentPortions+d);
 function renderRecipeModal(r,portions){
   var scale=portions/(parseInt(r.porzioni)||4);
   var ings=(r.ingredienti||[]).map(function(i){return'<li>'+fmtIng(i,scale)+'</li>';}).join('');
-  var canEdit=currentUser&&(r.addedBy===currentUser.displayName||r.addedBy===currentUser.email);
   var tagHtml=(r.tags||[]).length?'<div class="recipe-tags" style="margin-bottom:12px">'+(r.tags||[]).map(function(t){var tag=RECIPE_TAGS.find(function(x){return x.key===t;});return tag?'<span class="tag-chip">'+tag.label+'</span>':'';}).join('')+'</div>':'';
   var photoHtml=r.foto?'<img src="'+r.foto+'" style="width:calc(100% + 40px);height:200px;object-fit:cover;margin:-20px -20px 16px -20px;display:block;border-radius:14px 14px 0 0" onerror="this.style.display=\'none\'">':'';
   document.getElementById('modal-body').innerHTML=
@@ -754,7 +771,8 @@ function renderRecipeModal(r,portions){
     (r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+r.note+'</div>':'')+
     '<div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">'+
     '<button class="btn btn-primary btn-sm" onclick="openShopAddModal(\''+r.id+'\')">+ Aggiungi alla spesa</button>'+
-    (canEdit?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+r.id+'\')">&#9998; Modifica</button>':'')+'</div>';
+    (currentUser?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+r.id+'\')">&#9998; Modifica</button>':'')+
+    (currentUser?'<button class="btn btn-danger btn-sm" onclick="deleteRecipe(\''+r.id+'\')">Elimina</button>':'')+'</div>';
 }
 window.closeRecipeModal=function(){document.getElementById('recipe-modal').style.display='none';};
 window.deleteRecipe=function(id){if(!confirm('Eliminare? Rimossa per tutti.'))return;db.ref('recipes/'+id).remove();closeRecipeModal();};
