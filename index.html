@@ -11,12 +11,12 @@
 <meta name="apple-mobile-web-app-title" content="La Mia Cucina">
 <title>La Mia Cucina</title>
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#FAF7F2;--warm-white:#FFFDF9;--terracotta:#C4622D;--terracotta-pale:#FBF0EB;--sage:#7A8C6E;--sage-pale:#EEF2EB;--charcoal:#2C2C2A;--charcoal-mid:#5C5C58;--charcoal-light:#9C9C96;--border:rgba(44,44,42,0.12);--border-mid:rgba(44,44,42,0.2);--radius:14px;--radius-sm:8px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
-h1,h2,h3{font-family:'Playfair Display',serif;}
+body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
+h1,h2,h3{font-family:'Lora',serif;}
 #loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;}
 #loading-screen p{font-size:14px;color:var(--charcoal-light);}
 .spinner{width:32px;height:32px;border:3px solid var(--border-mid);border-top-color:var(--terracotta);border-radius:50%;animation:spin 0.8s linear infinite;}
@@ -25,7 +25,7 @@ h1,h2,h3{font-family:'Playfair Display',serif;}
 #login-screen h1{font-size:32px;font-weight:500;margin-bottom:8px;}
 #login-screen h1 span{color:var(--terracotta);}
 #login-screen .sub{font-size:15px;color:var(--charcoal-mid);margin-bottom:40px;line-height:1.6;}
-.login-btn{display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border-mid);border-radius:var(--radius-sm);padding:14px 24px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;color:var(--charcoal);width:100%;justify-content:center;max-width:280px;}
+.login-btn{display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border-mid);border-radius:var(--radius-sm);padding:14px 24px;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;cursor:pointer;color:var(--charcoal);width:100%;justify-content:center;max-width:280px;}
 .login-btn svg{width:22px;height:22px;}
 .login-note{font-size:12px;color:var(--charcoal-light);margin-top:20px;line-height:1.6;}
 #app-screen{display:none;}
@@ -38,7 +38,7 @@ h1,h2,h3{font-family:'Playfair Display',serif;}
 .page{display:none;padding:20px 16px 100px;}
 .page.active{display:block;}
 .bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--warm-white);border-top:0.5px solid var(--border);display:flex;padding:10px 0 22px;z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;border:none;background:none;color:var(--charcoal-light);font-family:'DM Sans',sans-serif;font-size:11px;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;border:none;background:none;color:var(--charcoal-light);font-family:'Inter',sans-serif;font-size:11px;}
 .nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;}
 .nav-item.active{color:var(--terracotta);}
 .section-title{font-size:19px;font-weight:500;margin-bottom:16px;}
@@ -52,9 +52,9 @@ h1,h2,h3{font-family:'Playfair Display',serif;}
 .tag-internet{background:var(--sage-pale);color:var(--sage);}
 .recipe-meta{font-size:13px;color:var(--charcoal-light);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
 .recipe-author{font-size:11px;color:var(--charcoal-light);margin-top:3px;}
-.search-bar{width:100%;padding:10px 14px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);margin-bottom:16px;outline:none;}
+.search-bar{width:100%;padding:10px 14px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'Inter',sans-serif;font-size:14px;color:var(--charcoal);margin-bottom:16px;outline:none;}
 .search-bar:focus{border-color:var(--terracotta);}
-.btn{padding:10px 18px;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:none;}
+.btn{padding:10px 18px;border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:none;}
 .btn-primary{background:var(--terracotta);color:white;}
 .btn-outline{background:none;border:0.5px solid var(--border-mid);color:var(--charcoal);}
 .btn-danger{background:none;border:0.5px solid rgba(196,98,45,0.3);color:var(--terracotta);}
@@ -62,7 +62,7 @@ h1,h2,h3{font-family:'Playfair Display',serif;}
 .btn-full{width:100%;text-align:center;}
 .form-group{margin-bottom:16px;}
 label{display:block;font-size:13px;font-weight:500;color:var(--charcoal-mid);margin-bottom:6px;}
-input[type=text],input[type=number],textarea,select{width:100%;padding:10px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);outline:none;}
+input[type=text],input[type=number],textarea,select{width:100%;padding:10px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'Inter',sans-serif;font-size:14px;color:var(--charcoal);outline:none;}
 input:focus,textarea:focus,select:focus{border-color:var(--terracotta);}
 textarea{resize:vertical;min-height:100px;}
 .ing-header{display:flex;gap:6px;margin-bottom:4px;}
@@ -115,9 +115,9 @@ textarea{resize:vertical;min-height:100px;}
 .source-link{font-size:12px;color:var(--sage);margin-bottom:14px;}
 .source-link a{color:var(--sage);text-decoration:underline;}
 .filter-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.filter-tab{padding:6px 14px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;}
+.filter-tab{padding:6px 14px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
 .filter-tab.active{background:var(--terracotta);color:white;border-color:var(--terracotta);}
-.pick-search{width:100%;padding:9px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--charcoal);outline:none;margin-bottom:12px;}
+.pick-search{width:100%;padding:9px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:'Inter',sans-serif;font-size:14px;color:var(--charcoal);outline:none;margin-bottom:12px;}
 .pick-search:focus{border-color:var(--terracotta);}
 .empty-state{text-align:center;padding:40px 20px;color:var(--charcoal-light);}
 .empty-state p{font-size:15px;margin-top:8px;}
@@ -126,7 +126,7 @@ textarea{resize:vertical;min-height:100px;}
 .user-info-name{font-size:16px;font-weight:500;}
 .user-info-email{font-size:13px;color:var(--charcoal-light);}
 .shop-week-nav{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;}
-.shop-week-nav button{background:none;border:0.5px solid rgba(122,140,110,0.4);border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;font-size:13px;color:var(--sage);font-family:'DM Sans',sans-serif;}
+.shop-week-nav button{background:none;border:0.5px solid rgba(122,140,110,0.4);border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;font-size:13px;color:var(--sage);font-family:'Inter',sans-serif;}
 .week-label{font-size:13px;font-weight:500;color:var(--sage);flex:1;text-align:center;}
 .shop-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
 .shop-note{font-size:11px;color:var(--charcoal-light);margin-top:2px;}
@@ -140,7 +140,7 @@ textarea{resize:vertical;min-height:100px;}
 .cat-order-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:0.5px solid var(--border);}
 .cat-order-name{flex:1;font-size:14px;color:var(--charcoal);}
 .cat-order-btns{display:flex;gap:4px;flex-shrink:0;}
-.cat-order-btns button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);width:30px;height:30px;cursor:pointer;font-size:15px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;}
+.cat-order-btns button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);width:30px;height:30px;cursor:pointer;font-size:15px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
 .cat-order-btns button:disabled{opacity:0.25;cursor:default;}
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0;}
 .cat-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:18px 10px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;transition:background 0.1s;}
@@ -163,9 +163,9 @@ textarea{resize:vertical;min-height:100px;}
 .fav-btn{background:none;border:none;cursor:pointer;padding:2px 6px;font-size:16px;line-height:1;flex-shrink:0;}
 .shop-edit-btn{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:14px;padding:0 5px;flex-shrink:0;}
 .tag-chip{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--sage-pale);color:var(--sage);font-weight:500;white-space:nowrap;}
-.tag-toggle{display:inline-flex;align-items:center;font-size:12px;padding:5px 10px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--warm-white);cursor:pointer;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.tag-toggle{display:inline-flex;align-items:center;font-size:12px;padding:5px 10px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--warm-white);cursor:pointer;color:var(--charcoal-mid);font-family:'Inter',sans-serif;white-space:nowrap;}
 .tag-toggle.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(122,140,110,0.6);}
-.tag-filter-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;}
+.tag-filter-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;}
 .tag-filter-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(122,140,110,0.6);}
 .recipe-card{overflow:hidden;}
 .recipe-photo-thumb{width:calc(100% + 32px);height:150px;object-fit:cover;margin:-14px -16px 10px -16px;display:block;}
@@ -178,7 +178,7 @@ textarea{resize:vertical;min-height:100px;}
 .week-meal-label{font-size:11px;font-weight:600;color:var(--charcoal-light);width:48px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.4px;}
 .week-meal-text{flex:1;font-size:13px;color:var(--charcoal);cursor:pointer;line-height:1.3;}
 .week-meal-text.empty{color:var(--charcoal-light);font-style:italic;}
-.planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;}
+.planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
 .nutri-bar{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--charcoal-mid);background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;align-items:center;}
 .nutri-kcal{font-weight:600;color:var(--charcoal);font-size:13px;}
 .planner-view-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(122,140,110,0.5);}
@@ -188,7 +188,7 @@ textarea{resize:vertical;min-height:100px;}
 .extra-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
 .extra-chip{background:var(--sage-pale);color:var(--sage);font-size:11px;padding:3px 6px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;}
 .extra-chip button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--sage);padding:0;line-height:1;opacity:0.7;}
-.extra-add-btn{background:none;border:0.5px dashed var(--border-mid);border-radius:var(--radius-sm);font-size:11px;color:var(--charcoal-light);font-family:'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;width:100%;text-align:left;}
+.extra-add-btn{background:none;border:0.5px dashed var(--border-mid);border-radius:var(--radius-sm);font-size:11px;color:var(--charcoal-light);font-family:'Inter',sans-serif;padding:4px 8px;cursor:pointer;width:100%;text-align:left;}
 </style>
 </head>
 <body>
@@ -231,7 +231,7 @@ textarea{resize:vertical;min-height:100px;}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="planner-view-btn" id="planner-view-btn" onclick="togglePlannerView()">Vista settimana</button>
-      <button onclick="copyPrevWeek()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;">&#8617; Copia settimana prec.</button>
+      <button onclick="copyPrevWeek()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;">&#8617; Copia settimana prec.</button>
     </div>
     <div id="planner-days"></div>
   </div>
@@ -240,8 +240,8 @@ textarea{resize:vertical;min-height:100px;}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h2 class="section-title" style="margin:0">Lista della spesa</h2>
       <div style="display:flex;gap:6px">
-        <button onclick="shareShopList()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;">&#128279; Condividi</button>
-        <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;">&#9881; Ordine</button>
+        <button onclick="shareShopList()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;">&#128279; Condividi</button>
+        <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;">&#9881; Ordine</button>
       </div>
     </div>
     <div class="shop-week-nav">
@@ -286,7 +286,7 @@ textarea{resize:vertical;min-height:100px;}
     <h2 class="section-title" id="aggiungi-title">Aggiungi ricetta</h2>
     <div id="edit-mode-bar" class="edit-mode-bar" style="display:none">
       &#9998; Stai modificando una ricetta
-      <button onclick="cancelEditRecipe()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--terracotta);font-family:'DM Sans',sans-serif;font-weight:500;">&#10005; Annulla</button>
+      <button onclick="cancelEditRecipe()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--terracotta);font-family:'Inter',sans-serif;font-weight:500;">&#10005; Annulla</button>
     </div>
     <div id="panel-manuale">
       <details style="margin-bottom:20px;background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px">
@@ -390,8 +390,8 @@ textarea{resize:vertical;min-height:100px;}
     <div id="extra-selected" style="display:none">
       <div style="font-size:14px;font-weight:500;margin-bottom:10px;color:var(--terracotta)" id="extra-selected-name"></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input type="number" id="extra-qty" placeholder="100" min="0" step="any" style="width:90px;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--warm-white)">
-        <select id="extra-unit" style="flex:1;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--warm-white)">
+        <input type="number" id="extra-qty" placeholder="100" min="0" step="any" style="width:90px;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;background:var(--warm-white)">
+        <select id="extra-unit" style="flex:1;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;background:var(--warm-white)">
           <option value="g">g</option>
           <option value="kg">kg</option>
           <option value="ml">ml</option>
