@@ -2,7 +2,7 @@
   "name": "La Mia Cucina",
   "short_name": "Cucina",
   "description": "Ricette, planner pasti e lista della spesa",
-  "start_url": "/index.html",
+  "start_url": "/la-mia-cucina/",
   "display": "standalone",
   "background_color": "#FAF7F2",
   "theme_color": "#C4622D",
