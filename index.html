@@ -179,6 +179,9 @@ textarea{resize:vertical;min-height:100px;}
 .week-meal-label{font-size:11px;font-weight:600;color:var(--charcoal-light);width:48px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.4px;}
 .week-meal-text{flex:1;font-size:13px;color:var(--charcoal);cursor:pointer;line-height:1.3;}
 .week-meal-text.empty{color:var(--charcoal-light);font-style:italic;}
+.meal-alt-btn{background:none;border:none;font-size:15px;line-height:1;color:var(--terracotta);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.55;}
+.meal-alt-btn:hover{opacity:1;}
+.week-meal-alt{display:flex;align-items:center;gap:8px;padding:2px 0 5px 56px;}
 .planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
 .nutri-bar{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--charcoal-mid);background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;align-items:center;}
 .nutri-kcal{font-weight:600;color:var(--charcoal);font-size:13px;}
@@ -725,7 +728,7 @@ function dayNutrition(key){
   var entry=planner[key]||{};
   var total={kcal:0,p:0};
   var covered=0,mealCount=0;
-  ['pranzo','cena'].forEach(function(meal){
+  ['pranzo','pranzo2','cena','cena2'].forEach(function(meal){
     if(!entry[meal])return;
     mealCount++;
     var r=recipes.find(function(x){return x.nome===entry[meal];});
@@ -1216,8 +1219,8 @@ function renderPlannerMonth(){
     var dn=dayNutrition(key);
     var kcalBadge=(dn.ok&&dn.kcal>0)?'<span style="font-size:9px;color:var(--charcoal-light);display:block;margin-top:2px;line-height:1.4">~'+dn.kcal+' kcal</span>':'';
     rows+='<tr class="'+(isToday?'today-row':'')+'"><td><div class="day-col"><span class="dow">'+DAYS[date.getDay()]+'</span>'+d+kcalBadge+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'" onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo||'&mdash;')+(entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'" onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena||'&mdash;')+(entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'" onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo||'&mdash;')+(entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.pranzo2+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'" onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena||'&mdash;')+(entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.cena2+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
   }
   document.getElementById('planner-days').innerHTML='<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1238,10 +1241,16 @@ function renderPlannerWeek(){
       '<div class="week-day-header">'+DAYS_FULL[i]+' '+date.getDate()+' '+MONTHS_SHORT[date.getMonth()]+'</div>'+
       '<div class="week-meal-row"><span class="week-meal-label">Pranzo</span>'+
       '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'" onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo||'Aggiungi')+(entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div>'+
+      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+
+      (entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
+      '</div>'+
+      (entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+entry.pranzo2+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
       '<div class="week-meal-row"><span class="week-meal-label">Cena</span>'+
       '<span class="week-meal-text'+(entry.cena?'':' empty')+'" onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena||'Aggiungi')+(entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div>'+
+      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+
+      (entry.cena&&!entry.cena2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
+      '</div>'+
+      (entry.cena2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'cena2\')">'+entry.cena2+(entry.cena2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena2_porzioni+'</span>':'')+'</span></div>':'')+
       (function(){
         var extras=entry.extras||[];
         var chips=extras.map(function(ex,idx){
@@ -1345,7 +1354,7 @@ function syncPlannerToShop(){
   var mealData={};
   getWeekKeys(shopWeek).forEach(function(key){
     var e=planner[key]||{};
-    ['pranzo','cena'].forEach(function(m){
+    ['pranzo','pranzo2','cena','cena2'].forEach(function(m){
       if(!e[m])return;
       if(!mealData[e[m]])mealData[e[m]]={tot:0,skip:{}};
       mealData[e[m]].tot+=(e[m+'_porzioni']||1);
