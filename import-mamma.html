@@ -49,36 +49,27 @@ function msg(text,cls){
 async function startImport(){
   var user=firebase.auth().currentUser;
   if(!user){
-    msg('Non autenticata. Apri prima app.html e ricarica questa pagina.','err');
+    msg('Non autenticata. Ricarica la pagina e fai il login.','err');
     return;
   }
   btn.disabled=true;
   prog.style.display='block';
-  msg('Inizio import di '+RECIPES.length+' ricette...','info');
-
-  // Check which importIds already exist
-  var existing=new Set();
-  var snap=await db.ref('recipes').orderByChild('_importId').get();
-  if(snap.exists())snap.forEach(function(c){var v=c.val();if(v._importId)existing.add(v._importId);});
-  msg('Già presenti: '+existing.size+' ricette.','info');
-
-  var toImport=RECIPES.filter(function(r){return!existing.has(r._importId);});
-  msg('Da importare: '+toImport.length+' nuove ricette.','info');
-  prog.max=toImport.length||1;
+  prog.max=RECIPES.length;
+  prog.value=0;
+  msg('Inizio: '+RECIPES.length+' ricette da importare...','info');
 
   var ok=0,err=0;
-  for(var i=0;i<toImport.length;i++){
+  for(var i=0;i<RECIPES.length;i++){
     try{
-      await db.ref('recipes').push(toImport[i]);
+      await db.ref('recipes').push(RECIPES[i]);
       ok++;
     }catch(e){
       err++;
-      console.error(toImport[i].nome,e);
+      console.error(RECIPES[i].nome,e);
     }
     prog.value=i+1;
-    if((i+1)%50===0)msg('Importate '+(i+1)+'/'+toImport.length+'...','info');
-    // Small delay every 20 to avoid rate limits
-    if((i+1)%20===0)await new Promise(function(r){setTimeout(r,200);});
+    if((i+1)%10===0)msg((i+1)+' / '+RECIPES.length+' importate...','info');
+    if((i+1)%20===0)await new Promise(function(r){setTimeout(r,300);});
   }
   msg('✅ Completato! '+ok+' importate, '+err+' errori.','ok');
   btn.disabled=false;
