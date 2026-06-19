@@ -74,6 +74,10 @@ textarea{resize:vertical;min-height:100px;}
 .ing-unit{width:80px!important;flex-shrink:0;padding:8px!important;}
 .ing-name{flex:1;}
 .ing-row button{flex-shrink:0;background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:0 10px;cursor:pointer;font-size:18px;color:var(--charcoal-light);height:38px;}
+.ing-section-row{border-bottom:1.5px solid var(--terracotta);padding-bottom:2px;margin:12px 0 4px;}
+.ing-section-input{flex:1;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;outline:none;padding:2px 0;}
+.ing-section-input::placeholder{color:var(--terracotta);opacity:0.45;}
+.recipe-ing-section{font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.6px;margin:12px 0 2px;list-style:none;padding-bottom:3px;border-bottom:1px solid var(--terracotta);}
 .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .month-nav h2{font-size:18px;font-weight:500;}
 .month-nav button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-size:18px;color:var(--charcoal);}
@@ -323,7 +327,10 @@ textarea{resize:vertical;min-height:100px;}
         <label>Ingredienti</label>
         <div class="ing-header"><span class="h-qty">Qt&agrave;</span><span class="h-unit">Unit&agrave;</span><span class="h-name">Ingrediente</span></div>
         <div id="ing-list"><div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div></div>
-        <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="addIng()">+ Aggiungi ingrediente</button>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn-outline btn-sm" onclick="addIng()">+ Ingrediente</button>
+          <button class="btn btn-outline btn-sm" onclick="addSection()" style="color:var(--terracotta);border-color:var(--terracotta)">+ Sezione</button>
+        </div>
       </div>
       <div class="form-group"><label>Procedimento</label><textarea id="r-procedimento" placeholder="Scrivi i passaggi&hellip;"></textarea></div>
       <div class="form-group"><label>Note</label><input type="text" id="r-note" placeholder="Es. Ottima con vino bianco"></div>
@@ -979,7 +986,7 @@ window.openRecipe=function(id){
 window.changePortions=function(d){currentPortions=Math.max(1,currentPortions+d);var r=recipes.find(function(x){return x.id===currentRecipeId;});if(r)renderRecipeModal(r,currentPortions);};
 function renderRecipeModal(r,portions){
   var scale=portions/(parseInt(r.porzioni)||4);
-  var ings=(r.ingredienti||[]).map(function(i){return'<li>'+fmtIng(i,scale)+'</li>';}).join('');
+  var ings='';var _lastSez=null;(r.ingredienti||[]).forEach(function(i){if(i.sezione&&i.sezione!==_lastSez){_lastSez=i.sezione;ings+='<li class="recipe-ing-section">'+i.sezione+'</li>';}ings+='<li>'+fmtIng(i,scale)+'</li>';});
   var tagHtml=(r.tags||[]).length?'<div class="recipe-tags" style="margin-bottom:12px">'+(r.tags||[]).map(function(t){var tag=RECIPE_TAGS.find(function(x){return x.key===t;});return tag?'<span class="tag-chip">'+tag.label+'</span>':'';}).join('')+'</div>':'';
   var photoHtml=r.foto?'<img src="'+r.foto+'" style="width:calc(100% + 40px);height:200px;object-fit:cover;margin:-20px -20px 16px -20px;display:block;border-radius:14px 14px 0 0" onerror="this.style.display=\'none\'">':'';
   document.getElementById('modal-body').innerHTML=
@@ -1003,11 +1010,7 @@ function showShopIngChecklist(id){
   shopAddRecipeId=id;
   document.getElementById('shop-add-title').textContent=r.nome;
   var scale=(id===currentRecipeId?currentPortions:parseInt(r.porzioni)||4)/(parseInt(r.porzioni)||4);
-  document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i){
-    var label=fmtIng(i,scale);
-    var q=(i.qty!=null?i.qty*scale:null);
-    return'<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-ing="'+i.name.replace(/"/g,'&quot;')+'" data-text="'+shopTxt(i,scale).replace(/"/g,'&quot;')+'" data-unit="'+(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';
-  }).join('');
+  var _sSez=null;document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i){var out='';if(i.sezione&&i.sezione!==_sSez){_sSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+i.sezione+'</div>';}var label=fmtIng(i,scale);var q=(i.qty!=null?i.qty*scale:null);out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-ing="'+i.name.replace(/"/g,'&quot;')+'" data-text="'+shopTxt(i,scale).replace(/"/g,'&quot;')+'" data-unit="'+(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';return out;}).join('');
   document.getElementById('shop-add-step1').style.display='none';
   document.getElementById('shop-add-step2').style.display='block';
   document.getElementById('shop-add-modal').style.display='flex';
@@ -1041,7 +1044,10 @@ window.confirmShopAdd=function(){
 };
 
 window.addIng=function(){var d=document.createElement('div');d.className='ing-row';d.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);};
+window.addSection=function(){var d=document.createElement('div');d.className='ing-row ing-section-row';d.dataset.isSection='1';d.innerHTML='<input class="ing-section-input" type="text" placeholder="es. Per l\'impasto"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);d.querySelector('input').focus();};
 window.removeIng=function(btn){if(document.querySelectorAll('.ing-row').length>1)btn.parentElement.remove();};
+function buildIngFormHtml(ingredienti){var html='';var lastSez=null;(ingredienti||[]).forEach(function(i){if(i.sezione&&i.sezione!==lastSez){lastSez=i.sezione;html+='<div class="ing-row ing-section-row" data-is-section="1"><input class="ing-section-input" type="text" value="'+i.sezione.replace(/"/g,'&quot;')+'"><button onclick="removeIng(this)">&minus;</button></div>';}html+='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any" value="'+(i.qty!=null?i.qty:'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+(i.unit||'')+'"><input class="ing-name" type="text" placeholder="pasta" value="'+(i.name||'').replace(/"/g,'&quot;')+'"><button onclick="removeIng(this)">&minus;</button></div>';});return html||'<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>';}
+function readIngForm(){var ings=[];var curSez=null;document.querySelectorAll('#ing-list .ing-row').forEach(function(row){if(row.dataset.isSection){curSez=row.querySelector('.ing-section-input').value.trim()||null;return;}var qty=parseFloat(row.querySelector('.ing-qty').value)||null;var unit=row.querySelector('.ing-unit').value.trim();var name=row.querySelector('.ing-name').value.trim();if(name){var ing={qty:qty,unit:unit,name:name};if(curSez)ing.sezione=curSez;ings.push(ing);}});return ings;}
 var UNITS_LIST=['g','kg','ml','L','n°','cucchiaio','cucchiaino','bicchiere','fetta','bustina','q.b.'];
 var _acTarget=null,_unitTarget=null;
 
@@ -1096,7 +1102,7 @@ window.selectUnit=function(u){
 function resetRecipeForm(){
   ['r-nome','r-foto','r-link','r-tempo','r-porzioni','r-procedimento','r-note','r-autore'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('r-fonte').value='mamma';
-  document.getElementById('ing-list').innerHTML='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>';
+  document.getElementById('ing-list').innerHTML=buildIngFormHtml([]);
   document.querySelectorAll('#r-tags-selection .tag-toggle').forEach(function(b){b.classList.remove('active');});
   editingRecipeId=null;
   document.getElementById('edit-mode-bar').style.display='none';
@@ -1116,11 +1122,7 @@ window.parseFromText=function(){
   if(r.tempo)document.getElementById('r-tempo').value=r.tempo;
   document.getElementById('r-porzioni').value=r.porzioni||4;
   if(r.procedimento)document.getElementById('r-procedimento').value=r.procedimento;
-  if(r.ingredienti.length){
-    document.getElementById('ing-list').innerHTML=r.ingredienti.map(function(i){
-      return'<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any" value="'+(i.qty!=null?i.qty:'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+(i.unit||'')+'"><input class="ing-name" type="text" placeholder="ingrediente" value="'+(i.name||'')+'"><button onclick="removeIng(this)">&minus;</button></div>';
-    }).join('');
-  }
+  if(r.ingredienti.length){document.getElementById('ing-list').innerHTML=buildIngFormHtml(r.ingredienti);}
   document.getElementById('parse-text').value='';
   alert('Ricetta analizzata! Controlla e correggi il form prima di salvare.');
 };
@@ -1140,8 +1142,7 @@ window.openEditRecipe=function(id){
   document.getElementById('r-procedimento').value=r.procedimento||'';
   document.getElementById('r-note').value=r.note||'';
   var ingList=document.getElementById('ing-list');
-  ingList.innerHTML=(r.ingredienti||[]).map(function(i){return'<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any" value="'+(i.qty||'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+(i.unit||'')+'"><input class="ing-name" type="text" placeholder="pasta" value="'+(i.name||'')+'"><button onclick="removeIng(this)">&minus;</button></div>';}).join('');
-  if(!ingList.children.length)ingList.innerHTML='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>';
+  ingList.innerHTML=buildIngFormHtml(r.ingredienti||[]);
   setSelectedTags(r.tags||[]);
   document.getElementById('edit-mode-bar').style.display='flex';
   document.getElementById('save-recipe-btn').textContent='Aggiorna ricetta';
@@ -1154,12 +1155,7 @@ window.cancelEditRecipe=function(){resetRecipeForm();};
 window.saveRecipe=function(){
   var nome=document.getElementById('r-nome').value.trim();
   if(!nome){alert('Inserisci il nome!');return;}
-  var ingredienti=Array.from(document.querySelectorAll('#ing-list .ing-row')).map(function(row){
-    var qty=parseFloat(row.querySelector('.ing-qty').value)||null;
-    var unit=row.querySelector('.ing-unit').value.trim();
-    var name=row.querySelector('.ing-name').value.trim();
-    return name?{qty:qty,unit:unit,name:name}:null;
-  }).filter(Boolean);
+  var ingredienti=readIngForm();
   var data={nome:nome,foto:document.getElementById('r-foto').value.trim()||null,fonte:document.getElementById('r-fonte').value,link:document.getElementById('r-link').value.trim(),tempo:document.getElementById('r-tempo').value.trim(),porzioni:parseInt(document.getElementById('r-porzioni').value)||4,ingredienti:ingredienti,procedimento:document.getElementById('r-procedimento').value.trim(),note:document.getElementById('r-note').value.trim(),tags:getSelectedTags()};
   if(editingRecipeId){
     db.ref('recipes/'+editingRecipeId).update(data);
@@ -1293,11 +1289,7 @@ window.selectMeal=function(nome){
   if(ings.length){
     document.getElementById('pick-step2-title').textContent=nome;
     var existing=(planner[pickTarget.key]||{})[pickTarget.meal+'_skip']||[];
-    document.getElementById('pick-ing-checks').innerHTML=ings.map(function(i,idx){
-      var label=fmtIng(i,1);
-      var checked=existing.indexOf(i.name)>=0;
-      return'<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-name="'+i.name.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';
-    }).join('');
+    var _pSez=null;document.getElementById('pick-ing-checks').innerHTML=ings.map(function(i){var out='';if(i.sezione&&i.sezione!==_pSez){_pSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+i.sezione+'</div>';}var label=fmtIng(i,1);var checked=existing.indexOf(i.name)>=0;out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-name="'+i.name.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+label+'</span></label>';return out;}).join('');
     document.getElementById('pick-step1').style.display='none';
     document.getElementById('pick-step2').style.display='block';
   }else{
