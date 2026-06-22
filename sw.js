@@ -1,4 +1,4 @@
-var CACHE = 'cucina-v4';
+var CACHE = 'cucina-v5';
 var PRECACHE = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {
