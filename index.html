@@ -380,6 +380,11 @@ textarea{resize:vertical;min-height:100px;}
           <button class="portions-btn" onclick="changePlannerPortions(+1)">+</button>
         </div>
       </div>
+      <div onclick="setFuoriCasa()" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);margin-bottom:10px;cursor:pointer;background:var(--warm-white)">
+        <span style="font-size:20px">🍽️</span>
+        <span style="font-size:14px;font-weight:500;color:var(--charcoal)">Fuori casa</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--charcoal-light)">nessuna spesa</span>
+      </div>
       <div id="pick-list"></div>
       <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="clearMeal()">Rimuovi pasto</button>
     </div>
@@ -1285,9 +1290,11 @@ function renderPlannerMonth(){
     var isToday=today.getDate()===d&&today.getMonth()===m&&today.getFullYear()===y;
     var dn=dayNutrition(key);
     var kcalBadge=(dn.ok&&dn.kcal>0)?'<span style="font-size:9px;color:var(--charcoal-light);display:block;margin-top:2px;line-height:1.4">~'+dn.kcal+' kcal</span>':'';
+    var fcStyle='color:var(--sage);font-style:italic';
+    var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
     rows+='<tr class="'+(isToday?'today-row':'')+'"><td><div class="day-col"><span class="dow">'+DAYS[date.getDay()]+'</span>'+d+kcalBadge+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'" onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo||'&mdash;')+(entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.pranzo2+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'" onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena||'&mdash;')+(entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.cena2+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?mealLabel(entry.pranzo):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.pranzo2+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?mealLabel(entry.cena):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.cena2+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
   }
   document.getElementById('planner-days').innerHTML='<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1304,20 +1311,22 @@ function renderPlannerWeek(){
     var key=date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
     var entry=planner[key]||{};
     var isToday=date.toDateString()===today.toDateString();
+    var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
+    var fcSty='color:var(--sage);font-style:italic';
     html+='<div class="week-day-card'+(isToday?' today':'')+'">'+
       '<div class="week-day-header">'+DAYS_FULL[i]+' '+date.getDate()+' '+MONTHS_SHORT[date.getMonth()]+'</div>'+
       '<div class="week-meal-row"><span class="week-meal-label">Pranzo</span>'+
-      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'" onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo||'Aggiungi')+(entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
+      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?mealLabel(entry.pranzo):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
       '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+
-      (entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
+      (!pFC&&entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
-      (entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+entry.pranzo2+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
+      (!pFC&&entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+entry.pranzo2+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
       '<div class="week-meal-row"><span class="week-meal-label">Cena</span>'+
-      '<span class="week-meal-text'+(entry.cena?'':' empty')+'" onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena||'Aggiungi')+(entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
+      '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?mealLabel(entry.cena):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
       '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+
-      (entry.cena&&!entry.cena2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
+      (!cFC&&entry.cena&&!entry.cena2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
-      (entry.cena2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'cena2\')">'+entry.cena2+(entry.cena2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena2_porzioni+'</span>':'')+'</span></div>':'')+
+      (!cFC&&entry.cena2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'cena2\')">'+entry.cena2+(entry.cena2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena2_porzioni+'</span>':'')+'</span></div>':'')+
       (function(){
         var extras=entry.extras||[];
         var chips=extras.map(function(ex,idx){
@@ -1379,6 +1388,17 @@ window.confirmMeal=function(){
   document.getElementById('pick-step1').style.display='block';
   document.getElementById('pick-step2').style.display='none';
   syncPlannerToShop();
+};
+function mealLabel(v){return v==='__fuori_casa'?'🍽️ Fuori casa':v;}
+window.setFuoriCasa=function(){
+  if(!pickTarget)return;
+  var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  entry[pickTarget.meal]='__fuori_casa';
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];
+  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
+  document.getElementById('pick-modal').style.display='none';
+  document.getElementById('pick-step1').style.display='block';
+  document.getElementById('pick-step2').style.display='none';
 };
 window.clearMeal=function(){
   if(!pickTarget)return;
