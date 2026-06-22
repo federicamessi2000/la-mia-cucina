@@ -968,7 +968,7 @@ var RECIPE_TAGS=[
 ];
 var RECIPE_CAT_EMOJI={'Antipasti':'🥗','Biscotti':'🍪','Bevande':'🥤','Colazione':'☕','Conserve':'🫙','Contorni':'🥦','Dolci':'🍰','Lievitati':'🫓','Pane e Pizza':'🍕','Primi':'🍝','Salse e Creme':'🫕','Secondi':'🥩','Torte':'🎂'};
 var RECIPE_CAT_FILTER_TAGS=[{key:'facile',label:'&#128994; Facile'},{key:'veloce',label:'&#9889; Veloce'},{key:'vegetariano',label:'&#127807; Vegetariano'},{key:'vegano',label:'&#127807; Vegano'},{key:'al-forno',label:'&#128293; Al forno'},{key:'dolce',label:'&#127856; Dolce'},{key:'lievitato',label:'&#127838; Lievitato'},{key:'senza-glutine',label:'&#127807; Senza glutine'}];
-var _recipeCatCurrent=null;var _recipeCatTagFilter=null;
+var _recipeCatCurrent=null;var _recipeCatTagFilters=[];
 
 function renderRecipeItems(list){
   var diffDot={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'};
@@ -984,22 +984,22 @@ function renderRecipeItems(list){
 }
 
 window.openRecipeCat=function(cat){
-  _recipeCatCurrent=cat;_recipeCatTagFilter=null;
+  _recipeCatCurrent=cat;_recipeCatTagFilters=[];
   var emoji=cat==='__preferiti'?'❤️':cat==='__all'?'📚':(RECIPE_CAT_EMOJI[cat]||'🍽️');
   var title=cat==='__preferiti'?'Preferiti':cat==='__all'?'Tutte le ricette':cat;
   document.getElementById('recipe-cat-emoji').textContent=emoji;
   document.getElementById('recipe-cat-title').textContent=title;
   document.getElementById('recipe-cat-search').value='';
-  var tagRow=document.getElementById('recipe-cat-tags');
-  tagRow.innerHTML=RECIPE_CAT_FILTER_TAGS.map(function(t){
+  document.getElementById('recipe-cat-tags').innerHTML=RECIPE_CAT_FILTER_TAGS.map(function(t){
     return'<button class="tag-filter-btn" data-tag="'+t.key+'" onclick="setRecipeCatTag(\''+t.key+'\')">'+t.label+'</button>';
   }).join('');
   filterRecipeCatModal();
   document.getElementById('recipe-cat-page').style.display='flex';
 };
 window.setRecipeCatTag=function(tag){
-  _recipeCatTagFilter=(_recipeCatTagFilter===tag?null:tag);
-  document.querySelectorAll('#recipe-cat-tags .tag-filter-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tag===_recipeCatTagFilter);});
+  var i=_recipeCatTagFilters.indexOf(tag);
+  if(i===-1)_recipeCatTagFilters.push(tag);else _recipeCatTagFilters.splice(i,1);
+  document.querySelectorAll('#recipe-cat-tags .tag-filter-btn').forEach(function(b){b.classList.toggle('active',_recipeCatTagFilters.indexOf(b.dataset.tag)!==-1);});
   filterRecipeCatModal();
 };
 window.filterRecipeCatModal=function(){
@@ -1007,7 +1007,7 @@ window.filterRecipeCatModal=function(){
   var list=recipes.filter(function(r){
     if(_recipeCatCurrent==='__preferiti')return!!userFavorites[r.id];
     if(_recipeCatCurrent!=='__all'&&r.categoria!==_recipeCatCurrent)return false;
-    if(_recipeCatTagFilter&&!(r.tags||[]).includes(_recipeCatTagFilter))return false;
+    if(_recipeCatTagFilters.length&&!_recipeCatTagFilters.every(function(t){return(r.tags||[]).includes(t);}))return false;
     if(q&&!r.nome.toLowerCase().includes(q))return false;
     return true;
   });
