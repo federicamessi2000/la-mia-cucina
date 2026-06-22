@@ -175,6 +175,12 @@ textarea{resize:vertical;min-height:100px;}
 .recipe-card{overflow:hidden;}
 .recipe-photo-thumb{width:calc(100% + 32px);height:150px;object-fit:cover;margin:-14px -16px 10px -16px;display:block;}
 .recipe-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
+.recipe-list-item{display:flex;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);cursor:pointer;gap:10px;}
+.recipe-list-item:active{background:var(--terracotta-pale);}
+.recipe-list-item-name{flex:1;font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.3;}
+.recipe-list-item-meta{font-size:12px;color:var(--charcoal-light);white-space:nowrap;display:flex;gap:5px;align-items:center;}
+.recipe-cat-tag-row{display:flex;gap:6px;overflow-x:auto;padding:6px 0 10px;scrollbar-width:none;}
+.recipe-cat-tag-row::-webkit-scrollbar{display:none;}
 .edit-mode-bar{background:var(--terracotta-pale);border-radius:var(--radius-sm);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:13px;color:var(--terracotta);}
 .week-day-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:12px 14px;margin-bottom:10px;}
 .week-day-card.today{border-left:3px solid var(--terracotta);}
@@ -228,15 +234,8 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 
   <div class="page active" id="page-ricette">
-    <input class="search-bar" type="text" placeholder="Cerca una ricetta&hellip;" id="search-input" oninput="filterRecipes()">
-    <div class="filter-tabs">
-      <button class="filter-tab active" onclick="setFilter('all',this)">Tutte</button>
-      <button class="filter-tab" onclick="setFilter('mamma',this)">Della mamma</button>
-      <button class="filter-tab" onclick="setFilter('internet',this)">Da internet</button>
-      <button class="filter-tab" onclick="setFilter('preferiti',this)">&#10084; Preferiti</button>
-    </div>
-    <div id="tag-filter-row" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
-    <div class="recipe-grid" id="recipe-list"></div>
+    <input class="search-bar" type="text" placeholder="Cerca una ricetta&hellip;" id="search-input" oninput="renderRecipeHome()">
+    <div id="recipe-home"></div>
   </div>
 
   <div class="page" id="page-planner">
@@ -487,6 +486,21 @@ textarea{resize:vertical;min-height:100px;}
   </div>
 </div>
 
+<!-- MODAL LISTA RICETTE PER CATEGORIA -->
+<div class="modal-overlay" id="recipe-cat-modal" style="display:none" onclick="if(event.target.id==='recipe-cat-modal')document.getElementById('recipe-cat-modal').style.display='none'">
+  <div class="modal" style="max-height:88vh">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span id="recipe-cat-emoji" style="font-size:26px"></span>
+      <h2 style="margin:0;font-size:18px;flex:1" id="recipe-cat-title"></h2>
+      <button onclick="document.getElementById('recipe-cat-modal').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--charcoal-light)">&times;</button>
+    </div>
+    <input class="pick-search" id="recipe-cat-search" type="text" placeholder="Cerca in questa categoria&hellip;" oninput="filterRecipeCatModal()">
+    <div class="recipe-cat-tag-row" id="recipe-cat-tags"></div>
+    <div id="recipe-cat-items" style="max-height:58vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- MODAL DETTAGLIO CATEGORIA -->
 <div class="modal-overlay" id="cat-detail-modal" style="display:none" onclick="if(event.target.id==='cat-detail-modal')document.getElementById('cat-detail-modal').style.display='none'">
   <div class="modal" style="max-height:82vh">
@@ -574,12 +588,12 @@ firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDom
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
 
 let currentUser=null,recipes=[],planner={},shopping=[];
-let currentFilter='all',currentMonth=new Date(),pickTarget=null;
+let currentMonth=new Date(),pickTarget=null;
 var plannerView='month';
 let currentRecipeId=null,currentPortions=4,plannerPortions=1;
 var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null;
 var userCatOrder=[],freezer=[],userFavorites={},freezerEditId=null,shopEditGroup=null;
-var editingRecipeId=null,recipeTagFilter=null;
+var editingRecipeId=null;
 var familyCode=null,_shopListener=null;
 var _extraTarget=null,_extraSelectedItem=null;
 
@@ -952,36 +966,81 @@ var RECIPE_TAGS=[
   {key:'carne',label:'&#129385; Carne'},{key:'pesce',label:'&#128031; Pesce'},
   {key:'pasta',label:'&#127837; Pasta'},
 ];
-function renderTagFilters(){
-  var el=document.getElementById('tag-filter-row');if(!el)return;
-  el.innerHTML=RECIPE_TAGS.map(function(t){return'<button class="tag-filter-btn'+(recipeTagFilter===t.key?' active':'')+'" onclick="setTagFilter(\''+t.key+'\',this)">'+t.label+'</button>';}).join('');
-}
-window.setTagFilter=function(tag){recipeTagFilter=(recipeTagFilter===tag?null:tag);renderTagFilters();filterRecipes();};
-window.setFilter=function(f,el){currentFilter=f;document.querySelectorAll('.filter-tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');filterRecipes();};
-function filterRecipes(){
-  var q=document.getElementById('search-input').value.toLowerCase();
-  renderRecipeList(recipes.filter(function(r){
-    if(currentFilter==='preferiti'&&!userFavorites[r.id])return false;
-    if(currentFilter!=='all'&&currentFilter!=='preferiti'&&r.fonte!==currentFilter)return false;
-    if(recipeTagFilter&&!(r.tags||[]).includes(recipeTagFilter))return false;
-    return r.nome.toLowerCase().includes(q);
-  }));
-}
-function renderRecipes(){renderTagFilters();filterRecipes();}
-window.toggleFavorite=function(recipeId,e){e.stopPropagation();if(!currentUser)return;var ref=db.ref('users/'+currentUser.uid+'/favorites/'+recipeId);if(userFavorites[recipeId]){ref.remove();}else{ref.set(true);}};
-function renderRecipeList(list){
-  var el=document.getElementById('recipe-list');
-  if(!list.length){el.innerHTML='<div class="empty-state"><p>Nessuna ricetta trovata.</p></div>';return;}
-  el.innerHTML=list.map(function(r){
-    var fav=userFavorites[r.id];
-    var photo=r.foto?'<img class="recipe-photo-thumb" src="'+r.foto+'" onerror="this.style.display=\'none\'">':'';
-    var tags=(r.tags||[]).filter(function(t){return t!=='da-foto';});
-    var tagsHtml=tags.length?'<div class="recipe-tags">'+tags.map(function(t){var tag=RECIPE_TAGS.find(function(x){return x.key===t;});return tag?'<span class="tag-chip">'+tag.label+'</span>':'';}).join('')+'</div>':'';
-    var catBadge=r.categoria?'<span class="tag-chip" style="background:var(--terracotta-pale);color:var(--terracotta)">'+r.categoria+'</span>':'';
-    var diff={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'}[r.difficolta]||'';
-    return'<div class="recipe-card" onclick="openRecipe(\''+r.id+'\')">'+photo+'<div class="recipe-card-header"><h3 style="flex:1">'+r.nome+'</h3><button class="fav-btn" onclick="toggleFavorite(\''+r.id+'\',event)">'+(fav?'&#10084;&#65039;':'&#129293;')+'</button><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web')+'</span></div><div class="recipe-meta">'+(r.tempo?'<span>&#x23F1; '+r.tempo+'</span>':'')+(diff?'<span>'+diff+' '+r.difficolta+'</span>':'')+(r.porzioni?'<span>&#x1F465; '+r.porzioni+' porz.</span>':'')+'<span>'+(r.ingredienti||[]).length+' ing.</span></div>'+(catBadge?'<div class="recipe-tags" style="margin-top:3px">'+catBadge+'</div>':'')+tagsHtml+'</div>';
+var RECIPE_CAT_EMOJI={'Antipasti':'🥗','Biscotti':'🍪','Bevande':'🥤','Colazione':'☕','Conserve':'🫙','Contorni':'🥦','Dolci':'🍰','Lievitati':'🫓','Pane e Pizza':'🍕','Primi':'🍝','Salse e Creme':'🫕','Secondi':'🥩','Torte':'🎂'};
+var RECIPE_CAT_FILTER_TAGS=[{key:'facile',label:'&#128994; Facile'},{key:'veloce',label:'&#9889; Veloce'},{key:'vegetariano',label:'&#127807; Vegetariano'},{key:'vegano',label:'&#127807; Vegano'},{key:'al-forno',label:'&#128293; Al forno'},{key:'dolce',label:'&#127856; Dolce'},{key:'lievitato',label:'&#127838; Lievitato'},{key:'senza-glutine',label:'&#127807; Senza glutine'}];
+var _recipeCatCurrent=null;var _recipeCatTagFilter=null;
+
+function renderRecipeItems(list){
+  var diffDot={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'};
+  if(!list.length)return'<div class="empty-state"><p>Nessuna ricetta trovata.</p></div>';
+  return list.map(function(r){
+    var dot=diffDot[r.difficolta]||'';
+    var meta=(r.tempo?'&#x23F1;'+r.tempo:'')+(r.porzioni?' &middot; '+r.porzioni+'p':'');
+    return'<div class="recipe-list-item" onclick="openRecipe(\''+r.id+'\')">'+(dot?'<span style="font-size:10px;flex-shrink:0">'+dot+'</span>':'')+
+      '<span class="recipe-list-item-name">'+r.nome+'</span>'+
+      (meta?'<span class="recipe-list-item-meta">'+meta+'</span>':'')+
+      '<span style="color:var(--charcoal-light);font-size:16px">&#8250;</span></div>';
   }).join('');
 }
+
+window.openRecipeCat=function(cat){
+  _recipeCatCurrent=cat;_recipeCatTagFilter=null;
+  var emoji=cat==='__preferiti'?'❤️':cat==='__all'?'📚':(RECIPE_CAT_EMOJI[cat]||'🍽️');
+  var title=cat==='__preferiti'?'Preferiti':cat==='__all'?'Tutte le ricette':cat;
+  document.getElementById('recipe-cat-emoji').textContent=emoji;
+  document.getElementById('recipe-cat-title').textContent=title;
+  document.getElementById('recipe-cat-search').value='';
+  var tagRow=document.getElementById('recipe-cat-tags');
+  tagRow.innerHTML=RECIPE_CAT_FILTER_TAGS.map(function(t){
+    return'<button class="tag-filter-btn" data-tag="'+t.key+'" onclick="setRecipeCatTag(\''+t.key+'\')">'+t.label+'</button>';
+  }).join('');
+  filterRecipeCatModal();
+  document.getElementById('recipe-cat-modal').style.display='flex';
+};
+window.setRecipeCatTag=function(tag){
+  _recipeCatTagFilter=(_recipeCatTagFilter===tag?null:tag);
+  document.querySelectorAll('#recipe-cat-tags .tag-filter-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tag===_recipeCatTagFilter);});
+  filterRecipeCatModal();
+};
+window.filterRecipeCatModal=function(){
+  var q=(document.getElementById('recipe-cat-search').value||'').toLowerCase().trim();
+  var list=recipes.filter(function(r){
+    if(_recipeCatCurrent==='__preferiti')return!!userFavorites[r.id];
+    if(_recipeCatCurrent!=='__all'&&r.categoria!==_recipeCatCurrent)return false;
+    if(_recipeCatTagFilter&&!(r.tags||[]).includes(_recipeCatTagFilter))return false;
+    if(q&&!r.nome.toLowerCase().includes(q))return false;
+    return true;
+  });
+  document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list);
+};
+
+function renderRecipeHome(){
+  var q=(document.getElementById('search-input').value||'').toLowerCase().trim();
+  var el=document.getElementById('recipe-home');
+  if(q){
+    var results=recipes.filter(function(r){
+      return r.nome.toLowerCase().includes(q)||
+        (r.categoria||'').toLowerCase().includes(q)||
+        (r.ingredienti||[]).some(function(i){return(i.name||'').toLowerCase().includes(q);});
+    });
+    el.innerHTML='<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+results.length+' ricette trovate</div>'+renderRecipeItems(results);
+    return;
+  }
+  var html='<div class="cat-grid">';
+  var nFav=recipes.filter(function(r){return!!userFavorites[r.id];}).length;
+  if(nFav)html+='<div class="cat-card" onclick="openRecipeCat(\'__preferiti\')"><div class="cat-card-emoji">❤️</div><div class="cat-card-name">Preferiti</div><div class="cat-card-count">'+nFav+' ricette</div></div>';
+  html+='<div class="cat-card" onclick="openRecipeCat(\'__all\')"><div class="cat-card-emoji">📚</div><div class="cat-card-name">Tutte</div><div class="cat-card-count">'+recipes.length+' ricette</div></div>';
+  Object.keys(RECIPE_CAT_EMOJI).forEach(function(cat){
+    var n=recipes.filter(function(r){return r.categoria===cat;}).length;
+    if(!n)return;
+    html+='<div class="cat-card" onclick="openRecipeCat(\''+cat+'\')"><div class="cat-card-emoji">'+RECIPE_CAT_EMOJI[cat]+'</div><div class="cat-card-name">'+cat+'</div><div class="cat-card-count">'+n+' ricette</div></div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+function renderRecipes(){renderRecipeHome();}
+window.toggleFavorite=function(recipeId,e){e.stopPropagation();if(!currentUser)return;var ref=db.ref('users/'+currentUser.uid+'/favorites/'+recipeId);if(userFavorites[recipeId]){ref.remove();}else{ref.set(true);}};
+function renderRecipeList(list){renderRecipeHome();}
 
 window.openRecipe=function(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
