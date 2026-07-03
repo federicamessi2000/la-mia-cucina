@@ -1509,9 +1509,6 @@ window.syncPlannerToShop=function(){
       });
     });
   });
-  // Vai alla prima settimana con contenuto
-  var firstMk=Object.keys(weekMondays).sort()[0];
-  if(firstMk){var p=firstMk.split('-');shopWeek=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));renderShopWeekNav();}
 };
 
 function buildShopGroups(items){
