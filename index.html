@@ -1141,7 +1141,7 @@ function _recipeRowHTML(r){
   var dot=diffDot[r.difficolta]||'';
   var meta=(r.tempo?'&#x23F1;'+esc(r.tempo):'')+(r.porzioni?' &middot; '+esc(r.porzioni)+'p':'');
   return'<div class="recipe-list-item" onclick="openRecipe(\''+r.id+'\')">'+(dot?'<span style="font-size:10px;flex-shrink:0">'+dot+'</span>':'')+
-    '<span class="recipe-list-item-name">'+esc(r.nome)+'</span>'+
+    '<span class="recipe-list-item-name">'+(esc(r.nome)||'<em>(senza nome)</em>')+'</span>'+
     (meta?'<span class="recipe-list-item-meta">'+meta+'</span>':'')+
     '<span style="color:var(--charcoal-light);font-size:16px">&#8250;</span></div>';
 }
@@ -1193,7 +1193,7 @@ window.filterRecipeCatModal=function(){
     if(_recipeCatTagFilters.length&&!_recipeCatTagFilters.every(function(t){return(r.tags||[]).includes(t);}))return false;
     if(q&&!normTxt(r.nome).includes(q))return false;
     return true;
-  }).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
+  }).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
   document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list,'cat');
   document.getElementById('recipe-cat-count').textContent=list.length+' ricette';
 };
@@ -1206,7 +1206,7 @@ function renderRecipeHome(){
       return normTxt(r.nome).includes(q)||
         normTxt(r.categoria||'').includes(q)||
         (r.ingredienti||[]).some(function(i){return normTxt(i.name||'').includes(q);});
-    }).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
+    }).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
     el.innerHTML='<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+results.length+' ricette trovate</div>'+renderRecipeItems(results,'home');
     return;
   }
@@ -1415,7 +1415,7 @@ window.openShopAddModal=function(id){
 window.closeShopAddModal=function(){document.getElementById('shop-add-modal').style.display='none';};
 window.renderShopPickList=function(q){
   var nq=normTxt(q||'');
-  var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
+  var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
   var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">+ altre '+(f.length-80)+' — affina la ricerca</p>':'';
   document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="showShopIngChecklist(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('')+extra;
 };
@@ -1665,7 +1665,7 @@ function renderPlannerWeek(){
 }
 window.renderPickList=function(q){
   var nq=normTxt(q||'');
-  var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
+  var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
   var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">+ altre '+(f.length-80)+' — affina la ricerca</p>':'';
   document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('')+extra;
 };
