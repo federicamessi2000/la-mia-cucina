@@ -1312,9 +1312,10 @@ window.togglePlannerView=function(){
   renderPlanner();
 };
 window.copyPrevWeek=function(){
-  var today=new Date();
-  var dow=today.getDay()||7;
-  var monThis=new Date(today);monThis.setDate(today.getDate()-dow+1);monThis.setHours(0,0,0,0);
+  // In vista settimana copia nella settimana visualizzata, altrimenti in quella corrente
+  var ref=(plannerView==='week')?new Date(currentMonth):new Date();
+  var dow=ref.getDay()||7;
+  var monThis=new Date(ref);monThis.setDate(ref.getDate()-dow+1);monThis.setHours(0,0,0,0);
   var monPrev=new Date(monThis);monPrev.setDate(monThis.getDate()-7);
   var keys={};
   for(var i=0;i<7;i++){
@@ -1325,7 +1326,8 @@ window.copyPrevWeek=function(){
     if(planner[sk])keys[dk]=planner[sk];
   }
   if(!Object.keys(keys).length){alert('La settimana precedente è vuota.');return;}
-  if(!confirm('Copiare i pasti della settimana scorsa in questa settimana?'))return;
+  var lbl=monThis.getDate()+' '+MONTHS_SHORT[monThis.getMonth()];
+  if(!confirm('Copiare i pasti della settimana precedente nella settimana del '+lbl+'?'))return;
   db.ref('users/'+currentUser.uid+'/planner').update(keys).catch(dbErr);
 };
 function renderPlanner(){if(plannerView==='week')renderPlannerWeek();else renderPlannerMonth();}
@@ -1500,8 +1502,14 @@ window.syncPlannerToShop=function(){
     if(!weekMondays[mk])weekMondays[mk]=mon;
   });
   if(!Object.keys(weekMondays).length)return;
+  // Ricorda cosa era già spuntato (per settimana+ingrediente) prima di rigenerare
+  var checkedKeys={};
+  shopping.filter(function(s){return s.fromPlanner&&s.checked;}).forEach(function(s){
+    var c=canonQty(s.ingQty,s.ingUnit||'');
+    checkedKeys[(s.weekSort||'')+'|'+(s.ingName||'')+'|'+c.unit]=true;
+  });
   // Rimuovi tutti i fromPlanner esistenti
-  shopping.filter(function(s){return s.fromPlanner;}).forEach(function(s){shopRef().child(s.id).remove();});
+  shopping.filter(function(s){return s.fromPlanner;}).forEach(function(s){shopRef().child(s.id).remove().catch(dbErr);});
   // Aggiungi ingredienti per ogni settimana del planner
   Object.keys(weekMondays).sort().forEach(function(mk){
     var mon=weekMondays[mk];
@@ -1523,34 +1531,53 @@ window.syncPlannerToShop=function(){
         if(d.skip[ing.name])return;
         var ingName=ing.name.toLowerCase(),ingUnit=normalizeUnit(ing.unit||'');
         var ingQty=(ing.qty!=null?ing.qty*d.tot:null);
+        var wasChecked=!!checkedKeys[mk+'|'+ingName+'|'+canonQty(ingQty,ingUnit).unit];
         shopRef().push({
           text:shopTxt(ing,d.tot),ingName:ingName,ingUnit:ingUnit,ingQty:ingQty,
           category:ingCategory(ing.name),source:nome+' (\xd7'+d.tot+' porz.)',
-          weekSort:mk,checked:false,fromPlanner:true
+          weekSort:mk,checked:wasChecked,fromPlanner:true
         }).catch(dbErr);
       });
     });
   });
 };
 
+// Converte in unità canonica per sommare quantità omogenee (kg→g, L/cl/dl→ml)
+function canonQty(qty,unit){
+  var u=normalizeUnit(unit||'');
+  if(qty==null)return{qty:qty,unit:u};
+  if(u==='kg')return{qty:qty*1000,unit:'g'};
+  if(u==='l'||u==='lt')return{qty:qty*1000,unit:'ml'};
+  if(u==='dl')return{qty:qty*100,unit:'ml'};
+  if(u==='cl')return{qty:qty*10,unit:'ml'};
+  return{qty:qty,unit:u};
+}
+// Formatta risalendo all'unità più leggibile (1500 g → 1.5 kg)
+function fmtQtyUnit(qty,unit){
+  if(qty==null)return{q:'',u:unit};
+  if(unit==='g'&&qty>=1000)return{q:+(qty/1000).toFixed(2),u:'kg'};
+  if(unit==='ml'&&qty>=1000)return{q:+(qty/1000).toFixed(2),u:'L'};
+  return{q:(qty%1===0?qty:+qty.toFixed(2)),u:unit};
+}
 function buildShopGroups(items){
   var groups={},order=[];
   items.forEach(function(s){
-    var key=s.ingName?(s.ingName+'|'+normalizeUnit(s.ingUnit||'')):('__'+s.id);
+    var c=canonQty(s.ingQty,s.ingUnit||'');
+    var key=s.ingName?(s.ingName+'|'+c.unit):('__'+s.id);
     if(!groups[key]){
-      groups[key]={ids:[s.id],ingQty:s.ingQty,ingUnit:s.ingUnit||'',ingName:s.ingName||null,text:s.text,sources:s.source?[s.source]:[],category:s.category||'Altro',checked:s.checked,note:s.note||''};
+      groups[key]={ids:[s.id],ingQty:c.qty,ingUnit:c.unit,ingName:s.ingName||null,text:s.text,sources:s.source?[s.source]:[],category:s.category||'Altro',checked:s.checked,note:s.note||''};
       order.push(key);
     }else{
       groups[key].ids.push(s.id);
       if(s.source&&groups[key].sources.indexOf(s.source)<0)groups[key].sources.push(s.source);
-      if(s.ingQty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=s.ingQty;else groups[key].ingQty=s.ingQty;}
+      if(c.qty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=c.qty;else groups[key].ingQty=c.qty;}
       if(s.note&&(!groups[key].note||groups[key].note.indexOf(s.note)<0)){groups[key].note=groups[key].note?(groups[key].note+' — '+s.note):s.note;}
       if(!s.checked)groups[key].checked=false;
     }
   });
   order.forEach(function(key){
     var g=groups[key];
-    if(g.ingName&&g.ingQty!=null){var v=g.ingQty,vs=(v%1===0?v:+v.toFixed(2));g.text=(vs?vs+' ':'')+(g.ingUnit&&g.ingUnit!=='q.b.'?g.ingUnit+' ':'')+g.ingName;}
+    if(g.ingName&&g.ingQty!=null){var f=fmtQtyUnit(g.ingQty,g.ingUnit);g.text=(f.q?f.q+' ':'')+(f.u&&f.u!=='q.b.'?f.u+' ':'')+g.ingName;}
   });
   return{groups:groups,order:order};
 }
@@ -1785,13 +1812,14 @@ window.shareShopList=function(){
   if(!unchecked.length){alert('La lista è vuota.');return;}
   var groups={},order=[];
   unchecked.forEach(function(s){
-    var key=s.ingName?(s.ingName+'|'+normalizeUnit(s.ingUnit||'')):('__'+s.id);
-    if(!groups[key]){groups[key]={ingQty:s.ingQty,ingUnit:s.ingUnit||'',ingName:s.ingName||null,text:s.text,category:s.category||'Altro'};order.push(key);}
-    else{if(s.ingQty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=s.ingQty;else groups[key].ingQty=s.ingQty;}}
+    var c=canonQty(s.ingQty,s.ingUnit||'');
+    var key=s.ingName?(s.ingName+'|'+c.unit):('__'+s.id);
+    if(!groups[key]){groups[key]={ingQty:c.qty,ingUnit:c.unit,ingName:s.ingName||null,text:s.text,category:s.category||'Altro'};order.push(key);}
+    else{if(c.qty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=c.qty;else groups[key].ingQty=c.qty;}}
   });
   order.forEach(function(k){
     var g=groups[k];
-    if(g.ingName&&g.ingQty!=null){var v=g.ingQty,vs=(v%1===0?v:+v.toFixed(2));g.text=(vs?vs+' ':'')+(g.ingUnit&&g.ingUnit!=='q.b.'?g.ingUnit+' ':'')+g.ingName;}
+    if(g.ingName&&g.ingQty!=null){var f=fmtQtyUnit(g.ingQty,g.ingUnit);g.text=(f.q?f.q+' ':'')+(f.u&&f.u!=='q.b.'?f.u+' ':'')+g.ingName;}
   });
   var lines=['🛒 *Lista della spesa*'];
   userCatOrder.forEach(function(catIdx){
