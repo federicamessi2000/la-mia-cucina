@@ -944,12 +944,18 @@ function initRecipes(){
       });
     }
   });
-  db.ref('recipes').on('value',function(snap){
-    recipes=[];
-    if(snap.exists())snap.forEach(function(c){recipes.push(Object.assign({id:c.key},c.val()));});
-    renderRecipes();
-  });
+  // Listener incrementali: il nodo recipes (800+ ricette) viene scaricato una sola volta,
+  // poi arrivano solo i delta — con on('value') ogni modifica riscaricava tutto.
+  if(!window._recipesListening){
+    window._recipesListening=true;
+    var rref=db.ref('recipes');
+    rref.on('child_added',function(c){recipes.push(Object.assign({id:c.key},c.val()));scheduleRecipeRender();});
+    rref.on('child_changed',function(c){var i=recipes.findIndex(function(r){return r.id===c.key;});if(i>=0)recipes[i]=Object.assign({id:c.key},c.val());scheduleRecipeRender();});
+    rref.on('child_removed',function(c){recipes=recipes.filter(function(r){return r.id!==c.key;});scheduleRecipeRender();});
+  }
 }
+var _recipeRenderTimer=null;
+function scheduleRecipeRender(){clearTimeout(_recipeRenderTimer);_recipeRenderTimer=setTimeout(function(){renderRecipes();if(document.getElementById('recipe-cat-page').style.display==='flex')filterRecipeCatModal();},80);}
 
 function shopRef(){return familyCode?db.ref('families/'+familyCode+'/shopping'):db.ref('users/'+currentUser.uid+'/shopping');}
 function setupShopListener(){
@@ -1010,17 +1016,34 @@ var RECIPE_CAT_EMOJI={'Antipasti':'🥗','Biscotti':'🍪','Bevande':'🥤','Col
 var RECIPE_CAT_FILTER_TAGS=[{key:'facile',label:'&#128994; Facile'},{key:'veloce',label:'&#9889; Veloce'},{key:'vegetariano',label:'&#127807; Vegetariano'},{key:'vegano',label:'&#127807; Vegano'},{key:'al-forno',label:'&#128293; Al forno'},{key:'dolce',label:'&#127856; Dolce'},{key:'lievitato',label:'&#127838; Lievitato'},{key:'senza-glutine',label:'&#127807; Senza glutine'}];
 var _recipeCatCurrent=null;var _recipeCatTagFilters=[];
 
-function renderRecipeItems(list){
+function _recipeRowHTML(r){
   var diffDot={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'};
+  var dot=diffDot[r.difficolta]||'';
+  var meta=(r.tempo?'&#x23F1;'+esc(r.tempo):'')+(r.porzioni?' &middot; '+esc(r.porzioni)+'p':'');
+  return'<div class="recipe-list-item" onclick="openRecipe(\''+r.id+'\')">'+(dot?'<span style="font-size:10px;flex-shrink:0">'+dot+'</span>':'')+
+    '<span class="recipe-list-item-name">'+esc(r.nome)+'</span>'+
+    (meta?'<span class="recipe-list-item-meta">'+meta+'</span>':'')+
+    '<span style="color:var(--charcoal-light);font-size:16px">&#8250;</span></div>';
+}
+// Rendering a blocchi: con 800+ ricette un innerHTML unico blocca il telefono
+var RI_CHUNK=120,_riPending={};
+function _riChunkHTML(list,start,key){
+  var end=Math.min(start+RI_CHUNK,list.length);
+  var html=list.slice(start,end).map(_recipeRowHTML).join('');
+  if(end<list.length){
+    _riPending[key]={list:list,next:end};
+    html+='<div id="ri-more-'+key+'"><button class="btn btn-outline btn-full" style="margin:10px 0" onclick="riMore(\''+key+'\')">Mostra altre '+(list.length-end)+' ricette</button></div>';
+  }else{delete _riPending[key];}
+  return html;
+}
+window.riMore=function(key){
+  var p=_riPending[key];if(!p)return;
+  var holder=document.getElementById('ri-more-'+key);if(!holder)return;
+  holder.outerHTML=_riChunkHTML(p.list,p.next,key);
+};
+function renderRecipeItems(list,key){
   if(!list.length)return'<div class="empty-state"><p>Nessuna ricetta trovata.</p></div>';
-  return list.map(function(r){
-    var dot=diffDot[r.difficolta]||'';
-    var meta=(r.tempo?'&#x23F1;'+esc(r.tempo):'')+(r.porzioni?' &middot; '+esc(r.porzioni)+'p':'');
-    return'<div class="recipe-list-item" onclick="openRecipe(\''+r.id+'\')">'+(dot?'<span style="font-size:10px;flex-shrink:0">'+dot+'</span>':'')+
-      '<span class="recipe-list-item-name">'+esc(r.nome)+'</span>'+
-      (meta?'<span class="recipe-list-item-meta">'+meta+'</span>':'')+
-      '<span style="color:var(--charcoal-light);font-size:16px">&#8250;</span></div>';
-  }).join('');
+  return _riChunkHTML(list,0,key||'k');
 }
 
 window.openRecipeCat=function(cat){
@@ -1051,7 +1074,7 @@ window.filterRecipeCatModal=function(){
     if(q&&!normTxt(r.nome).includes(q))return false;
     return true;
   }).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
-  document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list);
+  document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list,'cat');
   document.getElementById('recipe-cat-count').textContent=list.length+' ricette';
 };
 
@@ -1064,7 +1087,7 @@ function renderRecipeHome(){
         normTxt(r.categoria||'').includes(q)||
         (r.ingredienti||[]).some(function(i){return normTxt(i.name||'').includes(q);});
     }).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
-    el.innerHTML='<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+results.length+' ricette trovate</div>'+renderRecipeItems(results);
+    el.innerHTML='<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+results.length+' ricette trovate</div>'+renderRecipeItems(results,'home');
     return;
   }
   var html='<div class="cat-grid">';
@@ -1151,7 +1174,8 @@ window.closeShopAddModal=function(){document.getElementById('shop-add-modal').st
 window.renderShopPickList=function(q){
   var nq=normTxt(q||'');
   var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
-  document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="showShopIngChecklist(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('');
+  var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">+ altre '+(f.length-80)+' — affina la ricerca</p>':'';
+  document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="showShopIngChecklist(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('')+extra;
 };
 window.confirmShopAdd=function(){
   var uid=currentUser.uid;
@@ -1400,7 +1424,8 @@ function renderPlannerWeek(){
 window.renderPickList=function(q){
   var nq=normTxt(q||'');
   var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return a.nome.localeCompare(b.nome,'it');});
-  document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('');
+  var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">+ altre '+(f.length-80)+' — affina la ricerca</p>':'';
+  document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('')+extra;
 };
 window.changePlannerPortions=function(d){plannerPortions=Math.max(1,plannerPortions+d);document.getElementById('planner-portions-num').textContent=plannerPortions;};
 window.openPickModal=function(key,meal){
