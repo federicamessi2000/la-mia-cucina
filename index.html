@@ -5,139 +5,189 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="La Mia Cucina">
 <title>La Mia Cucina</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--cream:#FAF7F2;--warm-white:#FFFDF9;--terracotta:#C4622D;--terracotta-pale:#FBF0EB;--sage:#7A8C6E;--sage-pale:#EEF2EB;--charcoal:#2C2C2A;--charcoal-mid:#5C5C58;--charcoal-light:#9C9C96;--border:rgba(44,44,42,0.12);--border-mid:rgba(44,44,42,0.2);--radius:14px;--radius-sm:8px;}
+:root{
+  --cream:#FAF5EC;--warm-white:#FFFCF5;
+  --terracotta:#C05A2E;--terracotta-deep:#A3491F;--terracotta-pale:#F8EBE0;
+  --sage:#6F8263;--sage-pale:#EDF1E7;
+  --charcoal:#2B2620;--charcoal-mid:#5D554A;--charcoal-light:#9C9285;
+  --border:rgba(70,52,36,0.10);--border-mid:rgba(70,52,36,0.22);
+  --radius:16px;--radius-sm:10px;--radius-lg:24px;
+  --shadow-sm:0 1px 2px rgba(70,45,25,0.05),0 2px 10px rgba(70,45,25,0.05);
+  --shadow-md:0 2px 6px rgba(70,45,25,0.07),0 12px 32px rgba(70,45,25,0.10);
+  --shadow-lg:0 8px 24px rgba(50,30,15,0.14),0 28px 70px rgba(50,30,15,0.22);
+  --glow:0 2px 10px rgba(192,90,46,0.32);
+  --ease-spring:cubic-bezier(.34,1.45,.44,1);--ease-out:cubic-bezier(.22,.61,.36,1);
+  --font-display:'Fraunces',Georgia,serif;--font-body:'Figtree',-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --cream:#1A1512;--warm-white:#241E18;
+    --terracotta:#E17C4C;--terracotta-deep:#C05A2E;--terracotta-pale:#3B2A1E;
+    --sage:#97AC87;--sage-pale:#262E1F;
+    --charcoal:#F1E9DC;--charcoal-mid:#C7BCAC;--charcoal-light:#897E70;
+    --border:rgba(240,225,205,0.10);--border-mid:rgba(240,225,205,0.24);
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.25),0 2px 10px rgba(0,0,0,0.22);
+    --shadow-md:0 2px 6px rgba(0,0,0,0.30),0 12px 32px rgba(0,0,0,0.35);
+    --shadow-lg:0 8px 24px rgba(0,0,0,0.42),0 28px 70px rgba(0,0,0,0.5);
+  }
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'Inter',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
-h1,h2,h3{font-family:'Lora',serif;}
-#loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;}
-#loading-screen p{font-size:14px;color:var(--charcoal-light);}
-.spinner{width:32px;height:32px;border:3px solid var(--border-mid);border-top-color:var(--terracotta);border-radius:50%;animation:spin 0.8s linear infinite;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:radial-gradient(130% 55% at 50% -8%,rgba(192,90,46,0.07),transparent 62%),var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;font-size:14.5px;line-height:1.45;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.33 0 0 0 0 0.22 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");}
+@media (prefers-color-scheme:dark){body::before{mix-blend-mode:screen;opacity:.25;}}
+#app-screen,#login-screen,#loading-screen{position:relative;z-index:1;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-0.015em;}
+#loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:18px;}
+#loading-screen p{font-size:14px;color:var(--charcoal-light);letter-spacing:.02em;}
+.spinner{width:36px;height:36px;border:3px solid var(--border-mid);border-top-color:var(--terracotta);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 #login-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 30px;text-align:center;}
-#login-screen h1{font-size:32px;font-weight:500;margin-bottom:8px;}
-#login-screen h1 span{color:var(--terracotta);}
-#login-screen .sub{font-size:15px;color:var(--charcoal-mid);margin-bottom:40px;line-height:1.6;}
-.login-btn{display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border-mid);border-radius:var(--radius-sm);padding:14px 24px;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;cursor:pointer;color:var(--charcoal);width:100%;justify-content:center;max-width:280px;}
+#login-screen h1{font-size:44px;font-weight:600;margin-bottom:10px;line-height:1.05;animation:rise .7s var(--ease-out) backwards;}
+#login-screen h1 span{color:var(--terracotta);font-style:italic;font-weight:500;}
+#login-screen .sub{font-size:15px;color:var(--charcoal-mid);margin-bottom:44px;line-height:1.65;animation:rise .7s var(--ease-out) .08s backwards;}
+.login-btn{display:flex;align-items:center;gap:12px;background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:14px;padding:15px 24px;font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer;color:var(--charcoal);width:100%;justify-content:center;max-width:280px;box-shadow:var(--shadow-md);transition:transform .18s var(--ease-spring),box-shadow .2s;animation:rise .7s var(--ease-out) .16s backwards;}
+.login-btn:active{transform:scale(.97);}
 .login-btn svg{width:22px;height:22px;}
-.login-note{font-size:12px;color:var(--charcoal-light);margin-top:20px;line-height:1.6;}
+.login-note{font-size:12px;color:var(--charcoal-light);margin-top:22px;line-height:1.6;animation:rise .7s var(--ease-out) .24s backwards;}
 #app-screen{display:none;}
-.topbar{background:var(--warm-white);border-bottom:0.5px solid var(--border);padding:12px 20px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;}
-.topbar h1{font-size:20px;font-weight:500;letter-spacing:-0.3px;}
-.topbar h1 span{color:var(--terracotta);}
-.user-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;}
-.user-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;}
-.user-initials{width:32px;height:32px;border-radius:50%;background:var(--terracotta-pale);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--terracotta);}
-.page{display:none;padding:20px 16px 100px;}
-.page.active{display:block;}
-.bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--warm-white);border-top:0.5px solid var(--border);display:flex;padding:10px 0 22px;z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 0;border:none;background:none;color:var(--charcoal-light);font-family:'Inter',sans-serif;font-size:11px;}
-.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;}
-.nav-item.active{color:var(--terracotta);}
-.section-title{font-size:19px;font-weight:500;margin-bottom:16px;}
+.topbar{background:rgba(250,245,236,0.78);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);border-bottom:0.5px solid var(--border);padding:13px 20px calc(13px);padding-top:calc(13px + env(safe-area-inset-top));position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;}
+@media (prefers-color-scheme:dark){.topbar{background:rgba(26,21,18,0.78);}}
+.topbar h1{font-size:21px;font-weight:600;letter-spacing:-0.02em;}
+.topbar h1 span{color:var(--terracotta);font-style:italic;font-weight:500;}
+.user-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;transition:transform .18s var(--ease-spring);}
+.user-btn:active{transform:scale(.9);}
+.user-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--warm-white),0 0 0 3.5px var(--terracotta);}
+.user-initials{width:34px;height:34px;border-radius:50%;background:var(--terracotta-pale);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--terracotta);box-shadow:0 0 0 2px var(--warm-white),0 0 0 3.5px var(--terracotta);}
+.page{display:none;padding:20px 16px calc(120px + env(safe-area-inset-bottom));}
+.page.active{display:block;animation:pageIn .34s var(--ease-out);}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.bottomnav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:410px;background:rgba(255,252,245,0.82);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:0.5px solid var(--border);border-radius:26px;box-shadow:var(--shadow-md);display:flex;padding:7px 6px;z-index:100;}
+@media (prefers-color-scheme:dark){.bottomnav{background:rgba(36,30,24,0.85);}}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:7px 0 6px;border:none;background:none;color:var(--charcoal-light);font-family:var(--font-body);font-size:10px;font-weight:600;letter-spacing:.01em;border-radius:18px;transition:color .22s var(--ease-out),background .22s var(--ease-out);}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;transition:transform .3s var(--ease-spring);}
+.nav-item.active{color:var(--terracotta);background:var(--terracotta-pale);}
+.nav-item.active svg{transform:translateY(-1.5px) scale(1.08);}
+.section-title{font-size:21px;font-weight:600;margin-bottom:16px;}
 .recipe-grid{display:flex;flex-direction:column;gap:12px;}
-.recipe-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;cursor:pointer;}
-.recipe-card:active{background:var(--cream);}
+.recipe-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:14px 16px;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .16s var(--ease-out),box-shadow .2s;}
+.recipe-card:active{transform:scale(.977);box-shadow:none;}
 .recipe-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-.recipe-card h3{font-size:16px;font-weight:500;line-height:1.3;}
-.tag{font-size:11px;padding:3px 8px;border-radius:20px;white-space:nowrap;font-weight:500;flex-shrink:0;}
+.recipe-card h3{font-size:16px;font-weight:600;line-height:1.3;}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;font-weight:600;flex-shrink:0;}
 .tag-mamma{background:var(--terracotta-pale);color:var(--terracotta);}
 .tag-internet{background:var(--sage-pale);color:var(--sage);}
 .recipe-meta{font-size:13px;color:var(--charcoal-light);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
 .recipe-author{font-size:11px;color:var(--charcoal-light);margin-top:3px;}
-.search-bar{width:100%;padding:10px 14px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'Inter',sans-serif;font-size:14px;color:var(--charcoal);margin-bottom:16px;outline:none;}
-.search-bar:focus{border-color:var(--terracotta);}
-.btn{padding:10px 18px;border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:none;}
-.btn-primary{background:var(--terracotta);color:white;}
-.btn-outline{background:none;border:0.5px solid var(--border-mid);color:var(--charcoal);}
-.btn-danger{background:none;border:0.5px solid rgba(196,98,45,0.3);color:var(--terracotta);}
-.btn-sm{padding:7px 12px;font-size:13px;}
+.search-bar{width:100%;padding:12px 16px;border:0.5px solid var(--border-mid);border-radius:14px;background:var(--warm-white);font-family:var(--font-body);font-size:15px;color:var(--charcoal);margin-bottom:16px;outline:none;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s;}
+.search-bar::placeholder{color:var(--charcoal-light);}
+.search-bar:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(192,90,46,0.13),var(--shadow-sm);}
+.btn{padding:11px 18px;border-radius:12px;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:transform .15s var(--ease-out),box-shadow .2s,opacity .2s;}
+.btn:active{transform:scale(.96);}
+.btn-primary{background:linear-gradient(180deg,#CD6838 0%,var(--terracotta-deep) 100%);color:#fff;box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,0.22);text-shadow:0 1px 1px rgba(90,40,10,0.25);}
+.btn-outline{background:none;border:1px solid var(--border-mid);color:var(--charcoal);}
+.btn-danger{background:none;border:1px solid rgba(192,90,46,0.35);color:var(--terracotta);}
+.btn-sm{padding:7px 13px;font-size:13px;}
 .btn-full{width:100%;text-align:center;}
 .form-group{margin-bottom:16px;}
-label{display:block;font-size:13px;font-weight:500;color:var(--charcoal-mid);margin-bottom:6px;}
-input[type=text],input[type=number],textarea,select{width:100%;padding:10px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:'Inter',sans-serif;font-size:14px;color:var(--charcoal);outline:none;}
-input:focus,textarea:focus,select:focus{border-color:var(--terracotta);}
-textarea{resize:vertical;min-height:100px;}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--charcoal-mid);margin-bottom:6px;letter-spacing:.015em;text-transform:uppercase;font-size:11.5px;}
+input[type=text],input[type=number],input[type=date],textarea,select{width:100%;padding:11px 13px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:var(--font-body);font-size:15px;color:var(--charcoal);outline:none;transition:border-color .2s,box-shadow .2s;}
+input:focus,textarea:focus,select:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(192,90,46,0.13);}
+textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .ing-header{display:flex;gap:6px;margin-bottom:4px;}
-.ing-header span{font-size:11px;color:var(--charcoal-light);font-weight:500;}
+.ing-header span{font-size:10.5px;color:var(--charcoal-light);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
 .h-qty{width:64px;flex-shrink:0;}.h-unit{width:80px;flex-shrink:0;}.h-name{flex:1;}
 .ing-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;}
 .ing-qty{width:64px!important;flex-shrink:0;padding:8px!important;}
 .ing-unit{width:80px!important;flex-shrink:0;padding:8px!important;}
 .ing-name{flex:1;}
-.ing-row button{flex-shrink:0;background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:0 10px;cursor:pointer;font-size:18px;color:var(--charcoal-light);height:38px;}
+.ing-row button{flex-shrink:0;background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:0 10px;cursor:pointer;font-size:18px;color:var(--charcoal-light);height:40px;transition:color .2s,border-color .2s;}
+.ing-row button:active{color:var(--terracotta);border-color:var(--terracotta);}
 .ing-section-row{border-bottom:1.5px solid var(--terracotta);padding-bottom:2px;margin:12px 0 4px;}
-.ing-section-input{flex:1;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;outline:none;padding:2px 0;}
+.ing-section-input{flex:1;border:none;background:transparent;font-size:12px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;outline:none;padding:2px 0;box-shadow:none!important;}
 .ing-section-input::placeholder{color:var(--terracotta);opacity:0.45;}
 .recipe-ing-section{font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.6px;margin:12px 0 2px;list-style:none;padding-bottom:3px;border-bottom:1px solid var(--terracotta);}
 .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.month-nav h2{font-size:18px;font-weight:500;}
-.month-nav button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-size:18px;color:var(--charcoal);}
-.planner-wrap{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);overflow:hidden;}
+.month-nav h2{font-size:19px;font-weight:600;}
+.month-nav button{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:12px;padding:6px 14px;cursor:pointer;font-size:18px;color:var(--charcoal);box-shadow:var(--shadow-sm);transition:transform .15s var(--ease-out);}
+.month-nav button:active{transform:scale(.92);}
+.planner-wrap{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);}
 .planner-table{width:100%;border-collapse:collapse;}
-.planner-table th{font-size:11px;font-weight:500;color:var(--charcoal-light);text-transform:uppercase;letter-spacing:0.5px;padding:8px;text-align:left;border-bottom:0.5px solid var(--border-mid);}
+.planner-table th{font-size:10.5px;font-weight:700;color:var(--charcoal-light);text-transform:uppercase;letter-spacing:0.06em;padding:9px 8px;text-align:left;border-bottom:0.5px solid var(--border-mid);}
 .planner-table th:first-child{width:54px;}
 .planner-table td{padding:5px 6px;border-bottom:0.5px solid var(--border);vertical-align:middle;}
 .planner-table tr:last-child td{border-bottom:none;}
 .planner-table tr.today-row td{background:var(--terracotta-pale);}
-.day-col{font-size:13px;font-weight:500;white-space:nowrap;}
-.day-col .dow{font-size:11px;color:var(--charcoal-light);display:block;}
+.planner-table tr.today-row td:first-child{box-shadow:inset 3px 0 0 var(--terracotta);}
+.day-col{font-size:13px;font-weight:600;white-space:nowrap;}
+.day-col .dow{font-size:10.5px;color:var(--charcoal-light);display:block;text-transform:uppercase;letter-spacing:.04em;}
 .meal-cell{display:flex;align-items:center;gap:4px;}
-.meal-cell-text{font-size:12px;color:var(--charcoal);flex:1;cursor:pointer;line-height:1.3;}
+.meal-cell-text{font-size:12px;color:var(--charcoal);flex:1;cursor:pointer;line-height:1.35;}
 .meal-cell-text.empty{color:var(--charcoal-light);font-style:italic;}
-.meal-add-btn{background:none;border:0.5px solid var(--border-mid);border-radius:50%;width:22px;height:22px;font-size:14px;color:var(--terracotta);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.meal-add-btn{background:none;border:0.5px solid var(--border-mid);border-radius:50%;width:23px;height:23px;font-size:14px;color:var(--terracotta);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .15s var(--ease-spring);}
+.meal-add-btn:active{background:var(--terracotta-pale);transform:scale(.85);}
 .portions-bar{display:flex;align-items:center;gap:12px;background:var(--sage-pale);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;}
-.portions-label{font-size:13px;color:var(--sage);font-weight:500;flex:1;}
+.portions-label{font-size:13px;color:var(--sage);font-weight:600;flex:1;}
 .portions-controls{display:flex;align-items:center;gap:10px;}
-.portions-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--sage);background:none;color:var(--sage);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:500;}
-.portions-num{font-size:16px;font-weight:500;color:var(--charcoal);min-width:24px;text-align:center;}
-.shop-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--warm-white);border-radius:var(--radius-sm);border:0.5px solid var(--border);margin-bottom:8px;}
-.shop-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-mid);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.shop-check.checked{background:var(--sage);border-color:var(--sage);}
-.shop-check.checked::after{content:'\2713';color:white;font-size:11px;}
-.shop-text{flex:1;font-size:14px;}
+.portions-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--sage);background:none;color:var(--sage);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:500;transition:transform .15s var(--ease-spring),background .2s;}
+.portions-btn:active{transform:scale(.85);background:var(--sage-pale);}
+.portions-num{font-size:17px;font-weight:700;color:var(--charcoal);min-width:24px;text-align:center;font-variant-numeric:tabular-nums;}
+.shop-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--warm-white);border-radius:12px;border:0.5px solid var(--border);margin-bottom:8px;box-shadow:var(--shadow-sm);transition:opacity .25s;}
+.shop-check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border-mid);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s,transform .25s var(--ease-spring);}
+.shop-check:active{transform:scale(.8);}
+.shop-check.checked{background:var(--sage);border-color:var(--sage);animation:pop .35s var(--ease-spring);}
+@keyframes pop{0%{transform:scale(.7);}55%{transform:scale(1.18);}100%{transform:scale(1);}}
+.shop-check.checked::after{content:'\2713';color:#fff;font-size:12px;font-weight:700;}
+.shop-text{flex:1;font-size:14.5px;}
 .shop-text.checked{color:var(--charcoal-light);text-decoration:line-through;}
 .shop-source{font-size:11px;color:var(--terracotta);margin-top:1px;}
-.shop-delete{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:18px;padding:0 4px;}
+.shop-delete{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:18px;padding:0 4px;transition:color .2s;}
+.shop-delete:active{color:var(--terracotta);}
 .add-inline{display:flex;gap:8px;margin-bottom:16px;}
 .add-inline input{flex:1;}
-.modal-overlay{position:fixed;inset:0;background:rgba(44,44,42,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
-.modal{background:var(--warm-white);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;}
-.modal-handle{width:36px;height:4px;background:var(--border-mid);border-radius:2px;margin:0 auto 20px;}
-.modal h2{font-size:18px;margin-bottom:16px;}
-.recipe-detail-body{font-size:14px;line-height:1.7;color:var(--charcoal-mid);white-space:pre-wrap;}
+.modal-overlay{position:fixed;inset:0;background:rgba(30,20,12,0.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .22s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--warm-white);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:20px 20px calc(40px + env(safe-area-inset-bottom));width:100%;max-width:430px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:sheetUp .4s var(--ease-spring);}
+@keyframes sheetUp{from{transform:translateY(56px);opacity:.3;}to{transform:none;opacity:1;}}
+.modal-handle{width:38px;height:4.5px;background:var(--border-mid);border-radius:3px;margin:0 auto 20px;}
+.modal h2{font-size:19px;margin-bottom:16px;}
+.recipe-detail-body{font-size:14.5px;line-height:1.75;color:var(--charcoal-mid);white-space:pre-wrap;}
 .ingredients-list{list-style:none;margin-bottom:16px;}
-.ingredients-list li{padding:6px 0;border-bottom:0.5px solid var(--border);font-size:14px;}
+.ingredients-list li{padding:7px 0;border-bottom:0.5px solid var(--border);font-size:14.5px;}
 .ingredients-list li:last-child{border-bottom:none;}
 .source-link{font-size:12px;color:var(--sage);margin-bottom:14px;}
 .source-link a{color:var(--sage);text-decoration:underline;}
 .filter-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.filter-tab{padding:6px 14px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
-.filter-tab.active{background:var(--terracotta);color:white;border-color:var(--terracotta);}
-.pick-search{width:100%;padding:9px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:'Inter',sans-serif;font-size:14px;color:var(--charcoal);outline:none;margin-bottom:12px;}
-.pick-search:focus{border-color:var(--terracotta);}
-.empty-state{text-align:center;padding:40px 20px;color:var(--charcoal-light);}
+.filter-tab{padding:6px 14px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;transition:all .2s;}
+.filter-tab.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta);}
+.pick-search{width:100%;padding:10px 13px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:var(--font-body);font-size:15px;color:var(--charcoal);outline:none;margin-bottom:12px;transition:border-color .2s,box-shadow .2s;}
+.pick-search:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(192,90,46,0.13);}
+.empty-state{text-align:center;padding:44px 20px;color:var(--charcoal-light);}
 .empty-state p{font-size:15px;margin-top:8px;}
 .user-info{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:0.5px solid var(--border);}
 .user-info img{width:48px;height:48px;border-radius:50%;}
-.user-info-name{font-size:16px;font-weight:500;}
+.user-info-name{font-size:16px;font-weight:700;}
 .user-info-email{font-size:13px;color:var(--charcoal-light);}
-.shop-week-nav{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;}
-.shop-week-nav button{background:none;border:0.5px solid rgba(122,140,110,0.4);border-radius:var(--radius-sm);padding:4px 10px;cursor:pointer;font-size:13px;color:var(--sage);font-family:'Inter',sans-serif;}
-.week-label{font-size:13px;font-weight:500;color:var(--sage);flex:1;text-align:center;}
-.shop-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
-.shop-week-header{font-size:13px;font-weight:600;color:var(--sage);margin:20px 0 4px;padding:6px 10px;background:var(--sage-pale);border-radius:var(--radius-sm);}
+.shop-week-nav{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:12px;padding:8px 12px;margin-bottom:12px;}
+.shop-week-nav button{background:none;border:0.5px solid rgba(111,130,99,0.4);border-radius:var(--radius-sm);padding:4px 11px;cursor:pointer;font-size:13px;color:var(--sage);font-family:var(--font-body);font-weight:600;transition:transform .15s var(--ease-out);}
+.shop-week-nav button:active{transform:scale(.92);}
+.week-label{font-size:13px;font-weight:700;color:var(--sage);flex:1;text-align:center;}
+.shop-cat-header{font-size:10.5px;font-weight:700;color:var(--charcoal-mid);margin:16px 0 7px;padding:3px 0 5px;border-bottom:0.5px solid var(--border);letter-spacing:0.07em;text-transform:uppercase;}
+.shop-week-header{font-size:13px;font-weight:700;color:var(--sage);margin:20px 0 4px;padding:6px 10px;background:var(--sage-pale);border-radius:var(--radius-sm);}
 .shop-note{font-size:11px;color:var(--charcoal-light);margin-top:2px;}
 .shop-input-wrap{position:relative;flex:1;}
-.shop-suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);z-index:150;max-height:240px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,0.12);display:none;}
+.shop-suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:12px;z-index:150;max-height:240px;overflow-y:auto;box-shadow:var(--shadow-md);display:none;}
 .shop-suggest-item{padding:10px 12px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:0.5px solid var(--border);}
 .shop-suggest-item:last-child{border-bottom:none;}
 .shop-suggest-item:active{background:var(--cream);}
@@ -146,72 +196,101 @@ textarea{resize:vertical;min-height:100px;}
 .cat-order-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:0.5px solid var(--border);}
 .cat-order-name{flex:1;font-size:14px;color:var(--charcoal);}
 .cat-order-btns{display:flex;gap:4px;flex-shrink:0;}
-.cat-order-btns button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);width:30px;height:30px;cursor:pointer;font-size:15px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
+.cat-order-btns button{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;font-size:15px;color:var(--charcoal-mid);font-family:var(--font-body);transition:transform .15s var(--ease-out);}
+.cat-order-btns button:active{transform:scale(.88);}
 .cat-order-btns button:disabled{opacity:0.25;cursor:default;}
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0;}
-.cat-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:18px 10px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;transition:background 0.1s;}
-.cat-card:active{background:var(--terracotta-pale);}
-.cat-card-emoji{font-size:30px;line-height:1;}
-.cat-card-name{font-size:12px;font-weight:500;color:var(--charcoal);line-height:1.3;}
+.cat-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:18px 10px 15px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:var(--shadow-sm);transition:transform .18s var(--ease-spring),box-shadow .2s;animation:rise .5s var(--ease-out) backwards;}
+.cat-card:nth-child(1){animation-delay:.02s}.cat-card:nth-child(2){animation-delay:.05s}.cat-card:nth-child(3){animation-delay:.08s}.cat-card:nth-child(4){animation-delay:.11s}.cat-card:nth-child(5){animation-delay:.14s}.cat-card:nth-child(6){animation-delay:.17s}.cat-card:nth-child(7){animation-delay:.2s}.cat-card:nth-child(8){animation-delay:.23s}.cat-card:nth-child(9){animation-delay:.26s}.cat-card:nth-child(10){animation-delay:.29s}.cat-card:nth-child(11){animation-delay:.32s}.cat-card:nth-child(12){animation-delay:.35s}.cat-card:nth-child(13){animation-delay:.38s}.cat-card:nth-child(14){animation-delay:.41s}.cat-card:nth-child(n+15){animation-delay:.44s}
+.cat-card:active{transform:scale(.95);box-shadow:none;}
+.cat-card-emoji{font-size:28px;line-height:1;width:54px;height:54px;display:flex;align-items:center;justify-content:center;background:var(--terracotta-pale);border-radius:50%;}
+.cat-card:nth-child(even) .cat-card-emoji{background:var(--sage-pale);}
+.cat-card-name{font-size:12.5px;font-weight:700;color:var(--charcoal);line-height:1.3;}
 .cat-card-count{font-size:11px;color:var(--charcoal-light);}
 .cat-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
 .cat-item-name{font-size:14px;color:var(--charcoal);}
 .cat-item-unit{font-size:12px;color:var(--charcoal-light);margin-left:4px;}
-.cat-add-btn{background:var(--terracotta);color:white;border:none;border-radius:50%;width:28px;height:28px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
-.cat-search-result-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
-.nav-item{font-size:10px;}
-.freezer-item{background:var(--warm-white);border-radius:var(--radius-sm);border:0.5px solid var(--border);padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;}
-.freezer-item:active{background:var(--cream);}
-.freezer-item-name{font-size:14px;font-weight:500;color:var(--charcoal);}
-.freezer-item-qty{font-size:13px;color:var(--charcoal-mid);flex-shrink:0;}
+.cat-add-btn{background:linear-gradient(180deg,#CD6838,var(--terracotta-deep));color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;box-shadow:var(--glow);transition:transform .15s var(--ease-spring);}
+.cat-add-btn:active{transform:scale(.85);}
+.cat-search-result-header{font-size:10.5px;font-weight:700;color:var(--charcoal-mid);margin:16px 0 7px;padding:3px 0 5px;border-bottom:0.5px solid var(--border);letter-spacing:0.07em;text-transform:uppercase;}
+.freezer-item{background:var(--warm-white);border-radius:12px;border:0.5px solid var(--border);padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);transition:transform .16s var(--ease-out);}
+.freezer-item:active{transform:scale(.977);}
+.freezer-item-name{font-size:14px;font-weight:600;color:var(--charcoal);}
+.freezer-item-qty{font-size:13px;color:var(--charcoal-mid);flex-shrink:0;font-variant-numeric:tabular-nums;}
 .freezer-item-meta{font-size:11px;color:var(--charcoal-light);margin-top:3px;}
-.freezer-cat-header{font-size:11px;font-weight:600;color:var(--charcoal-mid);margin:14px 0 6px;padding:3px 0 4px;border-bottom:0.5px solid var(--border);letter-spacing:0.5px;text-transform:uppercase;}
-.fav-btn{background:none;border:none;cursor:pointer;padding:2px 6px;font-size:16px;line-height:1;flex-shrink:0;}
+.freezer-cat-header{font-size:10.5px;font-weight:700;color:var(--charcoal-mid);margin:16px 0 7px;padding:3px 0 5px;border-bottom:0.5px solid var(--border);letter-spacing:0.07em;text-transform:uppercase;}
+.fav-btn{background:none;border:none;cursor:pointer;padding:2px 6px;font-size:16px;line-height:1;flex-shrink:0;transition:transform .2s var(--ease-spring);}
+.fav-btn:active{transform:scale(1.3);}
 .shop-edit-btn{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:14px;padding:0 5px;flex-shrink:0;}
-.tag-chip{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--sage-pale);color:var(--sage);font-weight:500;white-space:nowrap;}
-.tag-toggle{display:inline-flex;align-items:center;font-size:12px;padding:5px 10px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--warm-white);cursor:pointer;color:var(--charcoal-mid);font-family:'Inter',sans-serif;white-space:nowrap;}
-.tag-toggle.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(122,140,110,0.6);}
-.tag-filter-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0;}
-.tag-filter-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(122,140,110,0.6);}
+.tag-chip{font-size:10px;padding:2.5px 8px;border-radius:12px;background:var(--sage-pale);color:var(--sage);font-weight:600;white-space:nowrap;}
+.tag-toggle{display:inline-flex;align-items:center;font-size:12px;padding:5px 11px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--warm-white);cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;white-space:nowrap;transition:all .2s;}
+.tag-toggle.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(111,130,99,0.6);}
+.tag-filter-btn{font-size:11px;padding:4.5px 11px;border-radius:20px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .2s;}
+.tag-filter-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(111,130,99,0.6);}
 .recipe-card{overflow:hidden;}
 .recipe-photo-thumb{width:calc(100% + 32px);height:150px;object-fit:cover;margin:-14px -16px 10px -16px;display:block;}
 .recipe-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
-.recipe-list-item{display:flex;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);cursor:pointer;gap:10px;}
+.recipe-list-item{display:flex;align-items:center;padding:10px 2px;border-bottom:0.5px solid var(--border);cursor:pointer;gap:10px;transition:background .15s;}
 .recipe-list-item:active{background:var(--terracotta-pale);}
-.recipe-list-item-name{flex:1;font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.3;}
+.recipe-list-item-name{flex:1;font-size:14.5px;font-weight:500;color:var(--charcoal);line-height:1.3;}
 .recipe-list-item-meta{font-size:12px;color:var(--charcoal-light);white-space:nowrap;display:flex;gap:5px;align-items:center;}
 .recipe-cat-tag-row{display:flex;gap:6px;overflow-x:auto;padding:6px 0 10px;scrollbar-width:none;}
 .recipe-cat-tag-row::-webkit-scrollbar{display:none;}
-.edit-mode-bar{background:var(--terracotta-pale);border-radius:var(--radius-sm);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:13px;color:var(--terracotta);}
-.week-day-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:12px 14px;margin-bottom:10px;}
-.week-day-card.today{border-left:3px solid var(--terracotta);}
-.week-day-header{font-size:14px;font-weight:600;color:var(--charcoal);margin-bottom:8px;}
+.edit-mode-bar{background:var(--terracotta-pale);border-radius:var(--radius-sm);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:13px;color:var(--terracotta);font-weight:600;}
+.week-day-card{background:var(--warm-white);border-radius:var(--radius);border:0.5px solid var(--border);padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow-sm);animation:rise .45s var(--ease-out) backwards;}
+.week-day-card:nth-child(1){animation-delay:.02s}.week-day-card:nth-child(2){animation-delay:.06s}.week-day-card:nth-child(3){animation-delay:.1s}.week-day-card:nth-child(4){animation-delay:.14s}.week-day-card:nth-child(5){animation-delay:.18s}.week-day-card:nth-child(6){animation-delay:.22s}.week-day-card:nth-child(7){animation-delay:.26s}
+.week-day-card.today{border-left:3px solid var(--terracotta);background:linear-gradient(90deg,var(--terracotta-pale),var(--warm-white) 45%);}
+.week-day-header{font-size:14px;font-weight:700;color:var(--charcoal);margin-bottom:8px;font-family:var(--font-display);}
 .week-meal-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:0.5px solid var(--border);}
-.week-meal-label{font-size:11px;font-weight:600;color:var(--charcoal-light);width:48px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.4px;}
-.week-meal-text{flex:1;font-size:13px;color:var(--charcoal);cursor:pointer;line-height:1.3;}
+.week-meal-label{font-size:10.5px;font-weight:700;color:var(--charcoal-light);width:48px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.05em;}
+.week-meal-text{flex:1;font-size:13.5px;color:var(--charcoal);cursor:pointer;line-height:1.35;}
 .week-meal-text.empty{color:var(--charcoal-light);font-style:italic;}
-.meal-alt-btn{background:none;border:none;font-size:15px;line-height:1;color:var(--terracotta);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.55;}
+.meal-alt-btn{background:none;border:none;font-size:15px;line-height:1;color:var(--terracotta);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.55;transition:opacity .2s;}
 .meal-alt-btn:hover{opacity:1;}
 .week-meal-alt{display:flex;align-items:center;gap:8px;padding:2px 0 5px 56px;}
-.planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
+.planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 11px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;transition:all .2s;}
 .nutri-bar{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--charcoal-mid);background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;align-items:center;}
-.nutri-kcal{font-weight:600;color:var(--charcoal);font-size:13px;}
-.planner-view-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(122,140,110,0.5);}
+.nutri-kcal{font-weight:700;color:var(--charcoal);font-size:13px;}
+.planner-view-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(111,130,99,0.5);}
 .week-day-kcal{font-size:11px;color:var(--charcoal-light);padding:5px 0 2px;border-top:0.5px solid var(--border);margin-top:6px;display:flex;align-items:center;gap:8px;}
-.week-day-kcal strong{color:var(--terracotta);font-weight:600;font-size:12px;}
+.week-day-kcal strong{color:var(--terracotta);font-weight:700;font-size:12px;}
 .week-extras{border-top:0.5px solid var(--border);padding-top:6px;margin-top:6px;}
 .extra-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
-.extra-chip{background:var(--sage-pale);color:var(--sage);font-size:11px;padding:3px 6px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;}
+.extra-chip{background:var(--sage-pale);color:var(--sage);font-size:11px;padding:3px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;font-weight:600;}
 .extra-chip button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--sage);padding:0;line-height:1;opacity:0.7;}
-.extra-add-btn{background:none;border:0.5px dashed var(--border-mid);border-radius:var(--radius-sm);font-size:11px;color:var(--charcoal-light);font-family:'Inter',sans-serif;padding:4px 8px;cursor:pointer;width:100%;text-align:left;}
-.ing-ac-inline{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);box-shadow:0 3px 12px rgba(0,0,0,0.1);margin-bottom:6px;overflow:hidden;}
+.extra-add-btn{background:none;border:1px dashed var(--border-mid);border-radius:var(--radius-sm);font-size:11px;color:var(--charcoal-light);font-family:var(--font-body);font-weight:600;padding:5px 9px;cursor:pointer;width:100%;text-align:left;transition:all .2s;}
+.extra-add-btn:active{border-color:var(--terracotta);color:var(--terracotta);}
+.ing-ac-inline{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);margin-bottom:6px;overflow:hidden;}
 .ing-ac-item{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .ing-ac-item:last-child{border-bottom:none;}
 .ing-ac-item:active{background:var(--cream);}
 .ing-ac-unit{font-size:11px;color:var(--charcoal-light);background:var(--cream);padding:1px 6px;border-radius:10px;}
 .unit-chips{display:flex;flex-wrap:wrap;gap:5px;padding:6px 2px;margin-bottom:6px;}
-.unit-chip{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:20px;padding:4px 11px;font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;color:var(--charcoal-mid);}
-.unit-chip:active,.unit-chip.sel{background:var(--terracotta-pale);color:var(--terracotta);border-color:rgba(196,98,45,0.35);}
+.unit-chip{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:20px;padding:4px 11px;font-size:12px;font-family:var(--font-body);font-weight:600;cursor:pointer;color:var(--charcoal-mid);transition:all .15s;}
+.unit-chip:active,.unit-chip.sel{background:var(--terracotta-pale);color:var(--terracotta);border-color:rgba(192,90,46,0.35);}
+/* ── Modalità cucina ─────────────────────────────── */
+#cook-mode{position:fixed;inset:0;z-index:400;background:var(--cream);display:none;flex-direction:column;}
+#cook-mode.open{display:flex;animation:fadeIn .25s ease;}
+.cook-top{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 18px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.cook-top h2{flex:1;font-size:17px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cook-close{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:50%;width:34px;height:34px;font-size:17px;cursor:pointer;color:var(--charcoal);flex-shrink:0;}
+.cook-progress{height:4px;background:var(--border);flex-shrink:0;}
+.cook-progress-fill{height:100%;background:linear-gradient(90deg,var(--terracotta),#CD6838);border-radius:0 3px 3px 0;transition:width .4s var(--ease-out);}
+.cook-body{flex:1;overflow-y:auto;padding:26px 24px;display:flex;flex-direction:column;}
+.cook-step-num{font-size:12px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
+.cook-step-text{font-family:var(--font-display);font-size:26px;line-height:1.45;color:var(--charcoal);font-weight:500;animation:rise .35s var(--ease-out);}
+.cook-timer-btn{margin-top:22px;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:var(--sage-pale);color:var(--sage);border:none;border-radius:20px;padding:9px 16px;font-family:var(--font-body);font-size:14px;font-weight:700;cursor:pointer;}
+.cook-timer-run{font-variant-numeric:tabular-nums;}
+.cook-ings{margin-top:auto;padding-top:20px;}
+.cook-ings summary{font-size:12px;font-weight:700;color:var(--charcoal-mid);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;list-style:none;padding:8px 0;}
+.cook-ings ul{list-style:none;padding:6px 0 0;max-height:30vh;overflow-y:auto;}
+.cook-ings li{padding:5px 0;font-size:14px;color:var(--charcoal-mid);border-bottom:0.5px solid var(--border);}
+.cook-nav{display:flex;gap:10px;padding:14px 18px calc(18px + env(safe-area-inset-bottom));border-top:0.5px solid var(--border);flex-shrink:0;background:var(--warm-white);}
+.cook-nav button{flex:1;padding:15px;border-radius:14px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;border:none;transition:transform .15s var(--ease-out);}
+.cook-nav button:active{transform:scale(.96);}
+.cook-prev{background:none;border:1px solid var(--border-mid);color:var(--charcoal);}
+.cook-next{background:linear-gradient(180deg,#CD6838,var(--terracotta-deep));color:#fff;box-shadow:var(--glow);}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 </style>
 </head>
 <body>
@@ -247,7 +326,7 @@ textarea{resize:vertical;min-height:100px;}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="planner-view-btn" id="planner-view-btn" onclick="togglePlannerView()">Vista settimana</button>
-      <button onclick="copyPrevWeek()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;">&#8617; Copia settimana prec.</button>
+      <button onclick="copyPrevWeek()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Figtree',sans-serif;">&#8617; Copia settimana prec.</button>
     </div>
     <div id="planner-days"></div>
   </div>
@@ -256,8 +335,8 @@ textarea{resize:vertical;min-height:100px;}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <h2 class="section-title" style="margin:0">Lista della spesa</h2>
       <div style="display:flex;gap:6px">
-        <button onclick="shareShopList()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;">&#128279; Condividi</button>
-        <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;">&#9881; Ordine</button>
+        <button onclick="shareShopList()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Figtree',sans-serif;">&#128279; Condividi</button>
+        <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Figtree',sans-serif;">&#9881; Ordine</button>
       </div>
     </div>
     <div class="shop-week-nav">
@@ -305,7 +384,7 @@ textarea{resize:vertical;min-height:100px;}
     <h2 class="section-title" id="aggiungi-title">Aggiungi ricetta</h2>
     <div id="edit-mode-bar" class="edit-mode-bar" style="display:none">
       &#9998; Stai modificando una ricetta
-      <button onclick="cancelEditRecipe()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--terracotta);font-family:'Inter',sans-serif;font-weight:500;">&#10005; Annulla</button>
+      <button onclick="cancelEditRecipe()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--terracotta);font-family:'Figtree',sans-serif;font-weight:500;">&#10005; Annulla</button>
     </div>
     <div id="panel-manuale">
       <details style="margin-bottom:20px;background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px">
@@ -418,8 +497,8 @@ textarea{resize:vertical;min-height:100px;}
     <div id="extra-selected" style="display:none">
       <div style="font-size:14px;font-weight:500;margin-bottom:10px;color:var(--terracotta)" id="extra-selected-name"></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input type="number" id="extra-qty" placeholder="100" min="0" step="any" style="width:90px;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;background:var(--warm-white)">
-        <select id="extra-unit" style="flex:1;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:14px;background:var(--warm-white)">
+        <input type="number" id="extra-qty" placeholder="100" min="0" step="any" style="width:90px;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'Figtree',sans-serif;font-size:14px;background:var(--warm-white)">
+        <select id="extra-unit" style="flex:1;padding:9px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-family:'Figtree',sans-serif;font-size:14px;background:var(--warm-white)">
           <option value="g">g</option>
           <option value="kg">kg</option>
           <option value="ml">ml</option>
@@ -564,6 +643,46 @@ textarea{resize:vertical;min-height:100px;}
     <div id="frz-delete-wrap" style="display:none;margin-top:8px">
       <button class="btn btn-danger btn-full" onclick="deleteFreezerItem()">Elimina dal congelatore</button>
     </div>
+  </div>
+</div>
+
+<!-- MODALITÀ CUCINA -->
+<div id="cook-mode">
+  <div class="cook-top">
+    <button class="cook-close" onclick="closeCookMode()">&#10005;</button>
+    <h2 id="cook-title"></h2>
+  </div>
+  <div class="cook-progress"><div class="cook-progress-fill" id="cook-progress-fill" style="width:0%"></div></div>
+  <div class="cook-body">
+    <div class="cook-step-num" id="cook-step-num"></div>
+    <div class="cook-step-text" id="cook-step-text"></div>
+    <button class="cook-timer-btn" id="cook-timer-btn" style="display:none" onclick="toggleCookTimer()"><span>&#9202;</span><span id="cook-timer-label" class="cook-timer-run"></span></button>
+    <details class="cook-ings"><summary>&#129367; Ingredienti</summary><ul id="cook-ings-list"></ul></details>
+  </div>
+  <div class="cook-nav">
+    <button class="cook-prev" id="cook-prev" onclick="cookPrev()">&#8592; Indietro</button>
+    <button class="cook-next" id="cook-next" onclick="cookNext()">Avanti &#8594;</button>
+  </div>
+</div>
+
+<!-- MODAL EXPORT BIMBY/COOKIDOO -->
+<div class="modal-overlay" id="export-modal" style="display:none" onclick="if(event.target.id==='export-modal')document.getElementById('export-modal').style.display='none'">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="export-title" style="margin-bottom:14px">Invia la ricetta</h2>
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <button class="btn btn-primary" style="flex:1" onclick="exportCopy()">&#128203; Copia testo</button>
+      <button class="btn btn-outline" style="flex:1" onclick="exportShare()">&#128228; Condividi&hellip;</button>
+    </div>
+    <div style="background:var(--sage-pale);border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:var(--charcoal-mid);line-height:1.75">
+      <strong style="color:var(--sage)">Per Cookidoo&reg; / Bimby&reg;:</strong><br>
+      1. Tocca <em>Copia testo</em> qui sopra<br>
+      2. Apri Cookidoo &rarr; <em>Ricette create</em><br>
+      3. Pulsante verde &rarr; <em>Crea ricetta</em><br>
+      4. Incolla titolo, ingredienti e passi nei campi<br>
+      5. La ritrovi sul Bimby in <em>Le mie ricette</em>, coi passi guidati sullo schermo
+    </div>
+    <p style="font-size:12px;color:var(--charcoal-light);margin-top:12px;line-height:1.6">In alternativa cucina da qui con la <strong>Modalit&agrave; cucina</strong>: passi uno alla volta, timer e schermo sempre acceso.</p>
   </div>
 </div>
 
@@ -853,7 +972,7 @@ function renderFamilySection(){
       '<p style="font-size:12px;color:var(--charcoal-mid);margin-bottom:12px;line-height:1.5">Condividi la lista della spesa in tempo reale con un\'altra persona (es. il tuo partner).</p>'+
       '<button class="btn btn-outline btn-full btn-sm" onclick="createFamily()" style="margin-bottom:10px">Crea codice famiglia</button>'+
       '<div style="display:flex;gap:8px;align-items:center">'+
-      '<input id="family-join-input" type="text" placeholder="Hai un codice? (es. ABC123)" style="flex:1;padding:8px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-size:12px;font-family:\'DM Sans\',sans-serif;background:var(--warm-white);outline:none">'+
+      '<input id="family-join-input" type="text" placeholder="Hai un codice? (es. ABC123)" style="flex:1;padding:8px 10px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-size:12px;font-family:\'Figtree\',sans-serif;background:var(--warm-white);outline:none">'+
       '<button class="btn btn-primary btn-sm" onclick="joinFamily()">Unisciti</button></div></div>';
   } else {
     db.ref('families/'+familyCode+'/members').once('value',function(snap){
@@ -862,7 +981,7 @@ function renderFamilySection(){
         '<p style="font-size:13px;font-weight:500;color:var(--charcoal);margin-bottom:6px">&#127968; Spesa condivisa</p>'+
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
         '<span style="font-size:12px;color:var(--charcoal-mid)">Codice: <strong style="font-family:monospace;letter-spacing:1px;color:var(--charcoal)">'+familyCode+'</strong></span>'+
-        '<button onclick="navigator.clipboard.writeText(\''+familyCode+'\').then(function(){alert(\'Codice copiato!\');})" style="background:none;border:0.5px solid var(--border-mid);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--charcoal-mid);font-family:\'DM Sans\',sans-serif">Copia</button></div>'+
+        '<button onclick="navigator.clipboard.writeText(\''+familyCode+'\').then(function(){alert(\'Codice copiato!\');})" style="background:none;border:0.5px solid var(--border-mid);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--charcoal-mid);font-family:\'Figtree\',sans-serif">Copia</button></div>'+
         '<p style="font-size:12px;color:var(--charcoal-mid);margin-bottom:12px">Membri: '+members.join(' &middot; ')+'</p>'+
         '<button class="btn btn-danger btn-sm" onclick="leaveFamily()" style="font-size:12px">Lascia la famiglia</button></div>';
     });
@@ -1122,7 +1241,7 @@ function renderRecipeModal(r,portions){
   var diffMap={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'};
   var diffHtml=r.difficolta?'<span>'+( diffMap[r.difficolta]||'')+' '+esc(r.difficolta)+'</span>':'';
   var fotoUrl=safeUrl(r.foto);
-  var photoHtml=fotoUrl?'<img src="'+esc(fotoUrl)+'" style="width:calc(100% + 40px);height:200px;object-fit:cover;margin:-20px -20px 16px -20px;display:block;border-radius:14px 14px 0 0" onerror="this.style.display=\'none\'">':'';
+  var photoHtml=fotoUrl?'<img src="'+esc(fotoUrl)+'" style="width:calc(100% + 40px);height:200px;object-fit:cover;margin:-20px -20px 16px -20px;display:block;border-radius:22px 22px 0 0" onerror="this.style.display=\'none\'">':'';
   var linkUrl=safeUrl(r.link);
   document.getElementById('modal-body').innerHTML=
     photoHtml+
@@ -1135,11 +1254,133 @@ function renderRecipeModal(r,portions){
     '<h3 style="font-size:15px;margin-bottom:10px">Procedimento</h3><p class="recipe-detail-body">'+esc(r.procedimento||'')+'</p>'+
     (r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+esc(r.note)+'</div>':'')+
     '<div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">'+
-    '<button class="btn btn-primary btn-sm" onclick="openShopAddModal(\''+r.id+'\')">+ Aggiungi alla spesa</button>'+
+    '<button class="btn btn-primary btn-sm" onclick="openCookMode(\''+r.id+'\')">&#x1F468;&#x200D;&#x1F373; Cucina passo-passo</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="openShopAddModal(\''+r.id+'\')">+ Spesa</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="openExportModal(\''+r.id+'\')">&#x1F4E4; Bimby / Condividi</button>'+
     (currentUser?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+r.id+'\')">&#9998; Modifica</button>':'')+
     (currentUser?'<button class="btn btn-danger btn-sm" onclick="deleteRecipe(\''+r.id+'\')">Elimina</button>':'')+'</div>';
 }
 window.closeRecipeModal=function(){document.getElementById('recipe-modal').style.display='none';};
+
+// ── MODALITÀ CUCINA ──────────────────────────────────────────
+var cookSteps=[],cookIdx=0,cookRecipe=null,cookWakeLock=null,cookTimerInt=null,cookTimerEnd=null;
+window.openCookMode=function(id){
+  var r=recipes.find(function(x){return x.id===id;});if(!r)return;
+  cookRecipe=r;
+  cookSteps=(r.procedimento||'').split(/\n+/).map(function(s){return s.replace(/^\d+[\.\)]\s*/,'').trim();}).filter(Boolean);
+  if(!cookSteps.length)cookSteps=['Questa ricetta non ha un procedimento scritto. Aggiungilo dalla scheda con ✎ Modifica.'];
+  cookIdx=0;
+  document.getElementById('cook-title').textContent=r.nome;
+  var scale=(id===currentRecipeId?currentPortions:parseInt(r.porzioni)||4)/(parseInt(r.porzioni)||4);
+  document.getElementById('cook-ings-list').innerHTML=(r.ingredienti||[]).map(function(i){return'<li>'+esc(fmtIng(i,scale))+'</li>';}).join('')||'<li>Nessun ingrediente</li>';
+  renderCookStep();
+  closeRecipeModal();
+  document.getElementById('cook-mode').classList.add('open');
+  _cookLock();
+};
+function _cookLock(){
+  if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(wl){cookWakeLock=wl;}).catch(function(){});}
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'&&document.getElementById('cook-mode').classList.contains('open'))_cookLock();
+});
+function renderCookStep(){
+  var total=cookSteps.length;
+  document.getElementById('cook-step-num').textContent='Passo '+(cookIdx+1)+' di '+total;
+  var el=document.getElementById('cook-step-text');
+  el.textContent=cookSteps[cookIdx];
+  el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  document.getElementById('cook-progress-fill').style.width=(((cookIdx+1)/total)*100)+'%';
+  var prev=document.getElementById('cook-prev');
+  prev.disabled=cookIdx===0;prev.style.opacity=cookIdx===0?0.4:1;
+  document.getElementById('cook-next').innerHTML=cookIdx===total-1?'&#10003; Finito':'Avanti &#8594;';
+  stopCookTimer(false);
+  var btn=document.getElementById('cook-timer-btn');
+  var m=cookSteps[cookIdx].match(/(\d+)\s*(?:min\b|minuti|minuto|')/i)||null;
+  var h=cookSteps[cookIdx].match(/(\d+)\s*(?:ore|ora|h)\b/i)||null;
+  if(m||h){
+    var mins=m?parseInt(m[1]):parseInt(h[1])*60;
+    btn.style.display='inline-flex';btn.dataset.mins=mins;
+    document.getElementById('cook-timer-label').textContent='Avvia timer '+(mins>=60?(mins/60)+' h':mins+' min');
+  }else btn.style.display='none';
+}
+window.cookNext=function(){if(cookIdx>=cookSteps.length-1){closeCookMode();showToast('\u{1F37D} Buon appetito!');return;}cookIdx++;renderCookStep();};
+window.cookPrev=function(){if(cookIdx>0){cookIdx--;renderCookStep();}};
+window.closeCookMode=function(){
+  document.getElementById('cook-mode').classList.remove('open');
+  stopCookTimer(false);
+  if(cookWakeLock){cookWakeLock.release().catch(function(){});cookWakeLock=null;}
+};
+window.toggleCookTimer=function(){
+  if(cookTimerInt){stopCookTimer(false);renderCookStep();return;}
+  var mins=parseInt(document.getElementById('cook-timer-btn').dataset.mins)||5;
+  cookTimerEnd=Date.now()+mins*60000;
+  cookTimerInt=setInterval(function(){
+    var left=Math.max(0,cookTimerEnd-Date.now());
+    var mm=Math.floor(left/60000),ss=Math.floor(left%60000/1000);
+    document.getElementById('cook-timer-label').textContent='⏸ '+mm+':'+(ss<10?'0':'')+ss;
+    if(left<=0)stopCookTimer(true);
+  },250);
+};
+function stopCookTimer(ring){
+  if(cookTimerInt){clearInterval(cookTimerInt);cookTimerInt=null;}
+  if(ring){
+    document.getElementById('cook-timer-label').textContent='⏰ Tempo scaduto!';
+    if(navigator.vibrate)navigator.vibrate([300,150,300,150,300]);
+    try{
+      var ctx=new (window.AudioContext||window.webkitAudioContext)();
+      var t=ctx.currentTime;
+      [0,0.4,0.8].forEach(function(off){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=880;g.gain.setValueAtTime(0.001,t+off);
+        g.gain.exponentialRampToValueAtTime(0.3,t+off+0.03);
+        g.gain.exponentialRampToValueAtTime(0.001,t+off+0.3);
+        o.start(t+off);o.stop(t+off+0.32);
+      });
+    }catch(e){}
+    showToast('⏰ Timer finito!');
+  }
+}
+
+// ── EXPORT BIMBY/COOKIDOO/CONDIVISIONE ───────────────────────
+var exportRecipeId=null;
+function recipePlainText(r,portions){
+  var base=parseInt(r.porzioni)||4;var p=portions||base;var scale=p/base;
+  var lines=[r.nome,''];
+  if(r.tempo)lines.push('Tempo: '+r.tempo);
+  lines.push('Porzioni: '+p,'','INGREDIENTI');
+  var lastSez=null;
+  (r.ingredienti||[]).forEach(function(i){
+    if(i.sezione&&i.sezione!==lastSez){lastSez=i.sezione;lines.push('');lines.push(i.sezione.toUpperCase());}
+    lines.push('- '+fmtIng(i,scale));
+  });
+  lines.push('','PREPARAZIONE');
+  var n=1;
+  (r.procedimento||'').split(/\n+/).forEach(function(s){
+    s=s.replace(/^\d+[\.\)]\s*/,'').trim();
+    if(s){lines.push(n+'. '+s);n++;}
+  });
+  if(r.note)lines.push('','Note: '+r.note);
+  return lines.join('\n');
+}
+window.openExportModal=function(id){
+  exportRecipeId=id;
+  var r=recipes.find(function(x){return x.id===id;});if(!r)return;
+  document.getElementById('export-title').textContent=r.nome;
+  document.getElementById('export-modal').style.display='flex';
+};
+window.exportCopy=function(){
+  var r=recipes.find(function(x){return x.id===exportRecipeId;});if(!r)return;
+  var text=recipePlainText(r,(exportRecipeId===currentRecipeId?currentPortions:null));
+  navigator.clipboard.writeText(text).then(function(){showToast('\u{1F4CB} Ricetta copiata! Incollala su Cookidoo.');}).catch(function(){alert(text);});
+};
+window.exportShare=function(){
+  var r=recipes.find(function(x){return x.id===exportRecipeId;});if(!r)return;
+  var text=recipePlainText(r,(exportRecipeId===currentRecipeId?currentPortions:null));
+  if(navigator.share){navigator.share({title:r.nome,text:text}).catch(function(){});}
+  else{navigator.clipboard.writeText(text).then(function(){showToast('Copiata negli appunti!');}).catch(function(){alert(text);});}
+};
 window.deleteRecipe=function(id){if(!confirm('Eliminare? Rimossa per tutti.'))return;db.ref('recipes/'+id).remove().catch(dbErr);closeRecipeModal();};
 function showShopIngChecklist(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
@@ -1860,7 +2101,7 @@ window.shareShopList=function(){
 };
 function showToast(msg){
   var t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:white;padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;';
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:var(--cream);padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;';
   t.textContent=msg;document.body.appendChild(t);
   setTimeout(function(){if(t.parentNode)document.body.removeChild(t);},2200);
 }
