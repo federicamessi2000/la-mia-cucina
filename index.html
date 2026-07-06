@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,15 +18,15 @@
 <style>
 :root{
   --cream:#FAF5EC;--warm-white:#FFFCF5;
-  --terracotta:#C05A2E;--terracotta-deep:#A3491F;--terracotta-pale:#F8EBE0;
-  --sage:#6F8263;--sage-pale:#EDF1E7;
-  --charcoal:#2B2620;--charcoal-mid:#5D554A;--charcoal-light:#9C9285;
+  --terracotta:#B04E24;--terracotta-deep:#8F3E1A;--terracotta-pale:#F8EBE0;
+  --sage:#5E7052;--sage-pale:#EDF1E7;
+  --charcoal:#2B2620;--charcoal-mid:#5D554A;--charcoal-light:#786D5F;
   --border:rgba(70,52,36,0.10);--border-mid:rgba(70,52,36,0.22);
   --radius:16px;--radius-sm:10px;--radius-lg:24px;
   --shadow-sm:0 1px 2px rgba(70,45,25,0.05),0 2px 10px rgba(70,45,25,0.05);
   --shadow-md:0 2px 6px rgba(70,45,25,0.07),0 12px 32px rgba(70,45,25,0.10);
   --shadow-lg:0 8px 24px rgba(50,30,15,0.14),0 28px 70px rgba(50,30,15,0.22);
-  --glow:0 2px 10px rgba(192,90,46,0.32);
+  --glow:0 2px 10px rgba(176,78,36,0.32);
   --ease-spring:cubic-bezier(.34,1.45,.44,1);--ease-out:cubic-bezier(.22,.61,.36,1);
   --font-display:'Fraunces',Georgia,serif;--font-body:'Figtree',-apple-system,'Segoe UI',sans-serif;
 }
@@ -35,7 +35,7 @@
     --cream:#1A1512;--warm-white:#241E18;
     --terracotta:#E17C4C;--terracotta-deep:#C05A2E;--terracotta-pale:#3B2A1E;
     --sage:#97AC87;--sage-pale:#262E1F;
-    --charcoal:#F1E9DC;--charcoal-mid:#C7BCAC;--charcoal-light:#897E70;
+    --charcoal:#F1E9DC;--charcoal-mid:#C7BCAC;--charcoal-light:#968A7A;
     --border:rgba(240,225,205,0.10);--border-mid:rgba(240,225,205,0.24);
     --shadow-sm:0 1px 2px rgba(0,0,0,0.25),0 2px 10px rgba(0,0,0,0.22);
     --shadow-md:0 2px 6px rgba(0,0,0,0.30),0 12px 32px rgba(0,0,0,0.35);
@@ -44,7 +44,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
-body{font-family:var(--font-body);background:radial-gradient(130% 55% at 50% -8%,rgba(192,90,46,0.07),transparent 62%),var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;font-size:14.5px;line-height:1.45;}
+body{font-family:var(--font-body);background:radial-gradient(130% 55% at 50% -8%,rgba(176,78,36,0.07),transparent 62%),var(--cream);color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;font-size:14.5px;line-height:1.45;}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.33 0 0 0 0 0.22 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");}
 @media (prefers-color-scheme:dark){body::before{mix-blend-mode:screen;opacity:.25;}}
 #app-screen,#login-screen,#loading-screen{position:relative;z-index:1;}
@@ -91,20 +91,20 @@ h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-0.015em
 .tag-internet{background:var(--sage-pale);color:var(--sage);}
 .recipe-meta{font-size:13px;color:var(--charcoal-light);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
 .recipe-author{font-size:11px;color:var(--charcoal-light);margin-top:3px;}
-.search-bar{width:100%;padding:12px 16px;border:0.5px solid var(--border-mid);border-radius:14px;background:var(--warm-white);font-family:var(--font-body);font-size:15px;color:var(--charcoal);margin-bottom:16px;outline:none;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s;}
+.search-bar{width:100%;padding:12px 16px;border:0.5px solid var(--border-mid);border-radius:14px;background:var(--warm-white);font-family:var(--font-body);font-size:16px;color:var(--charcoal);margin-bottom:16px;outline:none;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s;}
 .search-bar::placeholder{color:var(--charcoal-light);}
-.search-bar:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(192,90,46,0.13),var(--shadow-sm);}
+.search-bar:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(176,78,36,0.13),var(--shadow-sm);}
 .btn{padding:11px 18px;border-radius:12px;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:transform .15s var(--ease-out),box-shadow .2s,opacity .2s;}
 .btn:active{transform:scale(.96);}
-.btn-primary{background:linear-gradient(180deg,#CD6838 0%,var(--terracotta-deep) 100%);color:#fff;box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,0.22);text-shadow:0 1px 1px rgba(90,40,10,0.25);}
+.btn-primary{background:linear-gradient(180deg,#BC5527 0%,var(--terracotta-deep) 100%);color:#fff;box-shadow:var(--glow),inset 0 1px 0 rgba(255,255,255,0.22);text-shadow:0 1px 1px rgba(90,40,10,0.25);}
 .btn-outline{background:none;border:1px solid var(--border-mid);color:var(--charcoal);}
-.btn-danger{background:none;border:1px solid rgba(192,90,46,0.35);color:var(--terracotta);}
+.btn-danger{background:none;border:1px solid rgba(176,78,36,0.35);color:var(--terracotta);}
 .btn-sm{padding:7px 13px;font-size:13px;}
 .btn-full{width:100%;text-align:center;}
 .form-group{margin-bottom:16px;}
 label{display:block;font-size:12.5px;font-weight:600;color:var(--charcoal-mid);margin-bottom:6px;letter-spacing:.015em;text-transform:uppercase;font-size:11.5px;}
-input[type=text],input[type=number],input[type=date],textarea,select{width:100%;padding:11px 13px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:var(--font-body);font-size:15px;color:var(--charcoal);outline:none;transition:border-color .2s,box-shadow .2s;}
-input:focus,textarea:focus,select:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(192,90,46,0.13);}
+input[type=text],input[type=number],input[type=date],textarea,select{width:100%;padding:11px 13px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--warm-white);font-family:var(--font-body);font-size:16px;color:var(--charcoal);outline:none;transition:border-color .2s,box-shadow .2s;}
+input:focus,textarea:focus,select:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(176,78,36,0.13);}
 textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .ing-header{display:flex;gap:6px;margin-bottom:4px;}
 .ing-header span{font-size:10.5px;color:var(--charcoal-light);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
@@ -163,17 +163,17 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 @keyframes sheetUp{from{transform:translateY(56px);opacity:.3;}to{transform:none;opacity:1;}}
 .modal-handle{width:38px;height:4.5px;background:var(--border-mid);border-radius:3px;margin:0 auto 20px;}
 .modal h2{font-size:19px;margin-bottom:16px;}
-.recipe-detail-body{font-size:14.5px;line-height:1.75;color:var(--charcoal-mid);white-space:pre-wrap;}
+.recipe-detail-body{font-size:15.5px;line-height:1.75;color:var(--charcoal-mid);white-space:pre-wrap;}
 .ingredients-list{list-style:none;margin-bottom:16px;}
-.ingredients-list li{padding:7px 0;border-bottom:0.5px solid var(--border);font-size:14.5px;}
+.ingredients-list li{padding:7px 0;border-bottom:0.5px solid var(--border);font-size:15.5px;}
 .ingredients-list li:last-child{border-bottom:none;}
 .source-link{font-size:12px;color:var(--sage);margin-bottom:14px;}
 .source-link a{color:var(--sage);text-decoration:underline;}
 .filter-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .filter-tab{padding:6px 14px;border-radius:20px;font-size:13px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;transition:all .2s;}
 .filter-tab.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta);}
-.pick-search{width:100%;padding:10px 13px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:var(--font-body);font-size:15px;color:var(--charcoal);outline:none;margin-bottom:12px;transition:border-color .2s,box-shadow .2s;}
-.pick-search:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(192,90,46,0.13);}
+.pick-search{width:100%;padding:10px 13px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);background:var(--cream);font-family:var(--font-body);font-size:16px;color:var(--charcoal);outline:none;margin-bottom:12px;transition:border-color .2s,box-shadow .2s;}
+.pick-search:focus{border-color:var(--terracotta);box-shadow:0 0 0 3.5px rgba(176,78,36,0.13);}
 .empty-state{text-align:center;padding:44px 20px;color:var(--charcoal-light);}
 .empty-state p{font-size:15px;margin-top:8px;}
 .user-info{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:0.5px solid var(--border);}
@@ -181,7 +181,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .user-info-name{font-size:16px;font-weight:700;}
 .user-info-email{font-size:13px;color:var(--charcoal-light);}
 .shop-week-nav{display:flex;align-items:center;justify-content:space-between;background:var(--sage-pale);border-radius:12px;padding:8px 12px;margin-bottom:12px;}
-.shop-week-nav button{background:none;border:0.5px solid rgba(111,130,99,0.4);border-radius:var(--radius-sm);padding:4px 11px;cursor:pointer;font-size:13px;color:var(--sage);font-family:var(--font-body);font-weight:600;transition:transform .15s var(--ease-out);}
+.shop-week-nav button{background:none;border:0.5px solid rgba(94,112,82,0.4);border-radius:var(--radius-sm);padding:4px 11px;cursor:pointer;font-size:13px;color:var(--sage);font-family:var(--font-body);font-weight:600;transition:transform .15s var(--ease-out);}
 .shop-week-nav button:active{transform:scale(.92);}
 .week-label{font-size:13px;font-weight:700;color:var(--sage);flex:1;text-align:center;}
 .shop-cat-header{font-size:10.5px;font-weight:700;color:var(--charcoal-mid);margin:16px 0 7px;padding:3px 0 5px;border-bottom:0.5px solid var(--border);letter-spacing:0.07em;text-transform:uppercase;}
@@ -211,7 +211,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .cat-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--border);}
 .cat-item-name{font-size:14px;color:var(--charcoal);}
 .cat-item-unit{font-size:12px;color:var(--charcoal-light);margin-left:4px;}
-.cat-add-btn{background:linear-gradient(180deg,#CD6838,var(--terracotta-deep));color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;box-shadow:var(--glow);transition:transform .15s var(--ease-spring);}
+.cat-add-btn{background:linear-gradient(180deg,#BC5527,var(--terracotta-deep));color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;box-shadow:var(--glow);transition:transform .15s var(--ease-spring);}
 .cat-add-btn:active{transform:scale(.85);}
 .cat-search-result-header{font-size:10.5px;font-weight:700;color:var(--charcoal-mid);margin:16px 0 7px;padding:3px 0 5px;border-bottom:0.5px solid var(--border);letter-spacing:0.07em;text-transform:uppercase;}
 .freezer-item{background:var(--warm-white);border-radius:12px;border:0.5px solid var(--border);padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm);transition:transform .16s var(--ease-out);}
@@ -225,9 +225,9 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .shop-edit-btn{background:none;border:none;color:var(--charcoal-light);cursor:pointer;font-size:14px;padding:0 5px;flex-shrink:0;}
 .tag-chip{font-size:10px;padding:2.5px 8px;border-radius:12px;background:var(--sage-pale);color:var(--sage);font-weight:600;white-space:nowrap;}
 .tag-toggle{display:inline-flex;align-items:center;font-size:12px;padding:5px 11px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--warm-white);cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;white-space:nowrap;transition:all .2s;}
-.tag-toggle.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(111,130,99,0.6);}
+.tag-toggle.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(94,112,82,0.6);}
 .tag-filter-btn{font-size:11px;padding:4.5px 11px;border-radius:20px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .2s;}
-.tag-filter-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(111,130,99,0.6);}
+.tag-filter-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(94,112,82,0.6);}
 .recipe-card{overflow:hidden;}
 .recipe-photo-thumb{width:calc(100% + 32px);height:150px;object-fit:cover;margin:-14px -16px 10px -16px;display:block;}
 .recipe-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
@@ -252,7 +252,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 11px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;transition:all .2s;}
 .nutri-bar{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--charcoal-mid);background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;align-items:center;}
 .nutri-kcal{font-weight:700;color:var(--charcoal);font-size:13px;}
-.planner-view-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(111,130,99,0.5);}
+.planner-view-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(94,112,82,0.5);}
 .week-day-kcal{font-size:11px;color:var(--charcoal-light);padding:5px 0 2px;border-top:0.5px solid var(--border);margin-top:6px;display:flex;align-items:center;gap:8px;}
 .week-day-kcal strong{color:var(--terracotta);font-weight:700;font-size:12px;}
 .week-extras{border-top:0.5px solid var(--border);padding-top:6px;margin-top:6px;}
@@ -268,7 +268,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .ing-ac-unit{font-size:11px;color:var(--charcoal-light);background:var(--cream);padding:1px 6px;border-radius:10px;}
 .unit-chips{display:flex;flex-wrap:wrap;gap:5px;padding:6px 2px;margin-bottom:6px;}
 .unit-chip{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:20px;padding:4px 11px;font-size:12px;font-family:var(--font-body);font-weight:600;cursor:pointer;color:var(--charcoal-mid);transition:all .15s;}
-.unit-chip:active,.unit-chip.sel{background:var(--terracotta-pale);color:var(--terracotta);border-color:rgba(192,90,46,0.35);}
+.unit-chip:active,.unit-chip.sel{background:var(--terracotta-pale);color:var(--terracotta);border-color:rgba(176,78,36,0.35);}
 /* ── Modalità cucina ─────────────────────────────── */
 #cook-mode{position:fixed;inset:0;z-index:400;background:var(--cream);display:none;flex-direction:column;}
 #cook-mode.open{display:flex;animation:fadeIn .25s ease;}
@@ -276,7 +276,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .cook-top h2{flex:1;font-size:17px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cook-close{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:50%;width:34px;height:34px;font-size:17px;cursor:pointer;color:var(--charcoal);flex-shrink:0;}
 .cook-progress{height:4px;background:var(--border);flex-shrink:0;}
-.cook-progress-fill{height:100%;background:linear-gradient(90deg,var(--terracotta),#CD6838);border-radius:0 3px 3px 0;transition:width .4s var(--ease-out);}
+.cook-progress-fill{height:100%;background:linear-gradient(90deg,var(--terracotta),#BC5527);border-radius:0 3px 3px 0;transition:width .4s var(--ease-out);}
 .cook-body{flex:1;overflow-y:auto;padding:26px 24px;display:flex;flex-direction:column;}
 .cook-step-num{font-size:12px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
 .cook-step-text{font-family:var(--font-display);font-size:26px;line-height:1.45;color:var(--charcoal);font-weight:500;animation:rise .35s var(--ease-out);}
@@ -290,7 +290,16 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .cook-nav button{flex:1;padding:15px;border-radius:14px;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;border:none;transition:transform .15s var(--ease-out);}
 .cook-nav button:active{transform:scale(.96);}
 .cook-prev{background:none;border:1px solid var(--border-mid);color:var(--charcoal);}
-.cook-next{background:linear-gradient(180deg,#CD6838,var(--terracotta-deep));color:#fff;box-shadow:var(--glow);}
+.cook-next{background:linear-gradient(180deg,#BC5527,var(--terracotta-deep));color:#fff;box-shadow:var(--glow);}
+button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus-visible{outline:2.5px solid var(--terracotta);outline-offset:2px;}
+.nav-item:focus-visible{outline-offset:-2px;border-radius:18px;}
+.shop-check,.shop-delete,.shop-edit-btn,.meal-add-btn,.meal-alt-btn,.cook-close,.extra-chip button{position:relative;}
+.shop-check::before,.shop-delete::before,.shop-edit-btn::before,.meal-add-btn::before,.meal-alt-btn::before,.cook-close::before,.extra-chip button::before{content:'';position:absolute;inset:-10px;}
+.portions-btn{position:relative;}
+.portions-btn::before{content:'';position:absolute;inset:-6px;border-radius:50%;}
+.fav-heart{background:none;border:none;cursor:pointer;font-size:24px;line-height:1;padding:2px 4px;flex-shrink:0;transition:transform .25s var(--ease-spring);position:relative;}
+.fav-heart::before{content:'';position:absolute;inset:-8px;}
+.fav-heart:active{transform:scale(1.25);}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 </style>
 </head>
@@ -311,19 +320,19 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 <div id="app-screen">
   <div class="topbar">
     <h1>La Mia <span>Cucina</span></h1>
-    <button class="user-btn" onclick="openUserModal()" id="user-btn-inner"><div class="user-initials" id="user-initials">?</div></button>
+    <button class="user-btn" aria-label="Il tuo profilo" onclick="openUserModal()" id="user-btn-inner"><div class="user-initials" id="user-initials">?</div></button>
   </div>
 
   <div class="page active" id="page-ricette">
-    <input class="search-bar" type="text" placeholder="Cerca una ricetta&hellip;" id="search-input" oninput="renderRecipeHome()">
+    <input class="search-bar" type="text" placeholder="Cerca una ricetta&hellip;" aria-label="Cerca una ricetta" id="search-input" oninput="renderRecipeHome()">
     <div id="recipe-home"></div>
   </div>
 
   <div class="page" id="page-planner">
     <div class="month-nav">
-      <button onclick="changeMonth(-1)">&#8249;</button>
+      <button aria-label="Periodo precedente" onclick="changeMonth(-1)">&#8249;</button>
       <h2 id="month-title"></h2>
-      <button onclick="changeMonth(1)">&#8250;</button>
+      <button aria-label="Periodo successivo" onclick="changeMonth(1)">&#8250;</button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <button class="planner-view-btn" id="planner-view-btn" onclick="togglePlannerView()">Vista settimana</button>
@@ -341,20 +350,20 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
       </div>
     </div>
     <div class="shop-week-nav">
-      <button onclick="changeShopWeek(-1)">&#8592;</button>
+      <button aria-label="Settimana precedente" onclick="changeShopWeek(-1)">&#8592;</button>
       <span class="week-label" id="shop-week-label"></span>
       <button id="shop-week-today-btn" onclick="changeShopWeek(0)" style="display:none">Oggi</button>
-      <button onclick="changeShopWeek(1)">&#8594;</button>
+      <button aria-label="Settimana successiva" onclick="changeShopWeek(1)">&#8594;</button>
     </div>
     <div style="text-align:center;margin:6px 0">
-      <button class="btn btn-secondary" style="font-size:13px;padding:6px 14px" onclick="syncPlannerToShop()">&#128197; Carica tutte le settimane</button>
+      <button class="btn btn-secondary" style="font-size:13px;padding:6px 14px" onclick="syncPlannerToShop()">&#128197; Riempi dal planner</button>
     </div>
     <div class="add-inline">
       <div class="shop-input-wrap">
-        <input type="text" id="shop-input" placeholder="Cerca ingrediente&hellip;" oninput="onShopInput(this.value)" onkeydown="onShopInputKey(event)" autocomplete="off">
+        <input type="text" id="shop-input" placeholder="Cerca ingrediente&hellip;" aria-label="Cerca o aggiungi ingrediente" oninput="onShopInput(this.value)" onkeydown="onShopInputKey(event)" autocomplete="off">
         <div id="shop-suggest" class="shop-suggest"></div>
       </div>
-      <button class="btn btn-primary" onclick="addShopItem()">+</button>
+      <button class="btn btn-primary" aria-label="Aggiungi alla lista" onclick="addShopItem()">+</button>
     </div>
     <button class="btn btn-outline btn-full" style="margin-bottom:16px" onclick="openShopAddModal(null)">&#128203; Aggiungi ingredienti da ricetta</button>
     <div id="shop-list"></div>
@@ -366,7 +375,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
   <div class="page" id="page-ingredienti">
     <h2 class="section-title">Ingredienti</h2>
-    <input class="search-bar" type="text" id="cat-search" placeholder="Cerca ingrediente&hellip;" oninput="renderCatalog(this.value)">
+    <input class="search-bar" type="text" id="cat-search" placeholder="Cerca ingrediente&hellip;" aria-label="Cerca ingrediente nel catalogo" oninput="renderCatalog(this.value)">
     <div id="catalog-list"></div>
     <div style="margin-top:16px;padding-bottom:20px">
       <button class="btn btn-outline btn-full" onclick="openCustomCatalogAdd()">+ Aggiungi ingrediente non trovato</button>
@@ -409,7 +418,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
       <div class="form-group">
         <label>Ingredienti</label>
         <div class="ing-header"><span class="h-qty">Qt&agrave;</span><span class="h-unit">Unit&agrave;</span><span class="h-name">Ingrediente</span></div>
-        <div id="ing-list"><div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div></div>
+        <div id="ing-list"><div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button aria-label="Rimuovi riga" onclick="removeIng(this)">&minus;</button></div></div>
         <div style="display:flex;gap:8px;margin-top:6px">
           <button class="btn btn-outline btn-sm" onclick="addIng()">+ Ingrediente</button>
           <button class="btn btn-outline btn-sm" onclick="addSection()" style="color:var(--terracotta);border-color:var(--terracotta)">+ Sezione</button>
@@ -445,12 +454,12 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL RICETTA -->
 <div class="modal-overlay" id="recipe-modal" style="display:none" onclick="if(event.target.id==='recipe-modal')closeRecipeModal()">
-  <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div></div>
+  <div class="modal" role="dialog" aria-modal="true"><div class="modal-handle"></div><div id="modal-body"></div></div>
 </div>
 
 <!-- MODAL PICK PASTO -->
 <div class="modal-overlay" id="pick-modal" style="display:none" onclick="if(event.target.id==='pick-modal')document.getElementById('pick-modal').style.display='none'">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <!-- STEP 1: scegli ricetta -->
     <div id="pick-step1">
@@ -459,9 +468,9 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
       <div style="display:flex;align-items:center;gap:12px;background:var(--sage-pale);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
         <span style="font-size:13px;color:var(--sage);font-weight:500;flex:1;">&#x1F465; Per quante persone?</span>
         <div style="display:flex;align-items:center;gap:10px;">
-          <button class="portions-btn" onclick="changePlannerPortions(-1)">&minus;</button>
+          <button class="portions-btn" aria-label="Meno porzioni" onclick="changePlannerPortions(-1)">&minus;</button>
           <span class="portions-num" id="planner-portions-num">1</span>
-          <button class="portions-btn" onclick="changePlannerPortions(+1)">+</button>
+          <button class="portions-btn" aria-label="Più porzioni" onclick="changePlannerPortions(+1)">+</button>
         </div>
       </div>
       <div onclick="setFuoriCasa()" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);margin-bottom:10px;cursor:pointer;background:var(--warm-white)">
@@ -489,7 +498,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL EXTRA GIORNALIERO -->
 <div class="modal-overlay" id="extra-modal" style="display:none" onclick="if(event.target.id==='extra-modal')closeExtraModal()">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <h2>Aggiungi extra</h2>
     <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:12px">Frutta, formaggio, pane&hellip; qualcosa fuori dai pasti.</p>
@@ -520,7 +529,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL AGGIUNGI ALLA SPESA DA RICETTA -->
 <div class="modal-overlay" id="shop-add-modal" style="display:none" onclick="if(event.target.id==='shop-add-modal')closeShopAddModal()">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <div id="shop-add-step1">
       <h2>Aggiungi alla spesa</h2>
@@ -534,7 +543,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
       </div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
         <span style="font-size:13px;color:var(--charcoal-mid)">Porzioni:</span>
-        <div class="portions-controls"><button class="portions-btn" onclick="changeShopAddPortions(-1)">&minus;</button><span class="portions-num" id="shop-add-portions-num">1</span><button class="portions-btn" onclick="changeShopAddPortions(+1)">+</button></div>
+        <div class="portions-controls"><button class="portions-btn" aria-label="Meno porzioni" onclick="changeShopAddPortions(-1)">&minus;</button><span class="portions-num" id="shop-add-portions-num">1</span><button class="portions-btn" aria-label="Più porzioni" onclick="changeShopAddPortions(+1)">+</button></div>
       </div>
       <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:12px">Spunta gli ingredienti che hai <strong>già in casa</strong> &mdash; non li aggiungo alla lista.</p>
       <div id="shop-add-checks" style="max-height:300px;overflow-y:auto"></div>
@@ -547,7 +556,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL AGGIUNGI DA CATALOGO -->
 <div class="modal-overlay" id="catalog-add-modal" style="display:none" onclick="if(event.target.id==='catalog-add-modal')document.getElementById('catalog-add-modal').style.display='none'">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <h2 id="catalog-add-title" style="margin-bottom:16px">Aggiungi alla spesa</h2>
     <div class="form-group" id="cat-name-group" style="display:none">
@@ -568,7 +577,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL ORDINE CATEGORIE -->
 <div class="modal-overlay" id="cat-order-modal" style="display:none" onclick="if(event.target.id==='cat-order-modal')document.getElementById('cat-order-modal').style.display='none'">
-  <div class="modal" style="max-height:88vh">
+  <div class="modal" role="dialog" aria-modal="true" style="max-height:88vh">
     <div class="modal-handle"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <h2 style="margin:0;font-size:18px">Ordine categorie</h2>
@@ -596,7 +605,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL DETTAGLIO CATEGORIA -->
 <div class="modal-overlay" id="cat-detail-modal" style="display:none" onclick="if(event.target.id==='cat-detail-modal')document.getElementById('cat-detail-modal').style.display='none'">
-  <div class="modal" style="max-height:82vh">
+  <div class="modal" role="dialog" aria-modal="true" style="max-height:82vh">
     <div class="modal-handle"></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
       <span id="cat-detail-emoji" style="font-size:26px"></span>
@@ -610,7 +619,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL UTENTE -->
 <div class="modal-overlay" id="user-modal" style="display:none" onclick="if(event.target.id==='user-modal')document.getElementById('user-modal').style.display='none'">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <div class="user-info">
       <div id="user-modal-avatar"></div>
@@ -624,7 +633,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL CONGELATORE -->
 <div class="modal-overlay" id="freezer-modal" style="display:none" onclick="if(event.target.id==='freezer-modal')closeFreezerModal()">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <h2 id="freezer-modal-title" style="margin-bottom:16px">Aggiungi al congelatore</h2>
     <div class="form-group"><label>Nome</label><input type="text" id="frz-name" placeholder="es. Pollo marinato, Ragù" autocomplete="off"></div>
@@ -650,7 +659,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 <!-- MODALITÀ CUCINA -->
 <div id="cook-mode">
   <div class="cook-top">
-    <button class="cook-close" onclick="closeCookMode()">&#10005;</button>
+    <button class="cook-close" aria-label="Chiudi modalità cucina" onclick="closeCookMode()">&#10005;</button>
     <h2 id="cook-title"></h2>
   </div>
   <div class="cook-progress"><div class="cook-progress-fill" id="cook-progress-fill" style="width:0%"></div></div>
@@ -668,7 +677,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL EXPORT BIMBY/COOKIDOO -->
 <div class="modal-overlay" id="export-modal" style="display:none" onclick="if(event.target.id==='export-modal')document.getElementById('export-modal').style.display='none'">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <h2 id="export-title" style="margin-bottom:14px">Invia la ricetta</h2>
     <div style="display:flex;gap:8px;margin-bottom:18px">
@@ -689,7 +698,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 
 <!-- MODAL MODIFICA ITEM SPESA -->
 <div class="modal-overlay" id="shop-edit-modal" style="display:none" onclick="if(event.target.id==='shop-edit-modal')document.getElementById('shop-edit-modal').style.display='none'">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-handle"></div>
     <h2 id="shop-edit-title" style="margin-bottom:16px">Modifica</h2>
     <div style="display:flex;gap:8px">
@@ -1201,6 +1210,7 @@ window.filterRecipeCatModal=function(){
 function renderRecipeHome(){
   var q=normTxt((document.getElementById('search-input').value||'').trim());
   var el=document.getElementById('recipe-home');
+  if(!recipes.length){el.innerHTML='<div class="empty-state"><div class="spinner" style="margin:0 auto 14px"></div><p>Sto caricando le ricette&hellip;</p></div>';return;}
   if(q){
     var results=recipes.filter(function(r){
       return normTxt(r.nome).includes(q)||
@@ -1223,7 +1233,17 @@ function renderRecipeHome(){
   el.innerHTML=html;
 }
 function renderRecipes(){renderRecipeHome();}
-window.toggleFavorite=function(recipeId,e){e.stopPropagation();if(!currentUser)return;var ref=db.ref('users/'+currentUser.uid+'/favorites/'+recipeId);if(userFavorites[recipeId]){ref.remove();}else{ref.set(true);}};
+window.toggleFavorite=function(recipeId,e){
+  if(e&&e.stopPropagation)e.stopPropagation();
+  if(!currentUser)return;
+  var ref=db.ref('users/'+currentUser.uid+'/favorites/'+recipeId);
+  var isFav=!!userFavorites[recipeId];
+  if(isFav){ref.remove().catch(dbErr);}else{ref.set(true).catch(dbErr);}
+  // feedback immediato sul cuore nel modal, senza aspettare il listener
+  var btn=document.getElementById('fav-heart-btn');
+  if(btn){btn.textContent=isFav?'♡':'❤️';btn.setAttribute('aria-pressed',String(!isFav));}
+  showToast(isFav?'Rimossa dai preferiti':'❤️ Aggiunta ai preferiti');
+};
 function renderRecipeList(list){renderRecipeHome();}
 
 window.openRecipe=function(id){
@@ -1246,12 +1266,12 @@ function renderRecipeModal(r,portions){
   var linkUrl=safeUrl(r.link);
   document.getElementById('modal-body').innerHTML=
     photoHtml+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px"><h2 style="flex:1;margin:0">'+esc(r.nome)+'</h2><span class="tag tag-'+r.fonte+'" style="margin-left:8px">'+(r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web')+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:6px"><h2 style="flex:1;margin:0">'+esc(r.nome)+'</h2><button id="fav-heart-btn" class="fav-heart" aria-pressed="'+(userFavorites[r.id]?'true':'false')+'" aria-label="Aggiungi o togli dai preferiti" onclick="toggleFavorite(\''+r.id+'\',event)">'+(userFavorites[r.id]?'❤️':'♡')+'</button><span class="tag tag-'+r.fonte+'" style="margin-top:4px">'+(r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web')+'</span></div>'+
     (catChip?'<div class="recipe-tags" style="margin-bottom:8px">'+catChip+'</div>':'')+
     tagHtml+
     '<div class="recipe-meta" style="margin-bottom:12px">'+(r.tempo?'<span>&#x23F1; '+esc(r.tempo)+'</span>':'')+diffHtml+(r.addedBy?'<span>da '+esc(r.addedBy)+'</span>':'')+'</div>'+
     (linkUrl?'<div class="source-link">&#x1F517; <a href="'+esc(linkUrl)+'" target="_blank" rel="noopener">Fonte originale</a></div>':'')+
-    '<div class="portions-bar"><span class="portions-label">&#x1F465; Porzioni</span><div class="portions-controls"><button class="portions-btn" onclick="changePortions(-1)">&minus;</button><span class="portions-num">'+portions+'</span><button class="portions-btn" onclick="changePortions(+1)">+</button></div></div>'+(function(){var n=calcNutrition(r,portions);return n.coverage>=0.5&&n.kcal>0?'<div class="nutri-bar"><span class="nutri-kcal">&#x1F525; ~'+n.kcal+' kcal</span><span>'+n.p+'g prot</span><span>'+n.c+'g carb</span><span>'+n.f+'g grassi</span></div>':'';})()+'<h3 style="font-size:15px;margin-bottom:10px">Ingredienti</h3><ul class="ingredients-list">'+ings+'</ul>'+
+    '<div class="portions-bar"><span class="portions-label">&#x1F465; Porzioni</span><div class="portions-controls"><button class="portions-btn" aria-label="Meno porzioni" onclick="changePortions(-1)">&minus;</button><span class="portions-num">'+portions+'</span><button class="portions-btn" aria-label="Più porzioni" onclick="changePortions(+1)">+</button></div></div>'+(function(){var n=calcNutrition(r,portions);return n.coverage>=0.5&&n.kcal>0?'<div class="nutri-bar"><span class="nutri-kcal">&#x1F525; ~'+n.kcal+' kcal</span><span>'+n.p+'g prot</span><span>'+n.c+'g carb</span><span>'+n.f+'g grassi</span></div>':'';})()+'<h3 style="font-size:15px;margin-bottom:10px">Ingredienti</h3><ul class="ingredients-list">'+ings+'</ul>'+
     '<h3 style="font-size:15px;margin-bottom:10px">Procedimento</h3><p class="recipe-detail-body">'+esc(r.procedimento||'')+'</p>'+
     (r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+esc(r.note)+'</div>':'')+
     '<div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">'+
@@ -1261,6 +1281,19 @@ function renderRecipeModal(r,portions){
     (currentUser?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+r.id+'\')">&#9998; Modifica</button>':'')+
     (currentUser?'<button class="btn btn-danger btn-sm" onclick="deleteRecipe(\''+r.id+'\')">Elimina</button>':'')+'</div>';
 }
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var cm=document.getElementById('cook-mode');
+    if(cm&&cm.classList.contains('open')){closeCookMode();return;}
+    var ov=Array.prototype.filter.call(document.querySelectorAll('.modal-overlay'),function(o){return o.style.display==='flex';});
+    if(ov.length){ov[ov.length-1].style.display='none';return;}
+    var cp=document.getElementById('recipe-cat-page');
+    if(cp&&cp.style.display==='flex')cp.style.display='none';
+    return;
+  }
+  if((e.key===' '||e.key==='Enter')&&e.target&&e.target.getAttribute&&e.target.getAttribute('role')==='checkbox'){e.preventDefault();e.target.click();}
+});
 window.closeRecipeModal=function(){document.getElementById('recipe-modal').style.display='none';};
 
 // ── MODALITÀ CUCINA ──────────────────────────────────────────
@@ -1434,10 +1467,10 @@ window.confirmShopAdd=function(){
   closeShopAddModal();closeRecipeModal();
 };
 
-window.addIng=function(){var d=document.createElement('div');d.className='ing-row';d.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);};
-window.addSection=function(){var d=document.createElement('div');d.className='ing-row ing-section-row';d.dataset.isSection='1';d.innerHTML='<input class="ing-section-input" type="text" placeholder="es. Per l\'impasto"><button onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);d.querySelector('input').focus();};
+window.addIng=function(){var d=document.createElement('div');d.className='ing-row';d.innerHTML='<input class="ing-qty" type="number" placeholder="200" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="ingrediente"><button aria-label="Rimuovi riga" onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);};
+window.addSection=function(){var d=document.createElement('div');d.className='ing-row ing-section-row';d.dataset.isSection='1';d.innerHTML='<input class="ing-section-input" type="text" placeholder="es. Per l\'impasto"><button aria-label="Rimuovi riga" onclick="removeIng(this)">&minus;</button>';document.getElementById('ing-list').appendChild(d);d.querySelector('input').focus();};
 window.removeIng=function(btn){if(document.querySelectorAll('.ing-row').length>1)btn.parentElement.remove();};
-function buildIngFormHtml(ingredienti){var html='';var lastSez=null;(ingredienti||[]).forEach(function(i){if(i.sezione&&i.sezione!==lastSez){lastSez=i.sezione;html+='<div class="ing-row ing-section-row" data-is-section="1"><input class="ing-section-input" type="text" value="'+esc(i.sezione)+'"><button onclick="removeIng(this)">&minus;</button></div>';}html+='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any" value="'+(i.qty!=null?i.qty:'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+esc(i.unit||'')+'"><input class="ing-name" type="text" placeholder="pasta" value="'+esc(i.name||'')+'"><button onclick="removeIng(this)">&minus;</button></div>';});return html||'<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button onclick="removeIng(this)">&minus;</button></div>';}
+function buildIngFormHtml(ingredienti){var html='';var lastSez=null;(ingredienti||[]).forEach(function(i){if(i.sezione&&i.sezione!==lastSez){lastSez=i.sezione;html+='<div class="ing-row ing-section-row" data-is-section="1"><input class="ing-section-input" type="text" value="'+esc(i.sezione)+'"><button aria-label="Rimuovi riga" onclick="removeIng(this)">&minus;</button></div>';}html+='<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any" value="'+(i.qty!=null?i.qty:'')+'"><input class="ing-unit" type="text" placeholder="g" value="'+esc(i.unit||'')+'"><input class="ing-name" type="text" placeholder="pasta" value="'+esc(i.name||'')+'"><button aria-label="Rimuovi riga" onclick="removeIng(this)">&minus;</button></div>';});return html||'<div class="ing-row"><input class="ing-qty" type="number" placeholder="400" min="0" step="any"><input class="ing-unit" type="text" placeholder="g"><input class="ing-name" type="text" placeholder="pasta"><button aria-label="Rimuovi riga" onclick="removeIng(this)">&minus;</button></div>';}
 function readIngForm(){var ings=[];var curSez=null;document.querySelectorAll('#ing-list .ing-row').forEach(function(row){if(row.dataset.isSection){curSez=row.querySelector('.ing-section-input').value.trim()||null;return;}var qty=parseFloat(row.querySelector('.ing-qty').value)||null;var unit=row.querySelector('.ing-unit').value.trim();var name=row.querySelector('.ing-name').value.trim();if(name){var ing={qty:qty,unit:unit,name:name};if(curSez)ing.sezione=curSez;ings.push(ing);}});return ings;}
 var UNITS_LIST=['g','kg','ml','L','n°','cucchiaio','cucchiaino','bicchiere','fetta','bustina','q.b.'];
 var _acTarget=null,_unitTarget=null;
@@ -1546,6 +1579,10 @@ window.cancelEditRecipe=function(){resetRecipeForm();};
 window.saveRecipe=function(){
   var nome=document.getElementById('r-nome').value.trim();
   if(!nome){alert('Inserisci il nome!');return;}
+  if(!editingRecipeId){
+    var dup=recipes.find(function(x){return normTxt(x.nome||'')===normTxt(nome);});
+    if(dup&&!confirm('Esiste già una ricetta chiamata "'+dup.nome+'".\nVuoi salvarla lo stesso come duplicato?'))return;
+  }
   var ingredienti=readIngForm();
   var data={nome:nome,foto:document.getElementById('r-foto').value.trim()||null,fonte:document.getElementById('r-fonte').value,link:document.getElementById('r-link').value.trim(),tempo:document.getElementById('r-tempo').value.trim(),porzioni:parseInt(document.getElementById('r-porzioni').value)||4,ingredienti:ingredienti,procedimento:document.getElementById('r-procedimento').value.trim(),note:document.getElementById('r-note').value.trim(),tags:getSelectedTags()};
   if(editingRecipeId){
@@ -1610,8 +1647,8 @@ function renderPlannerMonth(){
     var fcStyle='color:var(--sage);font-style:italic';
     var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
     rows+='<tr class="'+(isToday?'today-row':'')+'"><td><div class="day-col"><span class="dow">'+DAYS[date.getDay()]+'</span>'+d+kcalBadge+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'))):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'))):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'))):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'))):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
   }
   document.getElementById('planner-days').innerHTML='<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1634,14 +1671,14 @@ function renderPlannerWeek(){
       '<div class="week-day-header">'+DAYS_FULL[i]+' '+date.getDate()+' '+MONTHS_SHORT[date.getMonth()]+'</div>'+
       '<div class="week-meal-row"><span class="week-meal-label">Pranzo</span>'+
       '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'))):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+
-      (!pFC&&entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
+      '<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+
+      (!pFC&&entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" aria-label="Aggiungi piatto alternativo" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
       (!pFC&&entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
       '<div class="week-meal-row"><span class="week-meal-label">Cena</span>'+
       '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'))):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+
-      (!cFC&&entry.cena&&!entry.cena2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
+      '<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+
+      (!cFC&&entry.cena&&!entry.cena2?'<button class="meal-alt-btn" aria-label="Aggiungi piatto alternativo" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
       (!cFC&&entry.cena2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'cena2\')">'+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena2_porzioni+'</span>':'')+'</span></div>':'')+
       (function(){
@@ -1650,7 +1687,7 @@ function renderPlannerWeek(){
           var nd=_nutriLookup[(ex.name||'').toLowerCase()];
           var g=toGrams(ex.qty,ex.unit,ex.name);
           var ek=nd&&g>0?'· '+Math.round(g/100*nd.kcal)+' kcal':'';
-          return'<span class="extra-chip">'+esc(ex.name)+' '+esc(ex.qty)+esc(ex.unit)+' '+ek+'<button onclick="removeExtra(\''+key+'\','+idx+')">×</button></span>';
+          return'<span class="extra-chip">'+esc(ex.name)+' '+esc(ex.qty)+esc(ex.unit)+' '+ek+'<button aria-label="Rimuovi extra" onclick="removeExtra(\''+key+'\','+idx+')">×</button></span>';
         }).join('');
         return'<div class="week-extras">'+(chips?'<div class="extra-chips">'+chips+'</div>':'')+
           '<button class="extra-add-btn" onclick="openExtraModal(\''+key+'\')">+ extra</button></div>';
@@ -1758,6 +1795,7 @@ function shopWeekSort(){
   return mon.getFullYear()+'-'+(mon.getMonth()+1)+'-'+mon.getDate();
 }
 window.syncPlannerToShop=function(){
+  showToast('\u{1F4C5} Sto riempiendo la lista dal planner…');
   // Trova tutte le settimane nel planner
   var weekMondays={};
   Object.keys(planner).forEach(function(key){
@@ -1827,24 +1865,34 @@ function fmtQtyUnit(qty,unit){
   return{q:(qty%1===0?qty:+qty.toFixed(2)),u:unit};
 }
 function buildShopGroups(items){
+  // Dedup a livello di NOME (normalizzato: maiuscole/accenti/spazi):
+  // "Patate", "patate " e "1 kg patate" + "500 g patate" diventano una sola riga.
+  // Le quantità si sommano per unità canonica; unità diverse si mostrano insieme (es. "1.5 kg + 2 n° patate").
   var groups={},order=[];
   items.forEach(function(s){
     var c=canonQty(s.ingQty,s.ingUnit||'');
-    var key=s.ingName?(s.ingName+'|'+c.unit):('__'+s.id);
+    var key=s.ingName?normTxt(s.ingName).replace(/\s+/g,' ').trim():('__'+s.id);
     if(!groups[key]){
-      groups[key]={ids:[s.id],ingQty:c.qty,ingUnit:c.unit,ingName:s.ingName||null,text:s.text,sources:s.source?[s.source]:[],category:s.category||'Altro',checked:s.checked,note:s.note||''};
+      groups[key]={ids:[],units:{},ingName:s.ingName||null,text:s.text,sources:[],category:s.category||'Altro',checked:true,note:''};
       order.push(key);
-    }else{
-      groups[key].ids.push(s.id);
-      if(s.source&&groups[key].sources.indexOf(s.source)<0)groups[key].sources.push(s.source);
-      if(c.qty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=c.qty;else groups[key].ingQty=c.qty;}
-      if(s.note&&(!groups[key].note||groups[key].note.indexOf(s.note)<0)){groups[key].note=groups[key].note?(groups[key].note+' — '+s.note):s.note;}
-      if(!s.checked)groups[key].checked=false;
     }
+    var g=groups[key];
+    g.ids.push(s.id);
+    if(s.source&&g.sources.indexOf(s.source)<0)g.sources.push(s.source);
+    if(s.note&&(!g.note||g.note.indexOf(s.note)<0))g.note=g.note?(g.note+' — '+s.note):s.note;
+    if(c.qty!=null)g.units[c.unit]=(g.units[c.unit]||0)+c.qty;
+    if(!s.checked)g.checked=false;
+    if(g.category==='Altro'&&s.category&&s.category!=='Altro')g.category=s.category;
   });
   order.forEach(function(key){
     var g=groups[key];
-    if(g.ingName&&g.ingQty!=null){var f=fmtQtyUnit(g.ingQty,g.ingUnit);g.text=(f.q?f.q+' ':'')+(f.u&&f.u!=='q.b.'?f.u+' ':'')+g.ingName;}
+    if(!g.ingName)return;
+    var parts=[];
+    Object.keys(g.units).forEach(function(u){
+      var f=fmtQtyUnit(g.units[u],u);
+      parts.push(String(f.q)+(f.u&&f.u!=='q.b.'?' '+f.u:''));
+    });
+    g.text=(parts.length?parts.join(' + ')+' ':'')+g.ingName;
   });
   return{groups:groups,order:order};
 }
@@ -1864,7 +1912,7 @@ function renderShopping(){
   var mk=shopWeekSort();
   // Item manuali (fromPlanner=false o assente) sempre visibili; fromPlanner solo se della settimana corrente
   var visible=shopping.filter(function(s){return!s.weekSort||s.weekSort===mk;});
-  if(!visible.length){list.innerHTML='<div class="empty-state"><p>La lista \xe8 vuota.</p></div>';return;}
+  if(!visible.length){list.innerHTML='<div class="empty-state"><p>La lista \xe8 vuota.</p><p style="font-size:13px;margin-top:6px">Riempila dal planner col bottone qui sopra,<br>oppure cerca un ingrediente.</p></div>';return;}
   var bg=buildShopGroups(visible);
   var unchecked=bg.order.filter(function(k){return!bg.groups[k].checked;});
   var checked=bg.order.filter(function(k){return bg.groups[k].checked;});
@@ -1879,8 +1927,8 @@ function shopGroupHTML(g){
   var ids=g.ids.join(',');
   var src=g.sources.length?'<div class="shop-source">'+g.sources.map(esc).join(' \xb7 ')+'</div>':'';
   var note=g.note?'<div class="shop-note">'+esc(g.note)+'</div>':'';
-  var editBtn=(!g.checked&&g.ingName)?'<button class="shop-edit-btn" onclick="openShopEdit(\''+ids+'\')">&#9998;</button>':'';
-  return'<div class="shop-item"><div class="shop-check '+(g.checked?'checked':'')+'" onclick="toggleShopGroup(\''+ids+'\')"></div><div class="shop-text '+(g.checked?'checked':'')+'">'+esc(g.text)+note+src+'</div>'+editBtn+'<button class="shop-delete" onclick="deleteShopGroup(\''+ids+'\')">&times;</button></div>';
+  var editBtn=(!g.checked&&g.ingName)?'<button class="shop-edit-btn" aria-label="Modifica '+esc(g.ingName)+'" onclick="openShopEdit(\''+ids+'\')">&#9998;</button>':'';
+  return'<div class="shop-item"><div class="shop-check '+(g.checked?'checked':'')+'" role="checkbox" tabindex="0" aria-checked="'+(g.checked?'true':'false')+'" aria-label="'+esc(g.text)+'" onclick="toggleShopGroup(\''+ids+'\')"></div><div class="shop-text '+(g.checked?'checked':'')+'">'+esc(g.text)+note+src+'</div>'+editBtn+'<button class="shop-delete" aria-label="Rimuovi '+esc(g.ingName||'voce')+' dalla lista" onclick="deleteShopGroup(\''+ids+'\')">&times;</button></div>';
 }
 window.toggleShopGroup=function(idsStr){
   var ids=idsStr.split(',');
@@ -1914,6 +1962,9 @@ window.selectShopSuggest=function(name,catIdx,unit){
 window.addShopFree=function(){
   var val=document.getElementById('shop-input').value.trim();if(!val)return;
   var nm=val.toLowerCase();
+  var mk=shopWeekSort();
+  var dup=shopping.find(function(s){return !s.checked&&(!s.weekSort||s.weekSort===mk)&&normTxt(s.ingName||'')===normTxt(nm);});
+  if(dup){showToast('✓ "'+val+'" è già in lista');document.getElementById('shop-input').value='';closeShopSuggest();return;}
   var cat=ingCategory(nm);
   shopRef().push({text:val,ingName:nm,ingUnit:'',ingQty:null,source:null,category:cat,weekSort:shopWeekSort(),checked:false}).catch(dbErr);
   document.getElementById('shop-input').value='';closeShopSuggest();
@@ -1966,7 +2017,7 @@ window.renderCatalog=function(query){
       html+='<div class="cat-search-result-header">'+CAT_EMOJI[catIdx]+' '+cat+'</div>';
       html+=items.map(function(c){
         var safeN=c[0].replace(/'/g,"\\'");
-        return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
+        return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn" aria-label="Aggiungi alla spesa" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
       }).join('');
     });
     el.innerHTML=html||'<div class="empty-state"><p>Nessun ingrediente trovato.</p></div>';
@@ -1994,7 +2045,7 @@ window.filterCatDetail=function(q){
   var items=CATALOG_SEED.filter(function(c){return c[1]===_catDetailIdx&&(!q||normTxt(c[0]).includes(q));});
   var html=items.map(function(c){
     var safeN=c[0].replace(/'/g,"\\'");
-    return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
+    return'<div class="cat-item"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn" aria-label="Aggiungi alla spesa" onclick="openCatalogAdd(\''+safeN+'\','+c[1]+',\''+c[2]+'\')">+</button></div>';
   }).join('');
   document.getElementById('cat-detail-list').innerHTML=html||'<div class="empty-state"><p>Nessun risultato.</p></div>';
 };
@@ -2045,11 +2096,16 @@ window.openShopEdit=function(idsStr){
   var ids=idsStr.split(',');
   var items=ids.map(function(id){return shopping.find(function(s){return s.id===id;});}).filter(Boolean);
   if(!items.length)return;
-  var merged={ids:ids,ingName:items[0].ingName,ingUnit:items[0].ingUnit||'',ingQty:null,category:items[0].category||'Altro',note:''};
+  var merged={ids:ids,ingName:items[0].ingName,ingUnit:'',ingQty:null,category:items[0].category||'Altro',note:''};
+  var totals={};
   items.forEach(function(s){
-    if(s.ingQty!=null){if(merged.ingQty!=null)merged.ingQty+=s.ingQty;else merged.ingQty=s.ingQty;}
+    var c=canonQty(s.ingQty,s.ingUnit||'');
+    if(c.qty!=null)totals[c.unit]=(totals[c.unit]||0)+c.qty;
     if(s.note&&(!merged.note||merged.note.indexOf(s.note)<0)){merged.note=merged.note?(merged.note+' — '+s.note):s.note;}
   });
+  // Se ci sono più unità, si modifica quella col totale maggiore
+  var bestU=null;Object.keys(totals).forEach(function(u){if(bestU==null||totals[u]>totals[bestU])bestU=u;});
+  if(bestU!=null){var f=fmtQtyUnit(totals[bestU],bestU);merged.ingQty=f.q;merged.ingUnit=f.u;}
   shopEditGroup=merged;
   document.getElementById('shop-edit-title').textContent=merged.ingName||items[0].text||'Modifica';
   document.getElementById('shop-edit-qty').value=merged.ingQty!=null?merged.ingQty:'';
@@ -2077,17 +2133,8 @@ window.confirmShopEdit=function(){
 window.shareShopList=function(){
   var unchecked=shopping.filter(function(s){return!s.checked;});
   if(!unchecked.length){alert('La lista è vuota.');return;}
-  var groups={},order=[];
-  unchecked.forEach(function(s){
-    var c=canonQty(s.ingQty,s.ingUnit||'');
-    var key=s.ingName?(s.ingName+'|'+c.unit):('__'+s.id);
-    if(!groups[key]){groups[key]={ingQty:c.qty,ingUnit:c.unit,ingName:s.ingName||null,text:s.text,category:s.category||'Altro'};order.push(key);}
-    else{if(c.qty!=null){if(groups[key].ingQty!=null)groups[key].ingQty+=c.qty;else groups[key].ingQty=c.qty;}}
-  });
-  order.forEach(function(k){
-    var g=groups[k];
-    if(g.ingName&&g.ingQty!=null){var f=fmtQtyUnit(g.ingQty,g.ingUnit);g.text=(f.q?f.q+' ':'')+(f.u&&f.u!=='q.b.'?f.u+' ':'')+g.ingName;}
-  });
+  var bg=buildShopGroups(unchecked);
+  var groups=bg.groups,order=bg.order;
   var lines=['🛒 *Lista della spesa*'];
   userCatOrder.forEach(function(catIdx){
     var cat=CATS[catIdx];
