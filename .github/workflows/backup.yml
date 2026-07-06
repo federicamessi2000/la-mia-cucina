@@ -1,0 +1,57 @@
+name: Backup database
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # ogni notte alle 03:00 italiane (02:00 UTC)
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica il database
+        env:
+          SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$SERVICE_ACCOUNT" ]; then
+            echo "Secret FIREBASE_SERVICE_ACCOUNT non configurato — vedi SECURITY.md"; exit 1
+          fi
+          echo "$SERVICE_ACCOUNT" > sa.json
+          pip -q install google-auth requests
+          python3 - <<'EOF'
+          import json, datetime, requests
+          from google.auth.transport.requests import Request
+          from google.oauth2 import service_account
+          creds = service_account.Credentials.from_service_account_file(
+              'sa.json',
+              scopes=['https://www.googleapis.com/auth/firebase.database',
+                      'https://www.googleapis.com/auth/userinfo.email'])
+          creds.refresh(Request())
+          url = 'https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app/.json'
+          r = requests.get(url, headers={'Authorization': 'Bearer ' + creds.token}, timeout=120)
+          r.raise_for_status()
+          stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+          with open(f'backup-{stamp}.json', 'w', encoding='utf-8') as f:
+              json.dump(r.json(), f, ensure_ascii=False, indent=1)
+          print('Backup OK:', f'backup-{stamp}.json')
+          EOF
+          rm sa.json
+
+      - name: Carica nel repo privato di backup
+        env:
+          TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "Secret BACKUP_REPO_TOKEN non configurato — vedi SECURITY.md"; exit 1
+          fi
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/federicamessi2000/la-mia-cucina-backup.git" backup-repo
+          mkdir -p backup-repo/backups
+          cp backup-*.json backup-repo/backups/
+          cd backup-repo
+          # tieni gli ultimi 60 backup
+          ls -1t backups/backup-*.json | tail -n +61 | xargs -r rm --
+          git config user.email "backup-bot@users.noreply.github.com"
+          git config user.name "Backup Bot"
+          git add -A
+          git commit -m "Backup $(date -u +%F)" || echo "Nessuna modifica"
+          git push

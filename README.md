@@ -1,33 +1,33 @@
 # La Mia Cucina
 
-A mobile-first Italian recipe app — save recipes, plan your week, and build your shopping list.
+App di ricette di famiglia, mobile-first — ricette condivise, planner dei pasti, lista della spesa intelligente, congelatore e modalità cucina passo-passo.
 
 **Live:** https://federicamessi2000.github.io/la-mia-cucina/
 
 ---
 
-## Features
+## Funzioni
 
-- **Ricette** — Browse shared recipes, filter by "della mamma" or from the web, search by name, view with scalable portions
-- **Aggiungi** — Add recipes manually with structured ingredients, or import automatically from any recipe website using AI
-- **Planner** — Monthly meal planner (lunch + dinner), private per account, auto-populates the shopping list
-- **Spesa** — Shopping list with items from the planner, from recipe buttons, and manual additions
+- **Ricette** — ~820 ricette condivise (di mamma e dal web), categorie, tag, preferiti, ricerca anche senza accenti, porzioni scalabili, kcal stimate
+- **Aggiungi** — form con ingredienti strutturati, autocomplete dal catalogo, "importa da testo" che compila il form da una ricetta incollata
+- **Planner** — pianificazione pranzo/cena per settimana o mese, privata per account, con alternative, extra e "fuori casa"
+- **Spesa** — si popola dal planner (ricordando ciò che hai già spuntato), da ricette o a mano; somma automaticamente le quantità (500 g + 1 kg → 1.5 kg); categorie ordinabili nell'ordine del tuo supermercato; condivisibile con il partner in tempo reale (codice famiglia)
+- **Congelatore** — inventario di cosa c'è in freezer, per categorie e date
+- **Modalità cucina** — un passo alla volta a schermo intero, schermo sempre acceso, timer avviabili direttamente dai tempi scritti nei passi
+- **Bimby / Cookidoo** — esporta qualsiasi ricetta come testo pronto da incollare nelle *Ricette create* di Cookidoo, o condividila su WhatsApp
 
 ## Stack
 
-- Vanilla HTML/CSS/JS — single `index.html`, no build step
+- Vanilla HTML/CSS/JS — un solo `index.html`, nessuna build
 - Firebase Realtime Database + Google Auth
-- Claude AI for recipe extraction from URLs
-- PWA — installable on mobile
+- PWA installabile (iPhone e Android), dark mode automatica
 
-## Setup
+## Sicurezza e backup
 
-The app uses Firebase and is designed to be opened directly as an `index.html` file (or served via GitHub Pages). No installation or build step required.
+Vedi [SECURITY.md](SECURITY.md): regole del database con allowlist di famiglia
+(`database.rules.json`) e backup notturno automatico del database via GitHub Actions.
 
-Sign in with Google to access your private planner and shopping list. Recipes are shared across all users.
+## Note
 
-## Notes
-
-- Recipes tagged **Mamma** are family recipes; recipes tagged **Web** are from the internet
-- The AI import feature fetches the page, extracts the recipe text, and uses Claude to structure it as JSON
-- Your planner and shopping list are private — only you can see them
+- Le ricette taggate **Mamma** sono ricette di famiglia; quelle **Web** vengono da internet
+- Planner, spesa, congelatore e preferiti sono privati: li vede solo il tuo account

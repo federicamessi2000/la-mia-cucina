@@ -4,8 +4,8 @@
   "description": "Ricette, planner pasti e lista della spesa",
   "start_url": "/la-mia-cucina/",
   "display": "standalone",
-  "background_color": "#C4A47C",
-  "theme_color": "#C4A47C",
+  "background_color": "#FAF5EC",
+  "theme_color": "#FAF5EC",
   "orientation": "portrait",
   "icons": [
     {
