@@ -1,16 +1,15 @@
 # Sicurezza — La Mia Cucina
 
-## 1. Regole del database (IMPORTANTE — da applicare a mano)
+## 1. Regole del database — ✅ FATTO (2026-07-07)
+
+Le regole con allowlist famiglia sono state **pubblicate** il 2026-07-07 (deploy via
+`firebase deploy --only database` dall'account di Daniele, ora membro del progetto).
+Le regole precedenti (qualsiasi account Google poteva leggere e scrivere tutto) sono
+salvate in locale da Daniele. Il file sorgente resta `database.rules.json`.
 
 Oggi chiunque acceda con un qualsiasi account Google può modificare o **cancellare tutte le ricette**
 (la app è pubblica su GitHub Pages, quindi chiunque può trovarla). Il file `database.rules.json`
 in questo repo limita lettura e scrittura ai soli account di famiglia.
-
-**Come applicarle** (serve l'account Firebase di Federica, ~2 minuti):
-
-1. Vai su [console.firebase.google.com](https://console.firebase.google.com) → progetto **la-mia-cucina-48a48**
-2. Realtime Database → scheda **Regole**
-3. Incolla il contenuto di `database.rules.json` e premi **Pubblica**
 
 **Per aggiungere una persona** (es. la mamma): aggiungi il suo indirizzo Gmail in *tutte* le
 condizioni `auth.token.email === '...'` del file (sono 3 blocchi: recipes read, recipes write,
@@ -19,10 +18,13 @@ families) e ripubblica. Poi falla accedere alla app col suo account Google.
 Nota: `users/$uid` è già limitato al proprietario — planner, spesa privata, congelatore e
 preferiti restano visibili solo all'account che li ha creati.
 
-## 2. Backup automatico
+## 2. Backup automatico — ✅ ATTIVO (2026-07-07)
 
-Il workflow `.github/workflows/backup.yml` scarica ogni notte l'intero database e lo carica
-in un **repository privato** di backup. Per attivarlo:
+Backup notturno **attivo** sul server di casa di Daniele (cron alle 03:15, ultimi 60 giorni,
+verifica anti-anomalia sul numero di ricette). Primo backup completato: 812 ricette.
+
+In più esiste il workflow `.github/workflows/backup.yml` (backup ridondante su GitHub),
+opzionale. Per attivarlo:
 
 1. Crea un repo **privato** `federicamessi2000/la-mia-cucina-backup`
 2. Firebase Console → Impostazioni progetto → Account di servizio → **Genera nuova chiave privata**
