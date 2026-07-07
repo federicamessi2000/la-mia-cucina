@@ -157,7 +157,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .shop-delete:active{color:var(--terracotta);}
 .add-inline{display:flex;gap:8px;margin-bottom:16px;}
 .add-inline input{flex:1;}
-.modal-overlay{position:fixed;inset:0;background:rgba(30,20,12,0.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .22s ease;}
+.modal-overlay{position:fixed;inset:0;background:rgba(30,20,12,0.45);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:300;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .22s ease;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 .modal{background:var(--warm-white);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:20px 20px calc(40px + env(safe-area-inset-bottom));width:100%;max-width:430px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:sheetUp .4s var(--ease-spring);}
 @keyframes sheetUp{from{transform:translateY(56px);opacity:.3;}to{transform:none;opacity:1;}}
@@ -628,6 +628,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;">Le ricette che aggiungi sono visibili a tutti.<br>Il tuo planner è privato.</p>
     <div id="family-section"></div>
     <button class="btn btn-danger btn-full" onclick="doSignOut()" style="margin-top:4px">Esci dall&apos;account</button>
+    <p id="app-version" style="text-align:center;font-size:11px;color:var(--charcoal-light);margin-top:14px"></p>
   </div>
 </div>
 
@@ -728,6 +729,7 @@ setTimeout(function(){
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
+var APP_VERSION='2026-07-07.1';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;

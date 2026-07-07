@@ -1,8 +1,8 @@
 {
-  "pid": 92857,
-  "port": 38370,
-  "token": "2354bdb1-1f08-4250-ab8a-631e7cab5a90",
-  "startedAt": "2026-07-06T21:21:27.496Z",
+  "pid": 8314,
+  "port": 47734,
+  "token": "f5631f04-d036-4515-bd96-f91dfa90af20",
+  "startedAt": "2026-07-07T05:15:32.317Z",
   "serverPath": "/Users/francidani/.claude/skills/gstack/browse/src/server.ts",
   "mode": "launched",
   "configHash": "303a7eeccc03078b"
