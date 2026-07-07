@@ -1,1 +1,14 @@
 [2026-07-07T06:11:28.141Z] [log] La Mia Cucina 2026-07-07.3
+[2026-07-07T06:37:29.854Z] [log] La Mia Cucina 2026-07-07.4
+[2026-07-07T06:37:38.763Z] [warning] [2026-07-07T06:37:38.753Z]  @firebase/database: FIREBASE WARNING: set at /users/qa/freezer/f3/qty failed: permission_denied 
+[2026-07-07T06:37:38.763Z] [error] Firebase write error Error: PERMISSION_DENIED: Permission denied
+    at https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:127324
+    at Pe (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:18047)
+    at Ji (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:127227)
+    at https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:126237
+    at https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:51675
+    at gt.onDataMessage_ (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:52004)
+    at Ke.onDataMessage_ (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:37351)
+    at Ke.onPrimaryMessageReceived_ (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:37284)
+    at Qe.onMessage (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:35645)
+    at Qe.appendFrame_ (https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js:1:31494)

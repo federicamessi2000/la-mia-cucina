@@ -311,6 +311,26 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .steps-list li::before{content:counter(step);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--terracotta-pale);color:var(--terracotta);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);}
 .modal-handle{position:relative;}
 .modal-handle::before{content:'';position:absolute;inset:-14px -70px;}
+.nav-fab{width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(180deg,#BC5527,var(--terracotta-deep));color:#fff;display:flex;align-items:center;justify-content:center;margin:-24px 8px 0;flex-shrink:0;box-shadow:0 6px 18px rgba(176,78,36,.45),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;transition:transform .2s var(--ease-spring);}
+.nav-fab:active{transform:scale(.88) rotate(90deg);}
+.nav-fab.fab-active{transform:rotate(45deg);}
+.nav-fab svg{width:26px;height:26px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;}
+.fab-opt{display:flex;align-items:center;gap:14px;padding:14px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--cream);margin-bottom:10px;cursor:pointer;transition:transform .15s var(--ease-out),background .2s;}
+.fab-opt:active{transform:scale(.97);background:var(--terracotta-pale);}
+.fab-opt-emoji{font-size:24px;width:48px;height:48px;border-radius:50%;background:var(--warm-white);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow-sm);}
+.fab-opt-title{font-size:15px;font-weight:700;color:var(--charcoal);}
+.fab-opt-sub{font-size:12.5px;color:var(--charcoal-mid);margin-top:1px;}
+.back-btn{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;color:var(--charcoal);flex-shrink:0;box-shadow:var(--shadow-sm);transition:transform .15s var(--ease-out);}
+.back-btn:active{transform:scale(.9);}
+.freezer-emoji{width:42px;height:42px;border-radius:13px;background:var(--sage-pale);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.age-badge{font-size:11px;font-weight:700;padding:1.5px 8px;border-radius:10px;white-space:nowrap;}
+.age-fresh{background:var(--sage-pale);color:var(--sage);}
+.age-warn{background:#F3E8C8;color:#7A5F13;}
+@media (prefers-color-scheme:dark){.age-warn{background:#332B14;color:#D9B45B;}}
+.age-old{background:var(--terracotta-pale);color:var(--terracotta);}
+.freezer-use{border:1px solid var(--border-mid);background:var(--warm-white);border-radius:16px;padding:7px 14px;font-size:12.5px;font-weight:700;color:var(--sage);cursor:pointer;flex-shrink:0;position:relative;transition:transform .15s var(--ease-out);}
+.freezer-use::before{content:'';position:absolute;inset:-8px;}
+.freezer-use:active{transform:scale(.9);}
 button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus-visible{outline:2.5px solid var(--terracotta);outline-offset:2px;}
 .nav-item:focus-visible{outline-offset:-2px;border-radius:18px;}
 .shop-check,.shop-delete,.shop-edit-btn,.meal-add-btn,.meal-alt-btn,.cook-close,.extra-chip button{position:relative;}
@@ -385,7 +405,10 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
       </div>
       <button class="btn btn-primary" aria-label="Aggiungi alla lista" onclick="addShopItem()">+</button>
     </div>
-    <button class="btn btn-outline btn-full" style="margin-bottom:16px" onclick="openShopAddModal(null)">&#128203; Aggiungi ingredienti da ricetta</button>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn btn-outline" style="flex:1" onclick="openShopAddModal(null)">&#128203; Da ricetta</button>
+      <button class="btn btn-outline" style="flex:1" onclick="openIngredientiPage()">&#129531; Catalogo</button>
+    </div>
     <div id="shop-list"></div>
     <div style="margin-top:16px;display:flex;gap:8px;">
       <button class="btn btn-outline btn-sm" onclick="clearChecked()">Rimuovi spuntati</button>
@@ -394,7 +417,10 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   </div>
 
   <div class="page" id="page-ingredienti">
-    <h2 class="section-title">Ingredienti</h2>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <button class="back-btn" aria-label="Torna alla spesa" onclick="showPage('spesa',document.querySelectorAll('.nav-item')[2])">&#8592;</button>
+      <h2 class="section-title" style="margin:0">Catalogo ingredienti</h2>
+    </div>
     <input class="search-bar" type="text" id="cat-search" placeholder="Cerca ingrediente&hellip;" aria-label="Cerca ingrediente nel catalogo" oninput="renderCatalog(this.value)">
     <div id="catalog-list"></div>
     <div style="margin-top:16px;padding-bottom:20px">
@@ -403,10 +429,11 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   </div>
 
   <div class="page" id="page-congelatore">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <h2 class="section-title" style="margin:0">&#10052; Congelatore</h2>
       <button class="btn btn-primary btn-sm" onclick="openFreezerModal(null)">+ Aggiungi</button>
     </div>
+    <p id="freezer-summary" style="font-size:13px;color:var(--charcoal-mid);margin-bottom:14px"></p>
     <div id="freezer-list"></div>
   </div>
 
@@ -457,17 +484,14 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     <button class="nav-item" onclick="showPage('planner',this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Planner
     </button>
+    <button class="nav-fab" aria-label="Aggiungi" onclick="openFabMenu()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
     <button class="nav-item" onclick="showPage('spesa',this)">
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Spesa
     </button>
-    <button class="nav-item" onclick="showPage('ingredienti',this)">
-      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>Ingredienti
-    </button>
     <button class="nav-item" onclick="showPage('congelatore',this)">
       <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/><circle cx="12" cy="12" r="3"/></svg>Freezer
-    </button>
-    <button class="nav-item" onclick="showPage('aggiungi',this)">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Aggiungi
     </button>
   </nav>
 </div>
@@ -677,6 +701,26 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   </div>
 </div>
 
+<!-- MENU AGGIUNGI (FAB) -->
+<div class="modal-overlay" id="fab-modal" style="display:none" onclick="if(event.target.id==='fab-modal')document.getElementById('fab-modal').style.display='none'">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-handle"></div>
+    <h2 style="margin-bottom:16px">Cosa vuoi aggiungere?</h2>
+    <div class="fab-opt" onclick="fabGo('ricetta')">
+      <span class="fab-opt-emoji">&#127858;</span>
+      <div><div class="fab-opt-title">Una ricetta</div><div class="fab-opt-sub">Scrivila o incollala da un sito o da un libro</div></div>
+    </div>
+    <div class="fab-opt" onclick="fabGo('spesa')">
+      <span class="fab-opt-emoji">&#128722;</span>
+      <div><div class="fab-opt-title">Qualcosa alla spesa</div><div class="fab-opt-sub">Cerca un ingrediente o scegli dal catalogo</div></div>
+    </div>
+    <div class="fab-opt" onclick="fabGo('freezer')">
+      <span class="fab-opt-emoji">&#10052;&#65039;</span>
+      <div><div class="fab-opt-title">Nel congelatore</div><div class="fab-opt-sub">Segna cosa hai appena messo in freezer</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODALITÀ CUCINA -->
 <div id="cook-mode">
   <div class="cook-top">
@@ -749,7 +793,7 @@ setTimeout(function(){
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-var APP_VERSION='2026-07-07.3';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
+var APP_VERSION='2026-07-07.4';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
@@ -1148,10 +1192,26 @@ window.showPage=function(name,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
-  el.classList.add('active');
+  if(el)el.classList.add('active');
+  var fab=document.querySelector('.nav-fab');
+  if(fab)fab.classList.toggle('fab-active',name==='aggiungi');
   if(name==='ingredienti')renderCatalog(document.getElementById('cat-search').value||'');
   if(name==='spesa')renderShopWeekNav();
   if(name==='congelatore')renderFreezer();
+};
+window.openIngredientiPage=function(){
+  // Il catalogo vive dentro Spesa: il tab Spesa resta evidenziato
+  showPage('ingredienti',document.querySelectorAll('.nav-item')[2]);
+  document.getElementById('cat-search').value='';
+  renderCatalog('');
+};
+window.openFabMenu=function(){document.getElementById('fab-modal').style.display='flex';};
+window.fabGo=function(what){
+  document.getElementById('fab-modal').style.display='none';
+  var nav=document.querySelectorAll('.nav-item');
+  if(what==='ricetta'){resetRecipeForm();showPage('aggiungi',null);window.scrollTo(0,0);}
+  else if(what==='spesa'){showPage('spesa',nav[2]);setTimeout(function(){document.getElementById('shop-input').focus();},200);}
+  else if(what==='freezer'){showPage('congelatore',nav[3]);openFreezerModal(null);}
 };
 var RECIPE_TAGS=[
   {key:'dolce',label:'&#127856; Dolce'},{key:'salato',label:'&#129749; Salato'},
@@ -1644,8 +1704,7 @@ window.openEditRecipe=function(id){
   document.getElementById('edit-mode-bar').style.display='flex';
   document.getElementById('save-recipe-btn').textContent='Aggiorna ricetta';
   document.getElementById('aggiungi-title').textContent='Modifica ricetta';
-  var navAggiungi=document.querySelectorAll('.nav-item')[5];
-  showPage('aggiungi',navAggiungi);
+  showPage('aggiungi',null);
   window.scrollTo(0,0);
 };
 window.cancelEditRecipe=function(){resetRecipeForm();};
@@ -2236,37 +2295,66 @@ function formatDateIT(s){
   var months=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
   return parseInt(p[2])+' '+months[parseInt(p[1])-1]+' '+p[0];
 }
+function freezerAgeInfo(f){
+  if(!f.frozenDate)return null;
+  var d=new Date(f.frozenDate);if(isNaN(d.getTime()))return null;
+  var days=Math.max(0,Math.floor((Date.now()-d.getTime())/86400000));
+  var cls=days>90?'old':days>30?'warn':'fresh';
+  var label=days===0?'oggi':days===1?'ieri':days<30?days+' gg':days<60?'1 mese':Math.floor(days/30)+' mesi';
+  if(cls==='old')label+=' · da consumare';
+  return{days:days,cls:cls,label:label};
+}
 function renderFreezer(){
   var el=document.getElementById('freezer-list');if(!el)return;
-  if(!freezer.length){el.innerHTML='<div class="empty-state"><p>Il congelatore è vuoto.</p><p style="font-size:13px;margin-top:6px">Premi + Aggiungi per inserire qualcosa.</p></div>';return;}
+  var sum=document.getElementById('freezer-summary');
+  if(!freezer.length){
+    if(sum)sum.textContent='';
+    el.innerHTML='<div class="empty-state"><p>Il congelatore è vuoto.</p><p style="font-size:13px;margin-top:6px">Premi + Aggiungi (o il bottone + al centro in basso)<br>quando metti via qualcosa.</p></div>';
+    return;
+  }
+  var nOld=freezer.filter(function(f){var a=freezerAgeInfo(f);return a&&a.cls==='old';}).length;
+  if(sum)sum.innerHTML=freezer.length+(freezer.length===1?' cosa':' cose')+' in freezer'+(nOld?' \xb7 <strong style="color:var(--terracotta)">'+nOld+' da consumare presto</strong>':' \xb7 tutto fresco ❄️');
   var cats={};
   freezer.forEach(function(f){var c=f.category||'Altro';if(!cats[c])cats[c]=[];cats[c].push(f);});
   var html='';
-  FREEZE_CATS.forEach(function(cat,i){
+  function renderCat(cat,emoji){
     var items=cats[cat]||[];if(!items.length)return;
-    html+='<div class="freezer-cat-header">'+FREEZE_EMOJI[i]+' '+cat+'</div>';
-    items.forEach(function(f){html+=freezerItemHTML(f);});
-  });
-  Object.keys(cats).forEach(function(cat){
-    if(FREEZE_CATS.indexOf(cat)<0&&cats[cat].length){
-      html+='<div class="freezer-cat-header">📦 '+cat+'</div>';
-      cats[cat].forEach(function(f){html+=freezerItemHTML(f);});
-    }
-  });
+    // prima le cose più vecchie: quelle vanno consumate
+    items.sort(function(a,b){var aa=freezerAgeInfo(a),bb=freezerAgeInfo(b);return(bb?bb.days:-1)-(aa?aa.days:-1);});
+    html+='<div class="freezer-cat-header">'+emoji+' '+cat+'</div>';
+    items.forEach(function(f){html+=freezerItemHTML(f,emoji);});
+  }
+  FREEZE_CATS.forEach(function(cat,i){renderCat(cat,FREEZE_EMOJI[i]);});
+  Object.keys(cats).forEach(function(cat){if(FREEZE_CATS.indexOf(cat)<0)renderCat(cat,'📦');});
   el.innerHTML=html;
 }
-function freezerItemHTML(f){
+function freezerItemHTML(f,emoji){
   var qty=f.qty!=null?(f.qty%1===0?f.qty:+f.qty.toFixed(2)):'';
-  var qtyStr=qty?(qty+(f.unit?' '+f.unit:'')):'';
+  var qtyStr=qty?(qty+(f.unit?' '+esc(f.unit):'')):'';
+  var age=freezerAgeInfo(f);
   var meta=[];
-  if(f.frozenDate)meta.push('Congelato il '+formatDateIT(f.frozenDate));
-  if(f.note)meta.push(f.note);
+  if(age)meta.push('<span class="age-badge age-'+age.cls+'">❄️ '+esc(age.label)+'</span>');
+  if(f.note)meta.push('<span>'+esc(f.note)+'</span>');
   return'<div class="freezer-item" onclick="openFreezerModal(\''+f.id+'\')">'+
-    '<div style="flex:1"><div class="freezer-item-name">'+esc(f.name)+'</div>'+
-    (meta.length?'<div class="freezer-item-meta">'+meta.map(esc).join(' \xb7 ')+'</div>':'')+'</div>'+
-    (qtyStr?'<div class="freezer-item-qty">'+qtyStr+'</div>':'')+
+    '<span class="freezer-emoji">'+(emoji||'📦')+'</span>'+
+    '<div class="recipe-li-main"><span class="recipe-li-name">'+esc(f.name)+(qtyStr?' <span style="font-weight:500;color:var(--charcoal-mid);font-size:13px">\xb7 '+qtyStr+'</span>':'')+'</span>'+
+    (meta.length?'<span class="recipe-li-meta" style="display:flex;gap:6px;align-items:center;white-space:normal">'+meta.join('')+'</span>':'')+'</div>'+
+    '<button class="freezer-use" aria-label="Segna come usato: '+esc(f.name)+'" onclick="useFreezerItem(event,\''+f.id+'\')">Usa</button>'+
     '</div>';
 }
+window.useFreezerItem=function(e,id){
+  e.stopPropagation();
+  var f=freezer.find(function(x){return x.id===id;});if(!f)return;
+  var ref=db.ref('users/'+currentUser.uid+'/freezer/'+id);
+  if(f.qty!=null&&Number.isInteger(f.qty)&&f.qty>1){
+    ref.child('qty').set(f.qty-1).catch(dbErr);
+    showToast('❄️ '+f.name+': ne restano '+(f.qty-1));
+  }else{
+    if(!confirm('"'+f.name+'": era l\'ultimo — lo tolgo dal congelatore?'))return;
+    ref.remove().catch(dbErr);
+    showToast('❄️ '+f.name+' finito');
+  }
+};
 window.openFreezerModal=function(id){
   freezerEditId=id;
   var f=id?freezer.find(function(x){return x.id===id;}):null;
