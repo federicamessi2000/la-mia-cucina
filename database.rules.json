@@ -4,8 +4,8 @@
     ".write": false,
 
     "recipes": {
-      ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com')",
-      ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com')",
+      ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
+      ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
       "$recipeId": {
         ".validate": "newData.hasChildren(['nome']) || newData.val() === null"
       }
@@ -20,8 +20,8 @@
 
     "families": {
       "$code": {
-        ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com')",
-        ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com')"
+        ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
+        ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')"
       }
     }
   }

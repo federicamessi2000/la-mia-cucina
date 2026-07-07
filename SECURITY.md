@@ -7,13 +7,13 @@ Le regole con allowlist famiglia sono state **pubblicate** il 2026-07-07 (deploy
 Le regole precedenti (qualsiasi account Google poteva leggere e scrivere tutto) sono
 salvate in locale da Daniele. Il file sorgente resta `database.rules.json`.
 
-Oggi chiunque acceda con un qualsiasi account Google può modificare o **cancellare tutte le ricette**
-(la app è pubblica su GitHub Pages, quindi chiunque può trovarla). Il file `database.rules.json`
-in questo repo limita lettura e scrittura ai soli account di famiglia.
+Account autorizzati: Federica, Daniele, Alessandro, Maria Grazia. Chiunque altro può
+aprire l'app ma non vede né tocca nulla.
 
-**Per aggiungere una persona** (es. la mamma): aggiungi il suo indirizzo Gmail in *tutte* le
-condizioni `auth.token.email === '...'` del file (sono 3 blocchi: recipes read, recipes write,
-families) e ripubblica. Poi falla accedere alla app col suo account Google.
+**Per aggiungere una persona**: aggiungi il suo indirizzo Gmail in *tutte* le condizioni
+`auth.token.email === '...'` di `database.rules.json` (4 blocchi: recipes read/write,
+families read/write), poi `firebase deploy --only database` dalla cartella del repo
+(o incolla il file in Console → Realtime Database → Regole → Pubblica).
 
 Nota: `users/$uid` è già limitato al proprietario — planner, spesa privata, congelatore e
 preferiti restano visibili solo all'account che li ha creati.
