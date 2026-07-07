@@ -311,10 +311,10 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .steps-list li::before{content:counter(step);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--terracotta-pale);color:var(--terracotta);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);}
 .modal-handle{position:relative;}
 .modal-handle::before{content:'';position:absolute;inset:-14px -70px;}
-.nav-fab{width:56px;height:56px;border-radius:50%;border:none;background:linear-gradient(180deg,#BC5527,var(--terracotta-deep));color:#fff;display:flex;align-items:center;justify-content:center;margin:-24px 8px 0;flex-shrink:0;box-shadow:0 6px 18px rgba(176,78,36,.45),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;transition:transform .2s var(--ease-spring);}
+.nav-fab{width:46px;height:46px;border-radius:16px;border:none;background:linear-gradient(180deg,#BC5527,var(--terracotta-deep));color:#fff;display:flex;align-items:center;justify-content:center;margin:0 10px;align-self:center;flex-shrink:0;box-shadow:0 2px 8px rgba(176,78,36,.28),inset 0 1px 0 rgba(255,255,255,.22);cursor:pointer;transition:transform .2s var(--ease-spring),box-shadow .2s;}
 .nav-fab:active{transform:scale(.88) rotate(90deg);}
 .nav-fab.fab-active{transform:rotate(45deg);}
-.nav-fab svg{width:26px;height:26px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;}
+.nav-fab svg{width:21px;height:21px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;}
 .fab-opt{display:flex;align-items:center;gap:14px;padding:14px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--cream);margin-bottom:10px;cursor:pointer;transition:transform .15s var(--ease-out),background .2s;}
 .fab-opt:active{transform:scale(.97);background:var(--terracotta-pale);}
 .fab-opt-emoji{font-size:24px;width:48px;height:48px;border-radius:50%;background:var(--warm-white);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow-sm);}
@@ -793,7 +793,7 @@ setTimeout(function(){
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-var APP_VERSION='2026-07-07.4';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
+var APP_VERSION='2026-07-07.5';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
