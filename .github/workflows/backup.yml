@@ -14,7 +14,8 @@ jobs:
           SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
           if [ -z "$SERVICE_ACCOUNT" ]; then
-            echo "Secret FIREBASE_SERVICE_ACCOUNT non configurato — vedi SECURITY.md"; exit 1
+            echo "::notice::Backup non ancora configurato (manca il secret FIREBASE_SERVICE_ACCOUNT) — salto senza errore. Istruzioni in SECURITY.md"
+            exit 0
           fi
           echo "$SERVICE_ACCOUNT" > sa.json
           pip -q install google-auth requests
@@ -41,8 +42,13 @@ jobs:
         env:
           TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
         run: |
+          if ! ls backup-*.json >/dev/null 2>&1; then
+            echo "::notice::Nessun backup generato in questo run — salto l'upload."
+            exit 0
+          fi
           if [ -z "$TOKEN" ]; then
-            echo "Secret BACKUP_REPO_TOKEN non configurato — vedi SECURITY.md"; exit 1
+            echo "::notice::Backup non ancora configurato (manca il secret BACKUP_REPO_TOKEN) — salto senza errore. Istruzioni in SECURITY.md"
+            exit 0
           fi
           git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/federicamessi2000/la-mia-cucina-backup.git" backup-repo
           mkdir -p backup-repo/backups
