@@ -367,12 +367,12 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     <button class="user-btn" aria-label="Il tuo profilo" onclick="openUserModal()" id="user-btn-inner"><div class="user-initials" id="user-initials">?</div></button>
   </div>
 
-  <div class="page active" id="page-ricette">
+  <div class="page" id="page-ricette">
     <input class="search-bar" type="text" placeholder="Cerca una ricetta&hellip;" aria-label="Cerca una ricetta" id="search-input" oninput="renderRecipeHome()">
     <div id="recipe-home"></div>
   </div>
 
-  <div class="page" id="page-planner">
+  <div class="page active" id="page-planner">
     <div class="month-nav">
       <button aria-label="Periodo precedente" onclick="changeMonth(-1)">&#8249;</button>
       <h2 id="month-title"></h2>
@@ -422,7 +422,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
 
   <div class="page" id="page-ingredienti">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-      <button class="back-btn" aria-label="Torna alla spesa" onclick="showPage('spesa',document.querySelectorAll('.nav-item')[2])">&#8592;</button>
+      <button class="back-btn" aria-label="Torna alla spesa" onclick="showPage('spesa',document.querySelectorAll('.nav-item')[1])">&#8592;</button>
       <h2 class="section-title" style="margin:0">Catalogo ingredienti</h2>
     </div>
     <input class="search-bar" type="text" id="cat-search" placeholder="Cerca ingrediente&hellip;" aria-label="Cerca ingrediente nel catalogo" oninput="renderCatalog(this.value)">
@@ -482,17 +482,17 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   </div>
 
   <nav class="bottomnav">
-    <button class="nav-item active" onclick="showPage('ricette',this)">
-      <svg viewBox="0 0 24 24"><path d="M12 6.5c1.5-2 3.5-3 5.5-3 2 0 4 1 4 4 0 4-4 7-9.5 11C6.5 14.5 2.5 11.5 2.5 7.5c0-3 2-4 4-4 2 0 4 1 5.5 3z"/></svg>Ricette
-    </button>
-    <button class="nav-item" onclick="showPage('planner',this)">
+    <button class="nav-item active" onclick="showPage('planner',this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Planner
+    </button>
+    <button class="nav-item" onclick="showPage('spesa',this)">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Spesa
     </button>
     <button class="nav-fab" aria-label="Aggiungi" onclick="openFabMenu()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
-    <button class="nav-item" onclick="showPage('spesa',this)">
-      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Spesa
+    <button class="nav-item" onclick="showPage('ricette',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 6.5c1.5-2 3.5-3 5.5-3 2 0 4 1 4 4 0 4-4 7-9.5 11C6.5 14.5 2.5 11.5 2.5 7.5c0-3 2-4 4-4 2 0 4 1 5.5 3z"/></svg>Ricette
     </button>
     <button class="nav-item" onclick="showPage('congelatore',this)">
       <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/><circle cx="12" cy="12" r="3"/></svg>Freezer
@@ -1239,7 +1239,7 @@ window.showPage=function(name,el){
 };
 window.openIngredientiPage=function(){
   // Il catalogo vive dentro Spesa: il tab Spesa resta evidenziato
-  showPage('ingredienti',document.querySelectorAll('.nav-item')[2]);
+  showPage('ingredienti',document.querySelectorAll('.nav-item')[1]);
   document.getElementById('cat-search').value='';
   renderCatalog('');
 };
@@ -1248,7 +1248,7 @@ window.fabGo=function(what){
   document.getElementById('fab-modal').style.display='none';
   var nav=document.querySelectorAll('.nav-item');
   if(what==='ricetta'){resetRecipeForm();showPage('aggiungi',null);window.scrollTo(0,0);}
-  else if(what==='spesa'){showPage('spesa',nav[2]);setTimeout(function(){document.getElementById('shop-input').focus();},200);}
+  else if(what==='spesa'){showPage('spesa',nav[1]);setTimeout(function(){document.getElementById('shop-input').focus();},200);}
   else if(what==='freezer'){showPage('congelatore',nav[3]);openFreezerModal(null);}
 };
 var RECIPE_TAGS=[
@@ -1758,14 +1758,14 @@ window.saveRecipe=function(){
   if(editingRecipeId){
     db.ref('recipes/'+editingRecipeId).update(data).catch(dbErr);
     resetRecipeForm();
-    showPage('ricette',document.querySelectorAll('.nav-item')[0]);
+    showPage('ricette',document.querySelectorAll('.nav-item')[2]);
   }else{
     var autore=document.getElementById('r-autore').value.trim();
     data.addedBy=autore||(currentUser.displayName||currentUser.email);data.addedAt=Date.now();
     db.ref('recipes').push(data).catch(dbErr);
     resetRecipeForm();
     alert('Ricetta salvata! La vedono tutti.');
-    showPage('ricette',document.querySelectorAll('.nav-item')[0]);
+    showPage('ricette',document.querySelectorAll('.nav-item')[2]);
   }
 };
 
@@ -2499,7 +2499,7 @@ window.confirmCatalogAdd=function(){
     category:cat,note:note||null,source:'catalogo',weekSort:shopWeekSort(),checked:false
   }).catch(dbErr);
   document.getElementById('catalog-add-modal').style.display='none';
-  document.querySelectorAll('.nav-item')[2].click();
+  document.querySelectorAll('.nav-item')[1].click();
 };
 
 // ── SHOP EDIT ───────────────────────────────────────────────
