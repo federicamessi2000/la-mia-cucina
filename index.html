@@ -561,6 +561,13 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
       <div id="ing-pick-list" style="max-height:220px;overflow-y:auto"></div>
       <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="confirmIngMeal()">Salva al planner</button>
     </div>
+    <div id="pick-step4" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <button onclick="goToPickStep1()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--charcoal-mid)">&#8592;</button>
+        <h2 style="margin:0;font-size:18px">🧊 Scegli dal freezer</h2>
+      </div>
+      <div id="freezer-pick-list" style="overflow-y:auto;flex:1"></div>
+    </div>
   </div>
 </div>
 
@@ -1806,8 +1813,8 @@ function renderPlannerMonth(){
     var fcStyle='color:var(--sage);font-style:italic';
     var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
     rows+='<tr class="'+(isToday?'today-row':'')+'"><td><div class="day-col"><span class="dow">'+DAYS[date.getDay()]+'</span>'+d+kcalBadge+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'),entry.pranzo_ings)):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span>'+(entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>')+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'),entry.cena_ings)):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span>'+(entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>')+'</div></td></tr>';
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'),entry.pranzo_ings,entry.pranzo_freezer_name)):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span>'+(entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>')+'</div></td>'+
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'),entry.cena_ings,entry.cena_freezer_name)):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span>'+(entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>')+'</div></td></tr>';
   }
   document.getElementById('planner-days').innerHTML='<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1829,13 +1836,13 @@ function renderPlannerWeek(){
     html+='<div class="week-day-card'+(isToday?' today':'')+'">'+
       '<div class="week-day-header">'+DAYS_FULL[i]+' '+date.getDate()+' '+MONTHS_SHORT[date.getMonth()]+'</div>'+
       '<div class="week-meal-row"><span class="week-meal-label">Pranzo</span>'+
-      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'),entry.pranzo_ings)):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
+      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'),entry.pranzo_ings,entry.pranzo_freezer_name)):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
       '<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+(!pFC&&entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'')+
       (!pFC&&entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" aria-label="Aggiungi piatto alternativo" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
       (!pFC&&entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
       '<div class="week-meal-row"><span class="week-meal-label">Cena</span>'+
-      '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'),entry.cena_ings)):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
+      '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'),entry.cena_ings,entry.cena_freezer_name)):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
       '<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+(!cFC&&entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'')+
       (!cFC&&entry.cena&&!entry.cena2?'<button class="meal-alt-btn" aria-label="Aggiungi piatto alternativo" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
@@ -1913,9 +1920,9 @@ window.confirmMeal=function(){
   document.getElementById('pick-step1').style.display='block';
   document.getElementById('pick-step2').style.display='none';
 };
-function mealLabel(v,ings){
+function mealLabel(v,ings,freezerName){
   if(v==='__fuori_casa')return'🍽️ Fuori casa';
-  if(v==='__dal_freezer')return'🧊 Dal freezer';
+  if(v==='__dal_freezer')return'🧊 '+(freezerName||'Dal freezer');
   if(v==='__ingredienti'){
     if(ings&&ings.length)return'🧺 '+ings.slice(0,2).map(function(i){return i.name;}).join(', ')+(ings.length>2?'…':'');
     return'🧺 Ingredienti';
@@ -1926,7 +1933,7 @@ window.setFuoriCasa=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   entry[pickTarget.meal]='__fuori_casa';
-  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step1').style.display='block';
@@ -1934,14 +1941,55 @@ window.setFuoriCasa=function(){
 };
 window.setFreezerMeal=function(){
   if(!pickTarget)return;
+  if(!freezer.length){
+    var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+    entry[pickTarget.meal]='__dal_freezer';
+    delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
+    db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
+    document.getElementById('pick-modal').style.display='none';
+    return;
+  }
+  renderFreezerPickList();
+  document.getElementById('pick-step1').style.display='none';
+  document.getElementById('pick-step4').style.display='flex';
+};
+function renderFreezerPickList(){
+  var el=document.getElementById('freezer-pick-list');
+  if(!freezer.length){el.innerHTML='<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Il freezer è vuoto</p>';return;}
+  var catEmoji={'Carne':'🥩','Pesce':'🐟','Piatti pronti':'🍲','Verdure':'🥦','Pane e Dolci':'🍞','Altro':'📦'};
+  var cats={};
+  freezer.forEach(function(f){var c=f.category||'Altro';if(!cats[c])cats[c]=[];cats[c].push(f);});
+  var html='';
+  Object.keys(cats).sort().forEach(function(cat){
+    html+='<div style="font-size:10.5px;font-weight:700;color:var(--charcoal-mid);margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.07em">'+(catEmoji[cat]||'📦')+' '+cat+'</div>';
+    cats[cat].forEach(function(f){
+      var qty=f.qty!=null?(f.qty%1===0?f.qty:+f.qty.toFixed(2)):'';
+      var qtyStr=qty?(qty+(f.unit?' '+esc(f.unit):'')):'';
+      html+='<div class="freezer-item" onclick="selectFreezerItem(\''+f.id+'\','+JSON.stringify(f.name)+')">'+
+        '<span class="freezer-emoji">'+(catEmoji[f.category||'Altro']||'📦')+'</span>'+
+        '<div style="flex:1"><div class="freezer-item-name">'+esc(f.name)+'</div>'+
+        (qtyStr||f.note?'<div class="freezer-item-meta">'+(qtyStr||'')+(qtyStr&&f.note?' · ':'')+( f.note?esc(f.note):'')+'</div>':'')+'</div>'+
+        '<span style="font-size:12px;color:var(--sage);font-weight:600">Usa →</span></div>';
+    });
+  });
+  el.innerHTML=html;
+}
+window.selectFreezerItem=function(id,name){
+  if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   entry[pickTarget.meal]='__dal_freezer';
-  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_ings'];
-  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
+  entry[pickTarget.meal+'_freezer_id']=id;
+  entry[pickTarget.meal+'_freezer_name']=name;
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];
+  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
+  db.ref('users/'+uid+'/freezer/'+id).remove().catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
+  document.getElementById('pick-step4').style.display='none';
+  document.getElementById('pick-step1').style.display='block';
 };
 window.goToPickStep1=function(){
   document.getElementById('pick-step3').style.display='none';
+  document.getElementById('pick-step4').style.display='none';
   document.getElementById('pick-step1').style.display='block';
 };
 var _pickIngsList=[];
@@ -1993,8 +2041,8 @@ window.confirmIngMeal=function(){
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   entry[pickTarget.meal]='__ingredienti';
   entry[pickTarget.meal+'_ings']=_pickIngsList.map(function(i){return{name:i.name,qty:i.qty,unit:i.unit};});
-  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];
-  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
+  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step3').style.display='none';
   document.getElementById('pick-step1').style.display='block';
@@ -2002,16 +2050,16 @@ window.confirmIngMeal=function(){
 window.clearMeal=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
-  delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];
+  delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
   if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+pickTarget.key).remove().catch(dbErr);
   else db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
 };
 window.quickClearMeal=function(key,meal){
   var uid=currentUser.uid,entry=Object.assign({},planner[key]||{});
-  delete entry[meal];delete entry[meal+'_porzioni'];delete entry[meal+'_ings'];
-  if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+key).remove();
-  else db.ref('users/'+uid+'/planner/'+key).set(entry);
+  delete entry[meal];delete entry[meal+'_porzioni'];delete entry[meal+'_skip'];delete entry[meal+'_id'];delete entry[meal+'_ings'];delete entry[meal+'_freezer_id'];delete entry[meal+'_freezer_name'];
+  if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+key).remove().catch(dbErr);
+  else db.ref('users/'+uid+'/planner/'+key).set(entry).catch(dbErr);
 };
 
 function getWeekKeys(refDate){
