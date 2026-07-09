@@ -715,9 +715,12 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     <div class="modal-handle"></div>
     <h2 id="freezer-modal-title" style="margin-bottom:16px">Aggiungi al congelatore</h2>
     <div class="form-group"><label>Nome</label><input type="text" id="frz-name" placeholder="es. Pollo marinato, Ragù" autocomplete="off"></div>
-    <div style="display:flex;gap:8px">
-      <div class="form-group" style="flex:1"><label>Quantit&agrave;</label><input type="number" id="frz-qty" placeholder="1" min="0" step="any"></div>
-      <div class="form-group" style="width:90px"><label>Unit&agrave;</label><input type="text" id="frz-unit" placeholder="kg"></div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <div class="form-group" style="flex:0 0 80px"><label>Quantit&agrave;</label><input type="number" id="frz-qty" placeholder="1" min="0" step="any"></div>
+      <div class="form-group" style="flex:1"><label>Unit&agrave;</label>
+        <div id="frz-unit-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+        <input type="hidden" id="frz-unit" value="">
+      </div>
     </div>
     <div class="form-group"><label>Categoria</label><select id="frz-cat">
       <option>Carne</option><option>Pesce</option><option>Piatti pronti</option><option>Verdure</option><option>Pane e Dolci</option><option>Altro</option>
@@ -2367,8 +2370,19 @@ function renderUnitChips(selected){
   document.getElementById('cat-unit').value=selected||'';
 }
 window.selectUnitChip=function(u){
-  document.querySelectorAll('.unit-chip').forEach(function(b){b.classList.toggle('selected',b.textContent===u);});
+  document.querySelectorAll('#cat-unit-chips .unit-chip').forEach(function(b){b.classList.toggle('selected',b.textContent===u);});
   document.getElementById('cat-unit').value=u;
+};
+var FRZ_UNIT_CHIPS=['g','kg','ml','L','n°','porz.'];
+function renderFrzUnitChips(selected){
+  document.getElementById('frz-unit-chips').innerHTML=FRZ_UNIT_CHIPS.map(function(u){
+    return'<button type="button" class="unit-chip'+(u===selected?' selected':'')+'" onclick="selectFrzUnitChip(\''+u+'\')">'+u+'</button>';
+  }).join('');
+  document.getElementById('frz-unit').value=selected||'';
+}
+window.selectFrzUnitChip=function(u){
+  document.querySelectorAll('#frz-unit-chips .unit-chip').forEach(function(b){b.classList.toggle('selected',b.textContent===u);});
+  document.getElementById('frz-unit').value=u;
 };
 window.openCatalogAdd=function(name,catIdx,unit){
   catalogAddItem={name:name,catIdx:catIdx,unit:unit};
@@ -2550,7 +2564,7 @@ window.openFreezerModal=function(id){
   document.getElementById('freezer-modal-title').textContent=id?'Modifica':'Aggiungi al congelatore';
   document.getElementById('frz-name').value=f?f.name:'';
   document.getElementById('frz-qty').value=f&&f.qty!=null?f.qty:'';
-  document.getElementById('frz-unit').value=f?f.unit||'':'';
+  renderFrzUnitChips(f?f.unit||'':'');
   document.getElementById('frz-cat').value=f?f.category||'Altro':'Altro';
   document.getElementById('frz-date').value=f?f.frozenDate||'':'';
   document.getElementById('frz-note').value=f?f.note||'':'';
