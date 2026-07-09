@@ -1914,15 +1914,25 @@ window.confirmMeal=function(){
   if(!pickTarget||!pickTarget.selectedNome)return;
   var skip=Array.from(document.querySelectorAll('#pick-ing-checks input[type=checkbox]:checked')).map(function(cb){return cb.getAttribute('data-name');});
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  restoreFreezerItem(uid,entry,pickTarget.meal);
   entry[pickTarget.meal]=pickTarget.selectedNome;
   entry[pickTarget.meal+'_id']=pickTarget.selectedId||null;
   entry[pickTarget.meal+'_porzioni']=plannerPortions;
   if(skip.length)entry[pickTarget.meal+'_skip']=skip;else delete entry[pickTarget.meal+'_skip'];
+  delete entry[pickTarget.meal+'_ings'];deleteFreezerFields(entry,pickTarget.meal);
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step1').style.display='block';
   document.getElementById('pick-step2').style.display='none';
 };
+function restoreFreezerItem(uid,entry,meal){
+  if(entry[meal]==='__dal_freezer'&&entry[meal+'_freezer_data']){
+    db.ref('users/'+uid+'/freezer').push(entry[meal+'_freezer_data']).catch(dbErr);
+  }
+}
+function deleteFreezerFields(entry,meal){
+  delete entry[meal+'_freezer_id'];delete entry[meal+'_freezer_name'];delete entry[meal+'_freezer_data'];
+}
 function mealLabel(v,ings,freezerName){
   if(v==='__fuori_casa')return'🍽️ Fuori casa';
   if(v==='__dal_freezer')return'🧊 '+(freezerName||'Dal freezer');
@@ -1935,8 +1945,9 @@ function mealLabel(v,ings,freezerName){
 window.setFuoriCasa=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  restoreFreezerItem(uid,entry,pickTarget.meal);
   entry[pickTarget.meal]='__fuori_casa';
-  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];deleteFreezerFields(entry,pickTarget.meal);
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step1').style.display='block';
@@ -1980,9 +1991,12 @@ function renderFreezerPickList(){
 window.selectFreezerItem=function(id,name){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  restoreFreezerItem(uid,entry,pickTarget.meal);
+  var fItem=freezer.find(function(f){return f.id===id;});
   entry[pickTarget.meal]='__dal_freezer';
   entry[pickTarget.meal+'_freezer_id']=id;
   entry[pickTarget.meal+'_freezer_name']=name;
+  if(fItem){var fd=Object.assign({},fItem);delete fd.id;entry[pickTarget.meal+'_freezer_data']=fd;}
   delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   db.ref('users/'+uid+'/freezer/'+id).remove().catch(dbErr);
@@ -2042,9 +2056,10 @@ function renderIngPickAdded(){
 window.confirmIngMeal=function(){
   if(!pickTarget||!_pickIngsList.length)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  restoreFreezerItem(uid,entry,pickTarget.meal);
   entry[pickTarget.meal]='__ingredienti';
   entry[pickTarget.meal+'_ings']=_pickIngsList.map(function(i){return{name:i.name,qty:i.qty,unit:i.unit};});
-  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];deleteFreezerFields(entry,pickTarget.meal);
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step3').style.display='none';
@@ -2053,14 +2068,16 @@ window.confirmIngMeal=function(){
 window.clearMeal=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
-  delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];delete entry[pickTarget.meal+'_freezer_id'];delete entry[pickTarget.meal+'_freezer_name'];
+  restoreFreezerItem(uid,entry,pickTarget.meal);
+  delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];deleteFreezerFields(entry,pickTarget.meal);
   if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+pickTarget.key).remove().catch(dbErr);
   else db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
 };
 window.quickClearMeal=function(key,meal){
   var uid=currentUser.uid,entry=Object.assign({},planner[key]||{});
-  delete entry[meal];delete entry[meal+'_porzioni'];delete entry[meal+'_skip'];delete entry[meal+'_id'];delete entry[meal+'_ings'];delete entry[meal+'_freezer_id'];delete entry[meal+'_freezer_name'];
+  restoreFreezerItem(uid,entry,meal);
+  delete entry[meal];delete entry[meal+'_porzioni'];delete entry[meal+'_skip'];delete entry[meal+'_id'];delete entry[meal+'_ings'];deleteFreezerFields(entry,meal);
   if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+key).remove().catch(dbErr);
   else db.ref('users/'+uid+'/planner/'+key).set(entry).catch(dbErr);
 };
