@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "recipes": {
+      ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
+      ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
+      "$recipeId": {
+        ".validate": "newData.hasChildren(['nome']) || newData.val() === null"
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "families": {
+      "$code": {
+        ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
+        ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')"
+      }
+    }
+  }
+}

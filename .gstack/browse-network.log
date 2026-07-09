@@ -1,0 +1,8 @@
+[2026-07-07T19:00:35.148Z] GET http://localhost:8642/index.html?v=3008 → 200 (24ms, 192657B)
+[2026-07-07T19:00:35.182Z] GET https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Figtree:wght@400;500;600;700&display=swap → pending (?ms, ?B)
+[2026-07-07T19:00:35.183Z] GET https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js → pending (?ms, ?B)
+[2026-07-07T19:00:35.183Z] GET https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js → pending (?ms, ?B)
+[2026-07-07T19:00:35.183Z] GET https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js → pending (?ms, ?B)
+[2026-07-07T19:00:35.813Z] GET https://fonts.gstatic.com/s/figtree/v9/_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2 → 200 (474ms, 20727B)
+[2026-07-07T19:00:35.859Z] GET https://fonts.gstatic.com/s/fraunces/v38/6NU78FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0KxC9TeP2Xz5c.woff2 → 200 (493ms, 67542B)
+[2026-07-07T19:00:35.859Z] GET https://fonts.gstatic.com/s/fraunces/v38/6NUs8FyLNQOQZAnv9ZwNjucMHVn85Ni7emAe9lKqZTnbB-gzTK0K1ChJdt9hFwpX9W37lm1_mv0iQublWII.woff2 → 200 (475ms, 42252B)
