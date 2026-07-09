@@ -567,6 +567,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
         <h2 style="margin:0;font-size:18px">🧊 Scegli dal freezer</h2>
       </div>
       <div id="freezer-pick-list" style="overflow-y:auto;flex:1"></div>
+      <div id="freezer-pick-confirm" style="display:none"></div>
     </div>
   </div>
 </div>
@@ -1926,12 +1927,21 @@ window.confirmMeal=function(){
   document.getElementById('pick-step2').style.display='none';
 };
 function restoreFreezerItem(uid,entry,meal){
-  if(entry[meal]==='__dal_freezer'&&entry[meal+'_freezer_data']){
-    db.ref('users/'+uid+'/freezer').push(entry[meal+'_freezer_data']).catch(dbErr);
+  if(entry[meal]!=='__dal_freezer'||!entry[meal+'_freezer_data'])return;
+  var frzId=entry[meal+'_freezer_id'];
+  var usedQty=entry[meal+'_freezer_qty_used'];
+  var fData=entry[meal+'_freezer_data'];
+  var existing=frzId?freezer.find(function(f){return f.id===frzId;}):null;
+  if(existing!=null&&usedQty!=null&&existing.qty!=null){
+    db.ref('users/'+uid+'/freezer/'+frzId+'/qty').set(+(existing.qty+usedQty).toFixed(4)).catch(dbErr);
+  }else{
+    var rd=Object.assign({},fData);
+    if(usedQty!=null)rd.qty=usedQty;
+    db.ref('users/'+uid+'/freezer').push(rd).catch(dbErr);
   }
 }
 function deleteFreezerFields(entry,meal){
-  delete entry[meal+'_freezer_id'];delete entry[meal+'_freezer_name'];delete entry[meal+'_freezer_data'];
+  delete entry[meal+'_freezer_id'];delete entry[meal+'_freezer_name'];delete entry[meal+'_freezer_data'];delete entry[meal+'_freezer_qty_used'];
 }
 function mealLabel(v,ings,freezerName){
   if(v==='__fuori_casa')return'🍽️ Fuori casa';
@@ -1963,6 +1973,9 @@ window.setFreezerMeal=function(){
     document.getElementById('pick-modal').style.display='none';
     return;
   }
+  _freezerPickItem=null;
+  document.getElementById('freezer-pick-confirm').style.display='none';
+  document.getElementById('freezer-pick-list').style.display='block';
   renderFreezerPickList();
   document.getElementById('pick-step1').style.display='none';
   document.getElementById('pick-step4').style.display='flex';
@@ -1979,7 +1992,7 @@ function renderFreezerPickList(){
     cats[cat].forEach(function(f){
       var qty=f.qty!=null?(f.qty%1===0?f.qty:+f.qty.toFixed(2)):'';
       var qtyStr=qty?(qty+(f.unit?' '+esc(f.unit):'')):'';
-      html+='<div class="freezer-item" onclick="selectFreezerItem(\''+f.id+'\')">'+
+      html+='<div class="freezer-item" onclick="showFreezerQtyConfirm(\''+f.id+'\')">'+
         '<span class="freezer-emoji">'+(catEmoji[f.category||'Altro']||'📦')+'</span>'+
         '<div style="flex:1"><div class="freezer-item-name">'+esc(f.name)+'</div>'+
         (qtyStr||f.note?'<div class="freezer-item-meta">'+(qtyStr||'')+(qtyStr&&f.note?' · ':'')+( f.note?esc(f.note):'')+'</div>':'')+'</div>'+
@@ -1988,22 +2001,67 @@ function renderFreezerPickList(){
   });
   el.innerHTML=html;
 }
-window.selectFreezerItem=function(id){
+var _freezerPickItem=null;
+window.showFreezerQtyConfirm=function(id){
+  var fItem=freezer.find(function(f){return f.id===id;});if(!fItem)return;
+  _freezerPickItem=fItem;
+  var hasQty=fItem.qty!=null;
+  var qty=hasQty?(fItem.qty%1===0?fItem.qty:+fItem.qty.toFixed(2)):'';
+  var unit=fItem.unit?esc(fItem.unit):'';
+  document.getElementById('freezer-pick-confirm').innerHTML=
+    '<div style="text-align:center;padding:10px 0 16px">'+
+    '<div style="font-size:28px;margin-bottom:4px">🧊</div>'+
+    '<div style="font-size:17px;font-weight:700;color:var(--charcoal)">'+esc(fItem.name)+'</div>'+
+    (hasQty?'<div style="font-size:12px;color:var(--charcoal-light);margin-top:2px">Disponibile: '+qty+(unit?' '+unit:'')+'</div>':'')+
+    '</div>'+
+    '<div class="form-group">'+
+    '<label>Quantità usata'+(unit?' ('+unit+')':'')+'</label>'+
+    '<input type="number" id="frz-pick-qty" value="'+(hasQty?qty:'')+'" placeholder="'+(hasQty?'es. '+qty:'—')+'" min="0" step="any" style="width:100%;box-sizing:border-box;padding:10px 12px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-size:16px;font-family:var(--font-body);background:var(--warm-white)">'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;margin-top:14px">'+
+    '<button class="btn btn-outline" onclick="backToFreezerList()">&#8592; Cambia</button>'+
+    '<button class="btn btn-primary" style="flex:1" onclick="confirmFreezerQty()">Usa</button>'+
+    '</div>';
+  document.getElementById('freezer-pick-list').style.display='none';
+  document.getElementById('freezer-pick-confirm').style.display='block';
+  setTimeout(function(){var el=document.getElementById('frz-pick-qty');if(el)el.focus();},100);
+};
+window.backToFreezerList=function(){
+  _freezerPickItem=null;
+  document.getElementById('freezer-pick-confirm').style.display='none';
+  document.getElementById('freezer-pick-list').style.display='block';
+};
+window.confirmFreezerQty=function(){
+  if(!pickTarget||!_freezerPickItem)return;
+  var usedQtyStr=document.getElementById('frz-pick-qty').value;
+  var usedQty=usedQtyStr!==''?parseFloat(usedQtyStr)||null:null;
+  selectFreezerItem(_freezerPickItem.id,usedQty);
+};
+window.selectFreezerItem=function(id,usedQty){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   restoreFreezerItem(uid,entry,pickTarget.meal);
-  var fItem=freezer.find(function(f){return f.id===id;});
-  if(!fItem)return;
+  var fItem=freezer.find(function(f){return f.id===id;});if(!fItem)return;
   entry[pickTarget.meal]='__dal_freezer';
   entry[pickTarget.meal+'_freezer_id']=id;
   entry[pickTarget.meal+'_freezer_name']=fItem.name;
   var fd=Object.assign({},fItem);delete fd.id;entry[pickTarget.meal+'_freezer_data']=fd;
+  if(usedQty!=null)entry[pickTarget.meal+'_freezer_qty_used']=usedQty;
+  else delete entry[pickTarget.meal+'_freezer_qty_used'];
   delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
-  db.ref('users/'+uid+'/freezer/'+id).remove().catch(dbErr);
+  var fRef=db.ref('users/'+uid+'/freezer/'+id);
+  if(fItem.qty!=null&&usedQty!=null){
+    var remaining=fItem.qty-usedQty;
+    if(remaining>0.0001)fRef.update({qty:+remaining.toFixed(4)}).catch(dbErr);
+    else fRef.remove().catch(dbErr);
+  }else{fRef.remove().catch(dbErr);}
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step4').style.display='none';
+  document.getElementById('freezer-pick-confirm').style.display='none';
+  document.getElementById('freezer-pick-list').style.display='block';
   document.getElementById('pick-step1').style.display='block';
+  _freezerPickItem=null;
 };
 window.goToPickStep1=function(){
   document.getElementById('pick-step3').style.display='none';
