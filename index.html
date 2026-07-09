@@ -72,6 +72,8 @@ textarea{resize:vertical;min-height:100px;}
 .ing-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;}
 .ing-qty{width:64px!important;flex-shrink:0;padding:8px!important;}
 .ing-unit{width:80px!important;flex-shrink:0;padding:8px!important;}
+.unit-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border-mid);background:var(--warm-white);font-size:13px;cursor:pointer;color:var(--charcoal-mid);font-family:'DM Sans',sans-serif;transition:background 0.15s,color 0.15s,border-color 0.15s;}
+.unit-chip.selected{background:var(--terracotta);color:#fff;border-color:var(--terracotta);font-weight:600;}
 .ing-name{flex:1;}
 .ing-row button{flex-shrink:0;background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:0 10px;cursor:pointer;font-size:18px;color:var(--charcoal-light);height:38px;}
 .ing-section-row{border-bottom:1.5px solid var(--terracotta);padding-bottom:2px;margin:12px 0 4px;}
@@ -192,6 +194,8 @@ textarea{resize:vertical;min-height:100px;}
 .week-meal-text.empty{color:var(--charcoal-light);font-style:italic;}
 .meal-alt-btn{background:none;border:none;font-size:15px;line-height:1;color:var(--terracotta);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.55;}
 .meal-alt-btn:hover{opacity:1;}
+.meal-rm-btn{background:none;border:none;font-size:14px;line-height:1;color:var(--charcoal-light);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.6;}
+.meal-rm-btn:hover{color:#c0392b;opacity:1;}
 .week-meal-alt{display:flex;align-items:center;gap:8px;padding:2px 0 5px 56px;}
 .planner-view-btn{background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Inter',sans-serif;}
 .nutri-bar{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--charcoal-mid);background:var(--warm-white);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;align-items:center;}
@@ -384,10 +388,19 @@ textarea{resize:vertical;min-height:100px;}
           <button class="portions-btn" onclick="changePlannerPortions(+1)">+</button>
         </div>
       </div>
-      <div onclick="setFuoriCasa()" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);margin-bottom:10px;cursor:pointer;background:var(--warm-white)">
-        <span style="font-size:20px">🍽️</span>
-        <span style="font-size:14px;font-weight:500;color:var(--charcoal)">Fuori casa</span>
-        <span style="margin-left:auto;font-size:12px;color:var(--charcoal-light)">nessuna spesa</span>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div onclick="setFuoriCasa()" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);cursor:pointer;background:var(--warm-white)">
+          <span style="font-size:18px">🍽️</span>
+          <div><div style="font-size:13px;font-weight:500;color:var(--charcoal)">Fuori casa</div><div style="font-size:11px;color:var(--charcoal-light)">nessuna spesa</div></div>
+        </div>
+        <div onclick="setFreezerMeal()" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);cursor:pointer;background:var(--warm-white)">
+          <span style="font-size:18px">🧊</span>
+          <div><div style="font-size:13px;font-weight:500;color:var(--charcoal)">Dal freezer</div><div style="font-size:11px;color:var(--charcoal-light)">nessuna spesa</div></div>
+        </div>
+        <div onclick="openIngPick()" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);cursor:pointer;background:var(--warm-white)">
+          <span style="font-size:18px">🧺</span>
+          <div><div style="font-size:13px;font-weight:500;color:var(--charcoal)">Ingredienti</div><div style="font-size:11px;color:var(--charcoal-light)">aggiungi alla spesa</div></div>
+        </div>
       </div>
       <div id="pick-list"></div>
       <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="clearMeal()">Rimuovi pasto</button>
@@ -403,6 +416,17 @@ textarea{resize:vertical;min-height:100px;}
       <div style="display:flex;gap:8px;margin-top:16px">
         <button class="btn btn-primary" style="flex:1" onclick="confirmMeal()">Aggiungi al planner</button>
       </div>
+    </div>
+    <!-- STEP 3: ingredienti liberi -->
+    <div id="pick-step3" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <button onclick="goToPickStep1()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--charcoal-mid)">&#8592;</button>
+        <h2 style="margin:0;font-size:18px">Ingredienti</h2>
+      </div>
+      <div id="ing-pick-added" style="margin-bottom:12px"></div>
+      <input class="pick-search" id="ing-pick-search" type="text" placeholder="Cerca ingrediente&hellip;" oninput="renderIngPickSearch(this.value)">
+      <div id="ing-pick-list" style="max-height:220px;overflow-y:auto"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="confirmIngMeal()">Salva al planner</button>
     </div>
   </div>
 </div>
@@ -474,9 +498,11 @@ textarea{resize:vertical;min-height:100px;}
       <label>Nome ingrediente</label>
       <input type="text" id="cat-name" placeholder="es. Semola di grano duro">
     </div>
-    <div style="display:flex;gap:8px">
-      <div class="form-group" style="flex:1"><label>Quantit&agrave;</label><input type="number" id="cat-qty" placeholder="200" min="0" step="any"></div>
-      <div class="form-group" style="width:90px"><label>Unit&agrave;</label><input type="text" id="cat-unit" placeholder="g"></div>
+    <div class="form-group"><label>Quantit&agrave;</label><input type="number" id="cat-qty" placeholder="200" min="0" step="any"></div>
+    <div class="form-group">
+      <label>Unit&agrave;</label>
+      <div id="cat-unit-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+      <input type="hidden" id="cat-unit" value="">
     </div>
     <div class="form-group"><label>Nota (marca, gusto&hellip;)</label><input type="text" id="cat-note" placeholder="es. Mulino Bianco"></div>
     <div style="display:flex;gap:8px">
@@ -1324,8 +1350,8 @@ function renderPlannerMonth(){
     var fcStyle='color:var(--sage);font-style:italic';
     var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
     rows+='<tr class="'+(isToday?'today-row':'')+'"><td><div class="day-col"><span class="dow">'+DAYS[date.getDay()]+'</span>'+d+kcalBadge+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?mealLabel(entry.pranzo):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.pranzo2+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button></div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?mealLabel(entry.cena):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.cena2+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span><button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button></div></td></tr>';
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?mealLabel(entry.pranzo,entry.pranzo_ings):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.pranzo2+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span>'+(entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>')+'</div></td>'+
+      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?mealLabel(entry.cena,entry.cena_ings):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+entry.cena2+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span>'+(entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>')+'</div></td></tr>';
   }
   document.getElementById('planner-days').innerHTML='<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1347,14 +1373,14 @@ function renderPlannerWeek(){
     html+='<div class="week-day-card'+(isToday?' today':'')+'">'+
       '<div class="week-day-header">'+DAYS_FULL[i]+' '+date.getDate()+' '+MONTHS_SHORT[date.getMonth()]+'</div>'+
       '<div class="week-meal-row"><span class="week-meal-label">Pranzo</span>'+
-      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?mealLabel(entry.pranzo):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+
+      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?mealLabel(entry.pranzo,entry.pranzo_ings):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
+      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+(!pFC&&entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'')+
       (!pFC&&entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
       (!pFC&&entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+entry.pranzo2+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
       '<div class="week-meal-row"><span class="week-meal-label">Cena</span>'+
-      '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?mealLabel(entry.cena):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+
+      '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?mealLabel(entry.cena,entry.cena_ings):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
+      '<button class="meal-add-btn" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+(!cFC&&entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'')+
       (!cFC&&entry.cena&&!entry.cena2?'<button class="meal-alt-btn" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
       '</div>'+
       (!cFC&&entry.cena2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'cena2\')">'+entry.cena2+(entry.cena2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena2_porzioni+'</span>':'')+'</span></div>':'')+
@@ -1378,7 +1404,16 @@ function renderPlannerWeek(){
   document.getElementById('planner-days').innerHTML=html;
 }
 window.renderPickList=function(q){
-  var f=recipes.filter(function(r){return r.nome.toLowerCase().includes((q||'').toLowerCase());});
+  var f;
+  if(!q){
+    // no query: show only favorites, with a hint
+    var favs=recipes.filter(function(r){return!!userFavorites[r.id];});
+    var hint=favs.length?'':'<p style="font-size:13px;color:var(--charcoal-light);text-align:center;padding:12px 0">Nessun preferito ancora.<br>Cerca per nome per trovare le ricette.</p>';
+    var head=favs.length?'<p style="font-size:11px;font-weight:600;color:var(--charcoal-mid);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">⭐ Preferiti</p>':'';
+    document.getElementById('pick-list').innerHTML=hint+head+favs.map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.nome.replace(/'/g,"\\'")+'\')" ><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+r.nome+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('');
+    return;
+  }
+  f=recipes.filter(function(r){return r.nome.toLowerCase().includes(q.toLowerCase());});
   document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.nome.replace(/'/g,"\\'")+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+r.nome+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('');
 };
 window.changePlannerPortions=function(d){plannerPortions=Math.max(1,plannerPortions+d);document.getElementById('planner-portions-num').textContent=plannerPortions;};
@@ -1419,24 +1454,105 @@ window.confirmMeal=function(){
   document.getElementById('pick-step1').style.display='block';
   document.getElementById('pick-step2').style.display='none';
 };
-function mealLabel(v){return v==='__fuori_casa'?'🍽️ Fuori casa':v;}
+function mealLabel(v,ings){
+  if(v==='__fuori_casa')return'🍽️ Fuori casa';
+  if(v==='__dal_freezer')return'🧊 Dal freezer';
+  if(v==='__ingredienti'){
+    if(ings&&ings.length)return'🧺 '+ings.slice(0,2).map(function(i){return i.name;}).join(', ')+(ings.length>2?'…':'');
+    return'🧺 Ingredienti';
+  }
+  return v;
+}
 window.setFuoriCasa=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   entry[pickTarget.meal]='__fuori_casa';
-  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_ings'];
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
   document.getElementById('pick-modal').style.display='none';
   document.getElementById('pick-step1').style.display='block';
   document.getElementById('pick-step2').style.display='none';
 };
+window.setFreezerMeal=function(){
+  if(!pickTarget)return;
+  var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  entry[pickTarget.meal]='__dal_freezer';
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_ings'];
+  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
+  document.getElementById('pick-modal').style.display='none';
+};
+window.goToPickStep1=function(){
+  document.getElementById('pick-step3').style.display='none';
+  document.getElementById('pick-step1').style.display='block';
+};
+var _pickIngsList=[];
+window.openIngPick=function(){
+  if(!pickTarget)return;
+  _pickIngsList=[];
+  document.getElementById('ing-pick-search').value='';
+  renderIngPickAdded();
+  renderIngPickSearch('');
+  document.getElementById('pick-step1').style.display='none';
+  document.getElementById('pick-step3').style.display='block';
+};
+window.renderIngPickSearch=function(q){
+  q=(q||'').toLowerCase().trim();
+  var items=q.length>=1?CATALOG_SEED.filter(function(c){return c[0].toLowerCase().includes(q);}).slice(0,15):[];
+  var html=!q?'<p style="font-size:13px;color:var(--charcoal-light);text-align:center;padding:16px 0">Scrivi per cercare un ingrediente</p>':
+    !items.length?'<p style="font-size:13px;color:var(--charcoal-light);text-align:center;padding:16px 0">Nessun risultato</p>':
+    items.map(function(c){
+      var safeN=c[0].replace(/'/g,"\\'");
+      return'<div class="cat-item" onclick="addIngPick(\''+safeN+'\','+c[1]+',\''+c[2]+'\')"><span class="cat-item-name">'+c[0]+'<span class="cat-item-unit"> &middot; '+c[2]+'</span></span><button class="cat-add-btn">+</button></div>';
+    }).join('');
+  document.getElementById('ing-pick-list').innerHTML=html;
+};
+window.addIngPick=function(name,catIdx,unit){
+  _pickIngsList=_pickIngsList.filter(function(i){return i.name!==name;});
+  _pickIngsList.push({name:name,catIdx:catIdx,unit:unit,qty:null});
+  renderIngPickAdded();
+  document.getElementById('ing-pick-search').value='';
+  renderIngPickSearch('');
+};
+window.removeIngPick=function(idx){_pickIngsList.splice(idx,1);renderIngPickAdded();};
+window.updateIngPickQty=function(idx,val){if(_pickIngsList[idx])_pickIngsList[idx].qty=parseFloat(val)||null;};
+function renderIngPickAdded(){
+  if(!_pickIngsList.length){
+    document.getElementById('ing-pick-added').innerHTML='<p style="font-size:13px;color:var(--charcoal-light)">Nessun ingrediente — cerca sotto e aggiungilo.</p>';
+    return;
+  }
+  document.getElementById('ing-pick-added').innerHTML=_pickIngsList.map(function(ing,i){
+    return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+      '<input type="number" value="'+(ing.qty||'')+'" placeholder="—" min="0" step="any" style="width:56px;padding:6px 4px;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);font-size:13px;font-family:\'DM Sans\',sans-serif;text-align:center;background:var(--warm-white);outline:none" oninput="updateIngPickQty('+i+',this.value)">'+
+      '<span style="font-size:12px;color:var(--charcoal-light);min-width:28px">'+( ing.unit||'')+'</span>'+
+      '<span style="flex:1;font-size:14px;color:var(--charcoal)">'+ing.name+'</span>'+
+      '<button onclick="removeIngPick('+i+')" style="background:none;border:none;font-size:18px;color:var(--charcoal-light);cursor:pointer;line-height:1">&#x2715;</button>'+
+      '</div>';
+  }).join('');
+}
+window.confirmIngMeal=function(){
+  if(!pickTarget||!_pickIngsList.length)return;
+  var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  entry[pickTarget.meal]='__ingredienti';
+  entry[pickTarget.meal+'_ings']=_pickIngsList.map(function(i){return{name:i.name,qty:i.qty,unit:i.unit};});
+  delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];
+  db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
+  document.getElementById('pick-modal').style.display='none';
+  document.getElementById('pick-step3').style.display='none';
+  document.getElementById('pick-step1').style.display='block';
+};
 window.clearMeal=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
-  delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];
+  delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_ings'];
   if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+pickTarget.key).remove();
   else db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry);
   document.getElementById('pick-modal').style.display='none';
+};
+window.quickClearMeal=function(key,meal){
+  var uid=currentUser.uid,entry=Object.assign({},planner[key]||{});
+  delete entry[meal];delete entry[meal+'_porzioni'];delete entry[meal+'_ings'];
+  if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+key).remove();
+  else db.ref('users/'+uid+'/planner/'+key).set(entry);
 };
 
 function getWeekKeys(refDate){
@@ -1484,11 +1600,16 @@ window.syncPlannerToShop=function(){
   Object.keys(weekMondays).sort().forEach(function(mk){
     var mon=weekMondays[mk];
     var weekKeys=Array.from({length:7},function(_,i){var d=new Date(mon);d.setDate(mon.getDate()+i);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();});
-    var mealData={};
+    var mealData={},ingMeals=[];
     weekKeys.forEach(function(key){
       var e=planner[key]||{};
       ['pranzo','pranzo2','cena','cena2'].forEach(function(m){
         if(!e[m])return;
+        if(e[m]==='__fuori_casa'||e[m]==='__dal_freezer')return;
+        if(e[m]==='__ingredienti'){
+          if(e[m+'_ings']&&e[m+'_ings'].length)ingMeals.push(e[m+'_ings']);
+          return;
+        }
         if(!mealData[e[m]])mealData[e[m]]={tot:0,skip:{}};
         mealData[e[m]].tot+=(e[m+'_porzioni']||1);
         (e[m+'_skip']||[]).forEach(function(s){mealData[e[m]].skip[s]=true;});
@@ -1506,6 +1627,15 @@ window.syncPlannerToShop=function(){
           category:ingCategory(ing.name),source:nome+' (\xd7'+d.tot+' porz.)',
           weekSort:mk,checked:false,fromPlanner:true
         });
+      });
+    });
+    ingMeals.forEach(function(ings){
+      ings.forEach(function(ing){
+        var ingName=ing.name.toLowerCase(),ingUnit=normalizeUnit(ing.unit||'');
+        var vs=ing.qty!=null?(ing.qty%1===0?ing.qty:+ing.qty.toFixed(2)):'';
+        var txt=(vs?vs+' ':'')+( ing.unit&&ing.unit!=='q.b.'?ing.unit+' ':'')+ing.name;
+        shopRef().push({text:txt,ingName:ingName,ingUnit:ingUnit,ingQty:ing.qty||null,
+          category:ingCategory(ing.name),source:'Ingredienti (planner)',weekSort:mk,checked:false,fromPlanner:true});
       });
     });
   });
@@ -1683,12 +1813,24 @@ window.filterCatDetail=function(q){
   }).join('');
   document.getElementById('cat-detail-list').innerHTML=html||'<div class="empty-state"><p>Nessun risultato.</p></div>';
 };
+var UNIT_CHIPS=['g','kg','ml','L','n°','bustine','q.b.'];
+function renderUnitChips(selected){
+  var html=UNIT_CHIPS.map(function(u){
+    return'<button type="button" class="unit-chip'+(u===selected?' selected':'')+'" onclick="selectUnitChip(\''+u+'\')">'+u+'</button>';
+  }).join('');
+  document.getElementById('cat-unit-chips').innerHTML=html;
+  document.getElementById('cat-unit').value=selected||'';
+}
+window.selectUnitChip=function(u){
+  document.querySelectorAll('.unit-chip').forEach(function(b){b.classList.toggle('selected',b.textContent===u);});
+  document.getElementById('cat-unit').value=u;
+};
 window.openCatalogAdd=function(name,catIdx,unit){
   catalogAddItem={name:name,catIdx:catIdx,unit:unit};
   document.getElementById('catalog-add-title').textContent=name;
   document.getElementById('cat-name-group').style.display='none';
   document.getElementById('cat-qty').value='';
-  document.getElementById('cat-unit').value=unit;
+  renderUnitChips(unit);
   document.getElementById('cat-note').value='';
   document.getElementById('cat-detail-modal').style.display='none';
   document.getElementById('catalog-add-modal').style.display='flex';
@@ -1700,7 +1842,7 @@ window.openCustomCatalogAdd=function(){
   document.getElementById('cat-name-group').style.display='block';
   document.getElementById('cat-name').value='';
   document.getElementById('cat-qty').value='';
-  document.getElementById('cat-unit').value='';
+  renderUnitChips('');
   document.getElementById('cat-note').value='';
   document.getElementById('catalog-add-modal').style.display='flex';
   setTimeout(function(){document.getElementById('cat-name').focus();},150);
