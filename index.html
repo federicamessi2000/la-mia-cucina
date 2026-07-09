@@ -379,7 +379,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
       <button aria-label="Periodo successivo" onclick="changeMonth(1)">&#8250;</button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <button class="planner-view-btn" id="planner-view-btn" onclick="togglePlannerView()">Vista settimana</button>
+      <button class="planner-view-btn active" id="planner-view-btn" onclick="togglePlannerView()">Vista mese</button>
       <button onclick="copyPrevWeek()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:'Figtree',sans-serif;">&#8617; Copia settimana prec.</button>
     </div>
     <div id="planner-days"></div>
@@ -833,7 +833,7 @@ var APP_VERSION='2026-07-07.5';console.log('La Mia Cucina',APP_VERSION);document
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
-var plannerView='month';
+var plannerView='week';
 let currentRecipeId=null,currentPortions=4,plannerPortions=1;
 var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null,shopAddPortions=1;
 var userCatOrder=[],freezer=[],userFavorites={},freezerEditId=null,shopEditGroup=null;
@@ -1979,7 +1979,7 @@ function renderFreezerPickList(){
     cats[cat].forEach(function(f){
       var qty=f.qty!=null?(f.qty%1===0?f.qty:+f.qty.toFixed(2)):'';
       var qtyStr=qty?(qty+(f.unit?' '+esc(f.unit):'')):'';
-      html+='<div class="freezer-item" onclick="selectFreezerItem(\''+f.id+'\','+JSON.stringify(f.name)+')">'+
+      html+='<div class="freezer-item" onclick="selectFreezerItem(\''+f.id+'\')">'+
         '<span class="freezer-emoji">'+(catEmoji[f.category||'Altro']||'📦')+'</span>'+
         '<div style="flex:1"><div class="freezer-item-name">'+esc(f.name)+'</div>'+
         (qtyStr||f.note?'<div class="freezer-item-meta">'+(qtyStr||'')+(qtyStr&&f.note?' · ':'')+( f.note?esc(f.note):'')+'</div>':'')+'</div>'+
@@ -1988,15 +1988,16 @@ function renderFreezerPickList(){
   });
   el.innerHTML=html;
 }
-window.selectFreezerItem=function(id,name){
+window.selectFreezerItem=function(id){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   restoreFreezerItem(uid,entry,pickTarget.meal);
   var fItem=freezer.find(function(f){return f.id===id;});
+  if(!fItem)return;
   entry[pickTarget.meal]='__dal_freezer';
   entry[pickTarget.meal+'_freezer_id']=id;
-  entry[pickTarget.meal+'_freezer_name']=name;
-  if(fItem){var fd=Object.assign({},fItem);delete fd.id;entry[pickTarget.meal+'_freezer_data']=fd;}
+  entry[pickTarget.meal+'_freezer_name']=fItem.name;
+  var fd=Object.assign({},fItem);delete fd.id;entry[pickTarget.meal+'_freezer_data']=fd;
   delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];
   db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   db.ref('users/'+uid+'/freezer/'+id).remove().catch(dbErr);
