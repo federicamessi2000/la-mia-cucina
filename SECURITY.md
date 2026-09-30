@@ -1,22 +1,23 @@
 # Sicurezza — La Mia Cucina
 
-## 1. Regole del database — ✅ FATTO (2026-07-07)
+## 1. Regole del database — ✅ AGGIORNATE (2026-09-30)
 
-Le regole con allowlist famiglia sono state **pubblicate** il 2026-07-07 (deploy via
-`firebase deploy --only database` dall'account di Daniele, ora membro del progetto).
-Le regole precedenti (qualsiasi account Google poteva leggere e scrivere tutto) sono
-salvate in locale da Daniele. Il file sorgente resta `database.rules.json`.
+Dal 2026-09-30 l'app è aperta a **qualsiasi account Google** (prima: solo i 4 account di
+famiglia). Regole pubblicate dalla Console; il file sorgente resta `database.rules.json`.
 
-Account autorizzati: Federica, Daniele, Alessandro, Maria Grazia. Chiunque altro può
-aprire l'app ma non vede né tocca nulla.
+| Dato | Chi legge | Chi scrive |
+|---|---|---|
+| Ricette condivise (`recipes`) | chiunque abbia fatto l'accesso | chi le crea (a suo nome, `ownerUid`); modifica/elimina solo l'autore o un account di famiglia |
+| Ricette private, planner, spesa privata, congelatore, preferiti (`users/<uid>`) | solo il proprietario | solo il proprietario |
+| Spesa condivisa (`families/<codice>`) | solo i membri | i membri; chi conosce il codice può unirsi |
 
-**Per aggiungere una persona**: aggiungi il suo indirizzo Gmail in *tutte* le condizioni
-`auth.token.email === '...'` di `database.rules.json` (4 blocchi: recipes read/write,
-families read/write), poi `firebase deploy --only database` dalla cartella del repo
-(o incolla il file in Console → Realtime Database → Regole → Pubblica).
+Account di famiglia (possono modificare anche le ricette senza autore, es. quelle di mamma):
+Federica, Daniele, Alessandro, Maria Grazia. Le regole validano anche chiave, nome (max 200
+caratteri), fonte (`mamma`/`internet`/`libro`) e la lunghezza di procedimento e note.
 
-Nota: `users/$uid` è già limitato al proprietario — planner, spesa privata, congelatore e
-preferiti restano visibili solo all'account che li ha creati.
+**Per aggiungere un account di famiglia**: aggiungi l'email nella condizione `.write` di
+`recipes/$recipeId` in `database.rules.json` e in `ADMIN_EMAILS` in `index.html`, poi
+pubblica (Console → Realtime Database → Regole → Pubblica, o `firebase deploy --only database`).
 
 ## 2. Backup automatico — ✅ ATTIVO (2026-07-07)
 

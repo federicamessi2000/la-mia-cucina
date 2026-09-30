@@ -8,13 +8,14 @@ App di ricette di famiglia, mobile-first — ricette condivise, planner dei past
 
 ## Funzioni
 
-- **Ricette** — ~820 ricette condivise (di mamma e dal web), categorie, tag, preferiti, ricerca anche senza accenti, porzioni scalabili, kcal stimate
-- **Aggiungi** — form con ingredienti strutturati, autocomplete dal catalogo, "importa da testo" che compila il form da una ricetta incollata
-- **Planner** — pianificazione pranzo/cena per settimana o mese, privata per account, con alternative, extra e "fuori casa"
+- **Ricette** — ~980 ricette (di mamma, dal web e da due libri), condivise con tutti o private del tuo account; categorie, tag, preferiti, ricerca anche senza accenti, porzioni scalabili, kcal stimate
+- **Aggiungi** — form con ingredienti strutturati, categoria, "Condivisa con tutti" / "Solo per me", autocomplete dal catalogo, "importa da testo" che compila il form da una ricetta incollata
+- **Planner** — pianificazione pranzo/cena per settimana o mese, privata per account, fino a 6 piatti per pasto (ognuno con le sue porzioni), extra e "fuori casa"
 - **Spesa** — si popola dal planner (ricordando ciò che hai già spuntato), da ricette o a mano; somma automaticamente le quantità (500 g + 1 kg → 1.5 kg); categorie ordinabili nell'ordine del tuo supermercato; condivisibile con il partner in tempo reale (codice famiglia)
 - **Congelatore** — inventario di cosa c'è in freezer, per categorie e date
 - **Modalità cucina** — un passo alla volta a schermo intero, schermo sempre acceso, timer avviabili direttamente dai tempi scritti nei passi
 - **Bimby / Cookidoo** — esporta qualsiasi ricetta come testo pronto da incollare nelle *Ricette create* di Cookidoo, o condividila su WhatsApp
+- **Segnala un problema** — dal profilo: prepara una mail a Federica con la descrizione e i dettagli tecnici (versione, telefono, errori recenti)
 
 ## Stack
 
@@ -24,10 +25,12 @@ App di ricette di famiglia, mobile-first — ricette condivise, planner dei past
 
 ## Sicurezza e backup
 
-Vedi [SECURITY.md](SECURITY.md): regole del database con allowlist di famiglia
-(`database.rules.json`) e backup notturno automatico del database via GitHub Actions.
+Vedi [SECURITY.md](SECURITY.md): chi può leggere e modificare cosa (`database.rules.json`)
+e backup notturno automatico del database.
 
 ## Note
 
-- Le ricette taggate **Mamma** sono ricette di famiglia; quelle **Web** vengono da internet
-- Planner, spesa, congelatore e preferiti sono privati: li vede solo il tuo account
+- Si accede con qualsiasi account Google
+- Le ricette taggate **Mamma** sono ricette di famiglia, **Web** vengono da internet, **Libro** da un libro di cucina
+- Una ricetta condivisa la modifica solo chi l'ha aggiunta (o un account di famiglia)
+- Planner, spesa, congelatore, preferiti e ricette "Solo per me" sono privati: li vede solo il tuo account

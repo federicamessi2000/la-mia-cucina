@@ -1,19 +1,20 @@
 # Project State — La Mia Cucina
 
-**Last updated:** 2026-07-06
-**Branch:** main (+ PR `migliorie-2026-07`)
+**Last updated:** 2026-09-30
+**Branch:** main
 **Repo:** https://github.com/federicamessi2000/la-mia-cucina
 
 ---
 
 ## Current State
 
-Single-file PWA (vanilla JS + Firebase RTDB + Google Auth) con ~820 ricette.
+Single-file PWA (vanilla JS + Firebase RTDB + Google Auth) con ~980 ricette, aperta a qualsiasi account Google.
 
 ### Funzioni
-- Ricette condivise: categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL
-- Aggiungi/modifica ricette, parser "importa da testo"
-- Planner mensile/settimanale privato (pranzo/cena + alternative + extra), kcal stimate
+- Ricette condivise o private ("Solo per me", in `users/<uid>/recipes`): categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL; modifica/elimina solo l'autore o la famiglia
+- Aggiungi/modifica ricette (con categoria), parser "importa da testo"; due libri importati (fonte "Libro")
+- Planner mensile/settimanale privato (fino a 6 piatti per pranzo/cena + extra), kcal stimate
+- "Segnala un problema": mailto precompilato con dettagli tecnici ed errori recenti
 - Lista spesa per settimana: da planner (sync che preserva gli spuntati), da ricetta,
   manuale, catalogo con 400+ ingredienti; merge automatico unità (g/kg, ml/L);
   categorie ordinabili "a giro supermercato"; condivisione via testo; spesa condivisa (codice famiglia)
@@ -23,9 +24,10 @@ Single-file PWA (vanilla JS + Firebase RTDB + Google Auth) con ~820 ricette.
 - Design "trattoria editoriale": Fraunces+Figtree, dark mode automatica, nav flottante
 
 ### Sicurezza
-- `database.rules.json` con allowlist famiglia — **da pubblicare in Firebase Console** (vedi SECURITY.md)
-- Backup notturno via GitHub Actions — **da attivare coi 2 secret** (vedi SECURITY.md)
+- `database.rules.json`: lettura per ogni account Google, scrittura per autore (`ownerUid`) o famiglia; spesa condivisa ai soli membri — **pubblicate il 2026-09-30**
+- Backup notturno sul server di Daniele (+ workflow GitHub opzionale, vedi SECURITY.md)
 - Strumenti di import una tantum rimossi dal repo (restano nella storia git)
+- Da fare in futuro: import da link Instagram/TikTok (caption + AI tramite piccolo Worker)
 
 ### Note tecniche
 - Listener Firebase incrementali (child_added/changed/removed) — niente re-download completo
