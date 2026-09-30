@@ -4,24 +4,35 @@
     ".write": false,
 
     "recipes": {
-      ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
-      ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
+      ".read": "auth != null",
       "$recipeId": {
-        ".validate": "newData.hasChildren(['nome']) || newData.val() === null"
+        ".write": "auth != null && ((auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it') || (!data.exists() && newData.child('ownerUid').val() === auth.uid) || (data.child('ownerUid').val() === auth.uid && (!newData.exists() || newData.child('ownerUid').val() === auth.uid)))",
+        ".validate": "$recipeId.matches(/^[A-Za-z0-9_-]+$/) && $recipeId.length <= 40 && newData.child('nome').isString() && newData.child('nome').val().length > 0 && newData.child('nome').val().length <= 200 && (!newData.child('fonte').exists() || newData.child('fonte').val() === 'mamma' || newData.child('fonte').val() === 'internet' || newData.child('fonte').val() === 'libro') && (!newData.child('procedimento').isString() || newData.child('procedimento').val().length <= 20000) && (!newData.child('note').isString() || newData.child('note').val().length <= 5000)"
       }
     },
 
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && auth.uid === $uid",
+        "recipes": {
+          "$recipeId": {
+            ".validate": "$recipeId.matches(/^[A-Za-z0-9_-]+$/) && $recipeId.length <= 40 && newData.child('nome').isString() && newData.child('nome').val().length > 0 && newData.child('nome').val().length <= 200 && (!newData.child('fonte').exists() || newData.child('fonte').val() === 'mamma' || newData.child('fonte').val() === 'internet' || newData.child('fonte').val() === 'libro') && (!newData.child('procedimento').isString() || newData.child('procedimento').val().length <= 20000) && (!newData.child('note').isString() || newData.child('note').val().length <= 5000)"
+          }
+        }
       }
     },
 
     "families": {
       "$code": {
-        ".read": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')",
-        ".write": "auth != null && (auth.token.email === 'federicamessi2000@gmail.com' || auth.token.email === 'danymexi@gmail.com' || auth.token.email === 'alessandro.messi60@gmail.com' || auth.token.email === 'gmmagnani@hotmail.it')"
+        ".read": "auth != null && data.child('members').child(auth.uid).exists()",
+        ".write": "auth != null && data.child('members').child(auth.uid).exists()",
+        "members": {
+          ".read": "auth != null",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
       }
     }
   }

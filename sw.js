@@ -1,4 +1,4 @@
-var CACHE = 'cucina-v21';
+var CACHE = 'cucina-v22';
 var PRECACHE = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {
@@ -16,9 +16,12 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  // Solo GET: la Cache API non può salvare POST & co.
+  if (e.request.method !== 'GET') { return; }
   var url = e.request.url;
   if (
     url.includes('firebaseio.com') ||
+    url.includes('firebasedatabase.app') ||
     url.includes('googleapis.com') ||
     url.includes('gstatic.com') ||
     url.includes('generativelanguage') ||

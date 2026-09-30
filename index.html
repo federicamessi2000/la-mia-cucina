@@ -89,6 +89,8 @@ h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:-0.015em
 .tag{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap;font-weight:600;flex-shrink:0;}
 .tag-mamma{background:var(--terracotta-pale);color:var(--terracotta);}
 .tag-internet{background:var(--sage-pale);color:var(--sage);}
+.tag-libro{background:#EFE6F5;color:#6B4C85;}
+@media (prefers-color-scheme:dark){.tag-libro{background:#2E2536;color:#C4A8DB;}}
 .recipe-meta{font-size:13px;color:var(--charcoal-light);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
 .recipe-author{font-size:11px;color:var(--charcoal-light);margin-top:3px;}
 .search-bar{width:100%;padding:12px 16px;border:0.5px solid var(--border-mid);border-radius:14px;background:var(--warm-white);font-family:var(--font-body);font-size:16px;color:var(--charcoal);margin-bottom:16px;outline:none;box-shadow:var(--shadow-sm);transition:border-color .2s,box-shadow .2s;}
@@ -228,6 +230,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .tag-chip{font-size:10px;padding:2.5px 8px;border-radius:12px;background:var(--sage-pale);color:var(--sage);font-weight:600;white-space:nowrap;}
 .tag-toggle{display:inline-flex;align-items:center;font-size:12px;padding:5px 11px;border-radius:20px;border:0.5px solid var(--border-mid);background:var(--warm-white);cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;white-space:nowrap;transition:all .2s;}
 .tag-toggle.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(94,112,82,0.6);}
+.tag-toggle:disabled{opacity:.45;cursor:default;}
 .tag-filter-btn{font-size:11px;padding:4.5px 11px;border-radius:20px;border:0.5px solid var(--border-mid);background:none;cursor:pointer;color:var(--charcoal-mid);font-family:var(--font-body);font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .2s;}
 .tag-filter-btn.active{background:var(--sage-pale);color:var(--sage);border-color:rgba(94,112,82,0.6);}
 .recipe-card{overflow:hidden;}
@@ -353,12 +356,12 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
 
 <div id="login-screen">
   <h1>La Mia <span>Cucina</span></h1>
-  <p class="sub">Ricette condivise con tutti.<br>Planner e spesa solo tuoi.</p>
+  <p class="sub">Ricette da condividere o da tenere per te.<br>Planner e spesa solo tuoi.</p>
   <button class="login-btn" onclick="signInWithGoogle()">
     <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
     Accedi con Google
   </button>
-  <p class="login-note">Le ricette sono condivise con chiunque usi l&apos;app.<br>Il tuo planner e la lista della spesa sono privati.</p>
+  <p class="login-note">Ogni ricetta pu&ograve; essere condivisa con chi usa l&apos;app o restare solo tua.<br>Il tuo planner e la lista della spesa sono privati.</p>
 </div>
 
 <div id="app-screen">
@@ -457,7 +460,15 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
       </details>
       <div class="form-group"><label>Nome della ricetta</label><input type="text" id="r-nome" placeholder="Es. Risotto ai funghi"></div>
       <div class="form-group"><label>Foto (URL, opzionale)</label><input type="text" id="r-foto" placeholder="https://...immagine.jpg"></div>
-      <div class="form-group"><label>Fonte</label><select id="r-fonte"><option value="mamma">Della mamma</option><option value="internet">Da internet</option></select></div>
+      <div class="form-group"><label>Fonte</label><select id="r-fonte"><option value="mamma">Della mamma</option><option value="internet">Da internet</option><option value="libro">Da un libro</option></select></div>
+      <div class="form-group">
+        <label>Chi la vede?</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          <button type="button" class="tag-toggle" id="r-vis-pub" onclick="setRecipeVis('pub')">&#128101; Condivisa con tutti</button>
+          <button type="button" class="tag-toggle" id="r-vis-priv" onclick="setRecipeVis('priv')">&#128274; Solo per me</button>
+        </div>
+        <p id="r-vis-hint" style="font-size:12px;color:var(--charcoal-light);margin-top:6px;line-height:1.5"></p>
+      </div>
       <div class="form-group"><label>Autore</label><input type="text" id="r-autore" placeholder="Chi ha fatto questa ricetta?" list="autori-list" autocomplete="off"><datalist id="autori-list"><option value="Federica"><option value="Pietro"><option value="Daniele"><option value="Michele"></datalist></div>
       <div class="form-group"><label>Link originale (opzionale)</label><input type="text" id="r-link" placeholder="https://..."></div>
       <div class="form-group"><label>Tempo</label><input type="text" id="r-tempo" placeholder="Es. 30 min"></div>
@@ -522,7 +533,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:10px">
-        <div onclick="setFuoriCasa()" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);cursor:pointer;background:var(--warm-white)">
+        <div id="pick-fc-tile" onclick="setFuoriCasa()" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border-mid);cursor:pointer;background:var(--warm-white)">
           <span style="font-size:18px">🍽️</span>
           <div><div style="font-size:13px;font-weight:500;color:var(--charcoal)">Fuori casa</div><div style="font-size:11px;color:var(--charcoal-light)">nessuna spesa</div></div>
         </div>
@@ -703,10 +714,26 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
       <div id="user-modal-avatar"></div>
       <div><div class="user-info-name" id="user-modal-name"></div><div class="user-info-email" id="user-modal-email"></div></div>
     </div>
-    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;">Le ricette che aggiungi sono visibili a tutti.<br>Il tuo planner è privato.</p>
+    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;">Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti o restare solo tua.<br>Il tuo planner è privato.</p>
     <div id="family-section"></div>
+    <button class="btn btn-outline btn-full" onclick="openBugReport()" style="margin-bottom:10px">&#128030; Segnala un problema</button>
     <button class="btn btn-danger btn-full" onclick="doSignOut()" style="margin-top:4px">Esci dall&apos;account</button>
     <p id="app-version" style="text-align:center;font-size:11px;color:var(--charcoal-light);margin-top:14px"></p>
+  </div>
+</div>
+
+<!-- MODAL SEGNALA UN PROBLEMA -->
+<div class="modal-overlay" id="bug-modal" style="display:none" onclick="if(event.target.id==='bug-modal')document.getElementById('bug-modal').style.display='none'">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-handle"></div>
+    <h2>Segnala un problema</h2>
+    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:12px;line-height:1.55">Scrivi cosa &egrave; successo e cosa stavi facendo. I dettagli tecnici (versione, telefono, errori recenti) li aggiungo io.</p>
+    <div class="form-group"><textarea id="bug-text" placeholder="Es. Quando salvo una ricetta non compare nella lista&hellip;"></textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="sendBugReport()">&#9993;&#65039; Invia email</button>
+      <button class="btn btn-outline" onclick="copyBugReport()">Copia testo</button>
+    </div>
+    <p style="font-size:11.5px;color:var(--charcoal-light);margin-top:10px;line-height:1.5">Si apre la tua app di posta con il messaggio pronto: premi Invia. Se non si apre, usa &laquo;Copia testo&raquo; e mandalo a federicamessi2000@hotmail.com.</p>
   </div>
 </div>
 
@@ -822,7 +849,12 @@ setTimeout(function(){
     document.querySelector('.spinner').style.display='none';
     document.getElementById('loading-msg').innerHTML='<span style="color:#C4622D;font-weight:600">Errore di caricamento</span><br><span style="font-size:12px">Prova a ricaricare la pagina (Ctrl+Shift+R)</span>';
   }
-},5000);
+},15000);
+// Ultimi errori, allegati a "Segnala un problema"
+var _errLog=[];
+function logErr(msg){_errLog.push(new Date().toTimeString().slice(0,8)+' '+String(msg).slice(0,200));if(_errLog.length>5)_errLog.shift();}
+window.addEventListener('error',function(e){logErr((e.message||'errore')+(e.filename?' @'+String(e.filename).split('/').pop()+':'+e.lineno:''));});
+window.addEventListener('unhandledrejection',function(e){var r=e.reason;logErr('promise: '+(r&&(r.code||r.message)||r));});
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -830,7 +862,7 @@ setTimeout(function(){
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-var APP_VERSION='2026-07-07.5';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
+var APP_VERSION='2026-09-30.1';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
@@ -841,11 +873,23 @@ var userCatOrder=[],freezer=[],userFavorites={},freezerEditId=null,shopEditGroup
 var editingRecipeId=null;
 var familyCode=null,_shopListener=null;
 var _extraTarget=null,_extraSelectedItem=null;
+// Account di famiglia: possono modificare anche le ricette condivise degli altri (stessa lista di database.rules.json)
+var ADMIN_EMAILS=['federicamessi2000@gmail.com','danymexi@gmail.com','alessandro.messi60@gmail.com','gmmagnani@hotmail.it'];
+var recipesState={pub:'loading',priv:'loading'},_privRecipesRef=null,recipeVis='priv';
 function normalizeUnit(u){if(!u)return '';u=u.trim().toLowerCase();if(u==='n'||u==='nr'||u==='nr.'||u==='pz'||u==='pezzi'||u==='pezzo')return 'n\xb0';return u;}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function safeUrl(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?u:'';}
-function dbErr(e){console.error('Firebase write error',e);showToast('⚠️ Salvataggio non riuscito. Controlla la connessione.');}
+function dbErr(e){console.error('Firebase write error',e);logErr('scrittura: '+(e&&(e.code||e.message)||e));showToast('⚠️ Salvataggio non riuscito. Controlla la connessione.');}
 function normTxt(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+// Gli id finiscono dentro onclick="...('id')": accetta solo caratteri da chiave Firebase
+function safeId(id){id=String(id==null?'':id);return /^[A-Za-z0-9_-]+$/.test(id)?id:'';}
+function fonteInfo(r){var f=r&&r.fonte;if(f==='mamma')return{cls:'mamma',short:'Mamma',long:'&#x1F475; Mamma'};if(f==='libro')return{cls:'libro',short:'Libro',long:'&#x1F4D6; Libro'};return{cls:'internet',short:'Web',long:'&#x1F310; Web'};}
+function isAdmin(){return!!(currentUser&&ADMIN_EMAILS.indexOf(currentUser.email)>=0);}
+// Le private caricate sono sempre dell'utente corrente; le condivise le modifica l'autore o la famiglia
+function canEdit(r){return!!(r&&currentUser&&(r._priv||isAdmin()||(r.ownerUid&&r.ownerUid===currentUser.uid)));}
+function recipePath(priv,id){return priv?'users/'+currentUser.uid+'/recipes/'+id:'recipes/'+id;}
+function recipeRef(r){return db.ref(recipePath(r._priv,r.id));}
+function recipeData(r){var d=Object.assign({},r);delete d.id;delete d._priv;return d;}
 function mealRecipe(entry,meal){
   var id=entry[meal+'_id'];
   if(id){var r=recipes.find(function(x){return x.id===id;});if(r)return r;}
@@ -858,20 +902,25 @@ function mealDisplay(entry,meal){
   var r=mealRecipe(entry,meal);
   return r?r.nome:v;
 }
+// Più piatti nello stesso pasto: slot pranzo, pranzo2 … pranzo6 (idem cena), ognuno coi propri campi slot_*
+var MAX_DISHES=6;
+function slotName(base,n){return n===1?base:base+n;}
+function slotBase(slot){return String(slot).replace(/[0-9]+$/,'');}
+function mealSlots(entry,base){var out=[];for(var n=1;n<=MAX_DISHES;n++){var s=slotName(base,n);if(entry[s])out.push(s);}return out;}
+// Per spesa e calorie: se il primo piatto è "fuori casa" tutto il pasto è fuori
+function allMealSlots(entry){var out=[];['pranzo','cena'].forEach(function(b){if(entry[b]!=='__fuori_casa')out=out.concat(mealSlots(entry,b));});return out;}
+function nextSlot(entry,base){for(var n=1;n<=MAX_DISHES;n++){var s=slotName(base,n);if(!entry[s])return s;}return null;}
+function slotFieldKeys(entry,slot){return Object.keys(entry).filter(function(k){return k===slot||k.indexOf(slot+'_')===0;});}
+function dishLabel(entry,slot){return mealLabel(mealDisplay(entry,slot),entry[slot+'_ings'],entry[slot+'_freezer_name']);}
+// Dopo aver tolto un piatto rinumera i rimasti (pranzo3 → pranzo2 …): il primo resta sempre "pranzo"
+function compactMeal(entry,base){
+  var groups=mealSlots(entry,base).map(function(s){var g={};slotFieldKeys(entry,s).forEach(function(k){g[k.substring(s.length)]=entry[k];});return g;});
+  for(var n=1;n<=MAX_DISHES;n++)slotFieldKeys(entry,slotName(base,n)).forEach(function(k){delete entry[k];});
+  groups.forEach(function(g,i){var s=slotName(base,i+1);Object.keys(g).forEach(function(suf){entry[s+suf]=g[suf];});});
+}
 
 function fmtIng(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit)r+=' '+i.unit;r+=' ';}else if(i.unit)r+=i.unit+' ';return r+i.name;}
 function shopTxt(i,s){if(typeof i==='string')return i;s=s||1;var r='';if(i.qty!=null){var v=i.qty*s;r+=(v%1===0?v:+v.toFixed(2));if(i.unit&&i.unit!=='q.b.')r+=' '+i.unit;r+=' ';}else if(i.unit&&i.unit!=='q.b.')r+=i.unit+' ';return r+i.name;}
-
-var SEED=[
-  {nome:"Spaghetti alla Carbonara",fonte:"internet",tempo:"30 min",porzioni:4,link:"https://www.giallozafferano.it/ricette/spaghetti-alla-carbonara.html",addedBy:"GialloZafferano",ingredienti:[{qty:400,unit:"g",name:"spaghetti"},{qty:200,unit:"g",name:"guanciale"},{qty:4,unit:"n°",name:"tuorli"},{qty:100,unit:"g",name:"pecorino romano"},{qty:50,unit:"g",name:"parmigiano"},{qty:null,unit:"q.b.",name:"pepe nero"}],procedimento:"1. Rosolare il guanciale a listarelle senza olio.\n2. Mescolare tuorli, pecorino, parmigiano e pepe.\n3. Cuocere pasta al dente, tenere acqua di cottura.\n4. Pasta al guanciale, poi uova mescolando rapido.\n5. Acqua di cottura per crema. Servire subito.",note:"Mai usare panna!"},
-  {nome:"Tiramisù classico",fonte:"internet",tempo:"30 min + 4h riposo",porzioni:8,link:"https://www.giallozafferano.it/ricette/tiramisu.html",addedBy:"GialloZafferano",ingredienti:[{qty:400,unit:"g",name:"savoiardi"},{qty:500,unit:"g",name:"mascarpone"},{qty:4,unit:"n°",name:"uova"},{qty:100,unit:"g",name:"zucchero"},{qty:300,unit:"ml",name:"caffè espresso freddo"},{qty:null,unit:"q.b.",name:"cacao amaro"}],procedimento:"1. Montare tuorli con zucchero. Aggiungere mascarpone.\n2. Montare albumi a neve e incorporare.\n3. Inzuppare savoiardi nel caffè.\n4. Strati: savoiardi, crema, savoiardi, crema.\n5. Cacao amaro. Frigo 4 ore.",note:"Si conserva 2 giorni in frigo."},
-  {nome:"Risotto alla Milanese",fonte:"internet",tempo:"35 min",porzioni:4,link:"https://www.giallozafferano.it/ricette/risotto-alla-milanese.html",addedBy:"GialloZafferano",ingredienti:[{qty:320,unit:"g",name:"riso Carnaroli"},{qty:1,unit:"bustina",name:"zafferano"},{qty:1,unit:"L",name:"brodo di carne caldo"},{qty:1,unit:"n°",name:"cipolla"},{qty:80,unit:"g",name:"burro"},{qty:60,unit:"g",name:"parmigiano grattugiato"},{qty:1,unit:"bicchiere",name:"vino bianco"}],procedimento:"1. Soffriggere cipolla in metà burro.\n2. Tostare riso 2 min, sfumare con vino.\n3. Aggiungere brodo un mestolo alla volta.\n4. Zafferano sciolto in brodo a metà cottura.\n5. Mantecare con burro e parmigiano.",note:"Riposo 2 min coperto è fondamentale."},
-  {nome:"Parmigiana di melanzane",fonte:"internet",tempo:"1h 30min",porzioni:6,link:"https://www.giallozafferano.it/ricette/parmigiana-di-melanzane.html",addedBy:"GialloZafferano",ingredienti:[{qty:1,unit:"kg",name:"melanzane"},{qty:700,unit:"g",name:"passata di pomodoro"},{qty:250,unit:"g",name:"mozzarella"},{qty:100,unit:"g",name:"parmigiano"},{qty:2,unit:"n°",name:"uova"},{qty:null,unit:"q.b.",name:"olio per friggere"},{qty:null,unit:"q.b.",name:"basilico"}],procedimento:"1. Fette 5mm, salare e scolare 30 min.\n2. Passare nell'uovo e friggere.\n3. Sugo con pomodoro e basilico.\n4. Strati: sugo, melanzane, mozzarella, parmigiano.\n5. Forno 180°C 35-40 min.",note:"Ottima anche fredda il giorno dopo."},
-  {nome:"Pasta e fagioli",fonte:"internet",tempo:"1h",porzioni:4,link:"https://www.giallozafferano.it/ricette/pasta-e-fagioli.html",addedBy:"GialloZafferano",ingredienti:[{qty:300,unit:"g",name:"pasta corta"},{qty:400,unit:"g",name:"fagioli borlotti"},{qty:1,unit:"n°",name:"costa sedano"},{qty:1,unit:"n°",name:"carota"},{qty:1,unit:"n°",name:"cipolla"},{qty:null,unit:"q.b.",name:"rosmarino"},{qty:null,unit:"q.b.",name:"olio EVO"}],procedimento:"1. Soffritto di sedano, carota, cipolla.\n2. Aggiungere fagioli e coprire con acqua. 20 min.\n3. Frullare metà fagioli e rimettere.\n4. Aggiungere pasta e cuocere.",note:"Fagioli secchi: ammollo 12h."},
-  {nome:"Pollo alla cacciatora",fonte:"internet",tempo:"1h 10min",porzioni:4,link:"https://www.giallozafferano.it/ricette/pollo-alla-cacciatora.html",addedBy:"GialloZafferano",ingredienti:[{qty:1.2,unit:"kg",name:"pollo a pezzi"},{qty:400,unit:"g",name:"pomodori pelati"},{qty:1,unit:"n°",name:"cipolla"},{qty:1,unit:"n°",name:"peperone giallo"},{qty:100,unit:"ml",name:"vino bianco"},{qty:null,unit:"q.b.",name:"olive nere"},{qty:null,unit:"q.b.",name:"capperi"},{qty:null,unit:"q.b.",name:"rosmarino"}],procedimento:"1. Dorare il pollo. Sfumare col vino.\n2. Soffriggere cipolla e peperone.\n3. Aggiungere pomodori, olive, capperi, rosmarino.\n4. Cuocere 40-45 min.",note:"Migliore il giorno dopo."},
-  {nome:"Pasta al pomodoro",fonte:"mamma",tempo:"20 min",porzioni:4,link:"",addedBy:"La mamma",ingredienti:[{qty:400,unit:"g",name:"pasta"},{qty:500,unit:"g",name:"pomodori pelati"},{qty:2,unit:"n°",name:"spicchi aglio"},{qty:null,unit:"q.b.",name:"basilico"},{qty:null,unit:"q.b.",name:"olio EVO"}],procedimento:"1. Soffriggere l'aglio in olio.\n2. Pomodori e cuocere 15 min.\n3. Cuocere la pasta e condire con basilico.",note:"Un pizzico di zucchero come la nonna."},
-  {nome:"Pollo arrosto",fonte:"mamma",tempo:"1h 20min",porzioni:4,link:"",addedBy:"La mamma",ingredienti:[{qty:1,unit:"n°",name:"pollo intero"},{qty:800,unit:"g",name:"patate"},{qty:3,unit:"n°",name:"spicchi aglio"},{qty:null,unit:"q.b.",name:"rosmarino"},{qty:null,unit:"q.b.",name:"salvia"},{qty:null,unit:"q.b.",name:"olio EVO"}],procedimento:"1. Marinare con erbe e olio.\n2. Forno 180°C per 1 ora.\n3. Patate a metà cottura.",note:"Bagnare ogni 20 min con il fondo."}
-];
 
 var CATS=["Frutta","Verdura e Funghi","Carne e Salumi","Pesce e Frutti di Mare","Latticini, Uova e Formaggi","Pasta, Riso e Cereali","Pane, Farine e Lievitati","Legumi","Conserve e Salse","Condimenti, Oli e Aceti","Spezie ed Erbe","Dolcificanti","Dolci e Snack","Semi e Frutta Secca","Surgelati","Bevande","Prodotti per la Casa","Igiene Personale","Altro"];
 userCatOrder=CATS.map(function(_,i){return i;});
@@ -976,7 +1025,11 @@ function toGrams(qty,unit,name){
   }
   return qty;
 }
+var _nutriCache={};
 function calcNutrition(recipe,portions){
+  // memo per ricetta+porzioni, azzerata quando cambiano le ricette: la vista mese la chiede per ogni giorno
+  var ck=recipe.id?recipe.id+'|'+(recipe._priv?1:0)+'|'+portions:null;
+  if(ck&&_nutriCache[ck])return _nutriCache[ck];
   var ings=recipe.ingredienti||[];
   var base=parseInt(recipe.porzioni)||4;
   var scale=portions/base;
@@ -1004,16 +1057,16 @@ function calcNutrition(recipe,portions){
     total.f+=grams/100*nd.f;
   });
   var coverage=total_count>0?matched/total_count:0;
-  return{kcal:Math.round(total.kcal),p:Math.round(total.p),c:Math.round(total.c),f:Math.round(total.f),coverage:coverage};
+  var res={kcal:Math.round(total.kcal),p:Math.round(total.p),c:Math.round(total.c),f:Math.round(total.f),coverage:coverage};
+  if(ck)_nutriCache[ck]=res;
+  return res;
 }
 
 function dayNutrition(key){
   var entry=planner[key]||{};
   var total={kcal:0,p:0};
-  var covered=0,mealCount=0;
-  ['pranzo','pranzo2','cena','cena2'].forEach(function(meal){
-    if(!entry[meal])return;
-    mealCount++;
+  var covered=0,mealCount=mealSlots(entry,'pranzo').length+mealSlots(entry,'cena').length;
+  allMealSlots(entry).forEach(function(meal){
     var r=mealRecipe(entry,meal);
     if(!r)return;
     var n=calcNutrition(r,entry[meal+'_porzioni']||1);
@@ -1104,8 +1157,9 @@ function renderFamilySection(){
 window.createFamily=function(){
   if(!currentUser)return;
   var code=currentUser.uid.substring(0,6).toUpperCase(),uid=currentUser.uid;
-  db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''});
-  db.ref('users/'+uid+'/familyCode').set(code);
+  // familyCode solo dopo essere entrati tra i membri: le regole aprono la spesa condivisa ai soli membri
+  db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''})
+    .then(function(){return db.ref('users/'+uid+'/familyCode').set(code);}).catch(dbErr);
 };
 window.joinFamily=function(){
   var code=(document.getElementById('family-join-input').value||'').trim().toUpperCase();
@@ -1113,9 +1167,9 @@ window.joinFamily=function(){
   var uid=currentUser.uid;
   db.ref('families/'+code+'/members').once('value',function(snap){
     if(!snap.exists()){alert('Codice non trovato. Chiedi il codice corretto all\'altra persona.');return;}
-    db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''});
-    db.ref('users/'+uid+'/familyCode').set(code);
-  });
+    db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''})
+      .then(function(){return db.ref('users/'+uid+'/familyCode').set(code);}).catch(dbErr);
+  },function(e){logErr('famiglia: '+(e&&(e.code||e.message)||e));alert('Non riesco a verificare il codice. Riprova tra poco.');});
 };
 window.leaveFamily=function(){
   if(!confirm('Lasci la lista condivisa? La tua spesa tornerà ad essere privata.'))return;
@@ -1144,51 +1198,48 @@ auth.onAuthStateChanged(function(user){
     initPrivate();
   }else{
     currentUser=null;
+    // Stacca i listener dell'account uscito e dimentica le sue ricette private (telefono condiviso)
+    _privateRefs.forEach(function(r){r.off();});_privateRefs=[];
+    if(_shopListener){_shopListener.off();_shopListener=null;}
+    if(_privRecipesRef){_privRecipesRef.off();_privRecipesRef=null;}
+    if(_pubRecipesRef){_pubRecipesRef.off();_pubRecipesRef=null;}
+    recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};
     document.getElementById('app-screen').style.display='none';
     document.getElementById('login-screen').style.display='flex';
   }
 });
 
-var SEED_TAGS={
-  'Spaghetti alla Carbonara':['pasta','carne'],
-  'Tiramisù classico':['dolce'],'Tiramiù classico':['dolce'],
-  'Risotto alla Milanese':['piatto-unico'],
-  'Parmigiana di melanzane':['vegetariano','piatto-unico'],
-  'Pasta e fagioli':['pasta','vegetariano'],
-  'Pollo alla cacciatora':['carne','piatto-unico'],
-  'Pasta al pomodoro':['pasta','vegetariano','veloce','facile'],
-  'Pollo arrosto':['carne']
-};
 function initRecipes(){
   // Render tag chips in add form
   document.getElementById('r-tags-selection').innerHTML=RECIPE_TAGS.map(function(t){
     return'<button type="button" class="tag-toggle" data-tag="'+t.key+'" onclick="toggleRecipeTag(this)">'+t.label+'</button>';
   }).join('');
-  db.ref('recipes').get().then(function(snap){
-    if(!snap.exists()){
-      SEED.forEach(function(r){db.ref('recipes').push(r);});
-    }else{
-      // One-time migration: add tags to seed recipes that don't have them
-      snap.forEach(function(c){
-        var r=c.val();
-        if((!r.tags||!r.tags.length)&&SEED_TAGS[r.nome]){
-          db.ref('recipes/'+c.key+'/tags').set(SEED_TAGS[r.nome]);
-        }
-      });
-    }
-  });
-  // Listener incrementali: il nodo recipes (800+ ricette) viene scaricato una sola volta,
-  // poi arrivano solo i delta — con on('value') ogni modifica riscaricava tutto.
-  if(!window._recipesListening){
-    window._recipesListening=true;
-    var rref=db.ref('recipes');
-    rref.on('child_added',function(c){recipes.push(Object.assign({id:c.key},c.val()));scheduleRecipeRender();});
-    rref.on('child_changed',function(c){var i=recipes.findIndex(function(r){return r.id===c.key;});if(i>=0)recipes[i]=Object.assign({id:c.key},c.val());scheduleRecipeRender();});
-    rref.on('child_removed',function(c){recipes=recipes.filter(function(r){return r.id!==c.key;});scheduleRecipeRender();});
-  }
+  recipeVis=loadRecipeVisPref();renderRecipeVis('');
+  // Condivise (recipes) + private dell'account (users/<uid>/recipes), unite nello stesso array con _priv
+  if(!_pubRecipesRef){recipesState.pub='loading';_pubRecipesRef=db.ref('recipes');listenRecipes(_pubRecipesRef,false);}
+  if(_privRecipesRef)_privRecipesRef.off();
+  recipesState.priv='loading';
+  _privRecipesRef=db.ref('users/'+currentUser.uid+'/recipes');
+  listenRecipes(_privRecipesRef,true);
 }
+var _pubRecipesRef=null;
+// Listener incrementali: il nodo (800+ ricette) viene scaricato una sola volta,
+// poi arrivano solo i delta — con on('value') ogni modifica riscaricava tutto.
+function listenRecipes(ref,priv){
+  var st=priv?'priv':'pub';
+  // stesso id + stessa origine: mentre una ricetta cambia visibilità la chiave esiste in entrambi i posti
+  function same(c){return function(r){return r.id===c.key&&!!r._priv===priv;};}
+  function row(c){return Object.assign({},c.val(),{id:c.key,_priv:priv});}
+  function onErr(e){recipesState[st]='error';logErr('lettura ricette '+st+': '+(e&&(e.code||e.message)||e));scheduleRecipeRender();}
+  ref.on('child_added',function(c){recipes.push(row(c));onRecipesChanged();},onErr);
+  ref.on('child_changed',function(c){var i=recipes.findIndex(same(c));if(i>=0)recipes[i]=row(c);onRecipesChanged();},onErr);
+  ref.on('child_removed',function(c){var f=same(c);recipes=recipes.filter(function(r){return!f(r);});onRecipesChanged();},onErr);
+  // once('value') riusa i dati del listener: niente download in più, dice solo quando il primo carico è finito
+  ref.once('value',function(){recipesState[st]='ok';scheduleRecipeRender();},onErr);
+}
+function onRecipesChanged(){_nutriCache={};scheduleRecipeRender();}
 var _recipeRenderTimer=null;
-function scheduleRecipeRender(){clearTimeout(_recipeRenderTimer);_recipeRenderTimer=setTimeout(function(){renderRecipes();if(document.getElementById('recipe-cat-page').style.display==='flex')filterRecipeCatModal();},80);}
+function scheduleRecipeRender(){clearTimeout(_recipeRenderTimer);_recipeRenderTimer=setTimeout(function(){renderRecipes();if(document.getElementById('recipe-cat-page').style.display==='flex')filterRecipeCatModal();if(currentUser)renderPlanner();},80);}
 
 function shopRef(){return familyCode?db.ref('families/'+familyCode+'/shopping'):db.ref('users/'+currentUser.uid+'/shopping');}
 function setupShopListener(){
@@ -1206,13 +1257,15 @@ function setupShopListener(){
     renderShopping();
   });
 }
+var _privateRefs=[];
 function initPrivate(){
   var uid=currentUser.uid;
-  db.ref('users/'+uid+'/planner').on('value',function(snap){planner=snap.exists()?snap.val():{};renderPlanner();});
+  function track(path){var r=db.ref('users/'+uid+'/'+path);_privateRefs.push(r);return r;}
+  track('planner').on('value',function(snap){planner=snap.exists()?snap.val():{};renderPlanner();});
   db.ref('users/'+uid+'/shopPlanner').remove(); // pulizia vecchio sistema a due ref
-  db.ref('users/'+uid+'/familyCode').on('value',function(snap){familyCode=snap.val()||null;setupShopListener();renderFamilySection();});
-  db.ref('users/'+uid+'/favorites').on('value',function(snap){userFavorites=snap.exists()?snap.val():{};renderRecipes();});
-  db.ref('users/'+uid+'/freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();});
+  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;setupShopListener();renderFamilySection();});
+  track('favorites').on('value',function(snap){userFavorites=snap.exists()?snap.val():{};renderRecipes();});
+  track('freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){
     if(snap.exists()){
       var saved=snap.val();
@@ -1261,7 +1314,9 @@ var RECIPE_TAGS=[
   {key:'carne',label:'&#129385; Carne'},{key:'pesce',label:'&#128031; Pesce'},
   {key:'pasta',label:'&#127837; Pasta'},
 ];
-var RECIPE_CAT_EMOJI={'Antipasti':'🥗','Biscotti':'🍪','Bevande':'🥤','Colazione':'☕','Conserve':'🫙','Contorni':'🥦','Dolci':'🍰','Lievitati':'🫓','Pane e Pizza':'🍕','Primi':'🍝','Salse e Creme':'🫕','Secondi':'🥩','Torte':'🎂'};
+var RECIPE_CAT_EMOJI={'Antipasti':'🥗','Biscotti':'🍪','Bevande':'🥤','Colazione':'☕','Conserve':'🫙','Contorni':'🥦','Dolci':'🍰','Lievitati':'🫓','Pane e Pizza':'🍕','Primi':'🍝','Salse e Creme':'🫕','Secondi':'🥩','Torte':'🎂','Altro':'🍽️'};
+// Categoria per la griglia: quelle mancanti o sconosciute (es. ricette aggiunte dal form) finiscono in "Altro"
+function recipeCat(r){return(r.categoria&&RECIPE_CAT_EMOJI[r.categoria])?r.categoria:'Altro';}
 var RECIPE_CAT_FILTER_TAGS=[{key:'facile',label:'&#128994; Facile'},{key:'veloce',label:'&#9889; Veloce'},{key:'vegetariano',label:'&#127807; Vegetariano'},{key:'vegano',label:'&#127807; Vegano'},{key:'al-forno',label:'&#128293; Al forno'},{key:'dolce',label:'&#127856; Dolce'},{key:'lievitato',label:'&#127838; Lievitato'},{key:'senza-glutine',label:'&#127807; Senza glutine'}];
 var _recipeCatCurrent=null;var _recipeCatTagFilters=[];
 
@@ -1273,7 +1328,8 @@ function _recipeRowHTML(r){
   if(r.porzioni)parts.push(esc(r.porzioni)+' porz.');
   if(r.difficolta&&diffDot[r.difficolta])parts.push(diffDot[r.difficolta]+' '+esc(r.difficolta));
   if(!parts.length&&r.categoria)parts.push(esc(r.categoria));
-  return'<div class="recipe-list-item" onclick="openRecipe(\''+r.id+'\')">'+
+  if(r._priv)parts.unshift('&#128274;');
+  return'<div class="recipe-list-item" onclick="openRecipe(\''+safeId(r.id)+'\')">'+
     '<span class="recipe-li-emoji">'+emoji+'</span>'+
     '<div class="recipe-li-main"><span class="recipe-li-name">'+(esc(r.nome)||'<em>(senza nome)</em>')+'</span>'+
     (parts.length?'<span class="recipe-li-meta">'+parts.join(' \xb7 ')+'</span>':'')+'</div>'+
@@ -1333,7 +1389,7 @@ window.filterRecipeCatModal=function(){
   var q=normTxt((document.getElementById('recipe-cat-search').value||'').trim());
   var list=recipes.filter(function(r){
     if(_recipeCatCurrent==='__preferiti')return!!userFavorites[r.id];
-    if(_recipeCatCurrent!=='__all'&&r.categoria!==_recipeCatCurrent)return false;
+    if(_recipeCatCurrent!=='__all'&&recipeCat(r)!==_recipeCatCurrent)return false;
     if(_recipeCatTagFilters.length&&!_recipeCatTagFilters.every(function(t){return(r.tags||[]).includes(t);}))return false;
     if(q&&!normTxt(r.nome).includes(q))return false;
     return true;
@@ -1345,22 +1401,30 @@ window.filterRecipeCatModal=function(){
 function renderRecipeHome(){
   var q=normTxt((document.getElementById('search-input').value||'').trim());
   var el=document.getElementById('recipe-home');
-  if(!recipes.length){el.innerHTML='<div class="empty-state"><div class="spinner" style="margin:0 auto 14px"></div><p>Sto caricando le ricette&hellip;</p></div>';return;}
+  var loadErr='<p>&#9888;&#65039; Non riesco a caricare le ricette condivise.</p><p style="font-size:13px;margin-top:6px">Controlla la connessione e riapri l&apos;app. Se continua, usa &laquo;Segnala un problema&raquo; dal tuo profilo.</p>';
+  if(!recipes.length){
+    if(recipesState.pub==='error')el.innerHTML='<div class="empty-state">'+loadErr+'</div>';
+    else if(recipesState.pub==='loading'||recipesState.priv==='loading')el.innerHTML='<div class="empty-state"><div class="spinner" style="margin:0 auto 14px"></div><p>Sto caricando le ricette&hellip;</p></div>';
+    else el.innerHTML='<div class="empty-state"><p>Ancora nessuna ricetta.</p><p style="font-size:13px;margin-top:6px">Aggiungine una con il + in basso.</p></div>';
+    return;
+  }
+  // Solo le private caricate (es. rete o permessi): lo dico invece di mostrare una lista incompleta in silenzio
+  var warn=recipesState.pub==='error'?'<div class="empty-state" style="padding:10px 12px 16px">'+loadErr+'</div>':'';
   if(q){
     var results=recipes.filter(function(r){
       return normTxt(r.nome).includes(q)||
         normTxt(r.categoria||'').includes(q)||
         (r.ingredienti||[]).some(function(i){return normTxt(i.name||'').includes(q);});
     }).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
-    el.innerHTML='<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+results.length+' ricette trovate</div>'+renderRecipeItems(results,'home');
+    el.innerHTML=warn+'<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+results.length+' ricette trovate</div>'+renderRecipeItems(results,'home');
     return;
   }
-  var html='<div class="cat-grid">';
+  var html=warn+'<div class="cat-grid">';
   var nFav=recipes.filter(function(r){return!!userFavorites[r.id];}).length;
   if(nFav)html+='<div class="cat-card" onclick="openRecipeCat(\'__preferiti\')"><div class="cat-card-emoji">❤️</div><div class="cat-card-name">Preferiti</div><div class="cat-card-count">'+nFav+' ricette</div></div>';
   html+='<div class="cat-card" onclick="openRecipeCat(\'__all\')"><div class="cat-card-emoji">📚</div><div class="cat-card-name">Tutte</div><div class="cat-card-count">'+recipes.length+' ricette</div></div>';
   Object.keys(RECIPE_CAT_EMOJI).forEach(function(cat){
-    var n=recipes.filter(function(r){return r.categoria===cat;}).length;
+    var n=recipes.filter(function(r){return recipeCat(r)===cat;}).length;
     if(!n)return;
     html+='<div class="cat-card" onclick="openRecipeCat(\''+cat+'\')"><div class="cat-card-emoji">'+RECIPE_CAT_EMOJI[cat]+'</div><div class="cat-card-name">'+cat+'</div><div class="cat-card-count">'+n+' ricette</div></div>';
   });
@@ -1412,27 +1476,29 @@ function renderRecipeModal(r,portions){
   if(r.addedBy)meta.push('da '+esc(r.addedBy));
   var modalTags=(r.tags||[]).filter(function(t){return t!=='da-foto';}).slice(0,4);
   var chips=[];
+  if(r._priv)chips.push('<span class="tag-chip" style="background:var(--terracotta-pale);color:var(--terracotta)">&#128274; Solo tu</span>');
   if(r.categoria)chips.push('<span class="tag-chip" style="background:var(--terracotta-pale);color:var(--terracotta)">'+esc(r.categoria)+'</span>');
   modalTags.forEach(function(t){var tag=RECIPE_TAGS.find(function(x){return x.key===t;});if(tag)chips.push('<span class="tag-chip">'+tag.label+'</span>');});
   var fotoUrl=safeUrl(r.foto);
   var photoHtml=fotoUrl?'<img src="'+esc(fotoUrl)+'" style="width:calc(100% + 40px);height:200px;object-fit:cover;margin:-20px -20px 16px -20px;display:block;border-radius:22px 22px 0 0" onerror="this.style.display=\'none\'">':'';
   var linkUrl=safeUrl(r.link);
   var nutri=(function(){var n=calcNutrition(r,portions);return n.coverage>=0.5&&n.kcal>0?'<div class="nutri-bar"><span class="nutri-kcal">&#x1F525; ~'+n.kcal+' kcal</span><span>'+n.p+'g prot</span><span>'+n.c+'g carb</span><span>'+n.f+'g grassi</span></div>':'';})();
+  var rid=safeId(r.id),fi=fonteInfo(r);
   document.getElementById('modal-body').innerHTML=
     photoHtml+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;padding-right:40px"><h2 style="flex:1;margin:0">'+esc(r.nome)+'</h2><button id="fav-heart-btn" class="fav-heart" aria-pressed="'+(userFavorites[r.id]?'true':'false')+'" aria-label="Aggiungi o togli dai preferiti" onclick="toggleFavorite(\''+r.id+'\',event)">'+(userFavorites[r.id]?'❤️':'♡')+'</button><span class="tag tag-'+r.fonte+'" style="margin-top:4px">'+(r.fonte==='mamma'?'&#x1F475; Mamma':'&#x1F310; Web')+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;padding-right:40px"><h2 style="flex:1;margin:0">'+esc(r.nome)+'</h2><button id="fav-heart-btn" class="fav-heart" aria-pressed="'+(userFavorites[r.id]?'true':'false')+'" aria-label="Aggiungi o togli dai preferiti" onclick="toggleFavorite(\''+rid+'\',event)">'+(userFavorites[r.id]?'❤️':'♡')+'</button><span class="tag tag-'+fi.cls+'" style="margin-top:4px">'+fi.long+'</span></div>'+
     (meta.length?'<div class="recipe-meta" style="margin-bottom:8px">'+meta.map(function(m){return'<span>'+m+'</span>';}).join('')+'</div>':'')+
     (chips.length?'<div class="recipe-tags" style="margin-bottom:14px">'+chips.join('')+'</div>':'')+
     '<div class="portions-bar" style="margin-bottom:10px"><span class="portions-label">&#x1F465; Porzioni</span><div class="portions-controls"><button class="portions-btn" aria-label="Meno porzioni" onclick="changePortions(-1)">&minus;</button><span class="portions-num">'+portions+'</span><button class="portions-btn" aria-label="Più porzioni" onclick="changePortions(+1)">+</button></div></div>'+
-    '<div class="modal-actions"><button class="btn btn-primary" onclick="openCookMode(\''+r.id+'\')">&#x1F468;&#x200D;&#x1F373; Cucina</button><button class="btn btn-outline" onclick="openShopAddModal(\''+r.id+'\')">&#128722; Spesa</button><button class="btn btn-outline" onclick="openExportModal(\''+r.id+'\')">&#x1F4E4; Invia</button></div>'+
+    '<div class="modal-actions"><button class="btn btn-primary" onclick="openCookMode(\''+rid+'\')">&#x1F468;&#x200D;&#x1F373; Cucina</button><button class="btn btn-outline" onclick="openShopAddModal(\''+rid+'\')">&#128722; Spesa</button><button class="btn btn-outline" onclick="openExportModal(\''+rid+'\')">&#x1F4E4; Invia</button></div>'+
     nutri+
     '<h3 class="modal-section-title">Ingredienti <span class="modal-section-sub">per '+portions+(portions===1?' porzione':' porzioni')+'</span></h3><ul class="ingredients-list">'+ings+'</ul>'+
     '<h3 class="modal-section-title">Procedimento</h3>'+stepsHtml+
     (r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+esc(r.note)+'</div>':'')+
     '<div style="margin-top:22px;padding-top:14px;border-top:0.5px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
     (linkUrl?'<a href="'+esc(linkUrl)+'" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="text-decoration:none">&#x1F517; Fonte</a>':'')+
-    (currentUser?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+r.id+'\')">&#9998; Modifica</button>':'')+
-    (currentUser?'<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteRecipe(\''+r.id+'\')">Elimina</button>':'')+'</div>';
+    (canEdit(r)?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+rid+'\')">&#9998; Modifica</button>':'')+
+    (canEdit(r)?'<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteRecipe(\''+rid+'\')">Elimina</button>':'')+'</div>';
 }
 
 var _sheetTouch=null;
@@ -1586,7 +1652,13 @@ window.exportShare=function(){
   if(navigator.share){navigator.share({title:r.nome,text:text}).catch(function(){});}
   else{navigator.clipboard.writeText(text).then(function(){showToast('Copiata negli appunti!');}).catch(function(){alert(text);});}
 };
-window.deleteRecipe=function(id){if(!confirm('Eliminare? Rimossa per tutti.'))return;db.ref('recipes/'+id).remove().catch(dbErr);closeRecipeModal();};
+window.deleteRecipe=function(id){
+  var r=recipes.find(function(x){return x.id===id;});if(!r||!canEdit(r))return;
+  if(!confirm(r._priv?'Eliminare questa ricetta?':'Eliminare? Rimossa per tutti.'))return;
+  recipeRef(r).remove().catch(dbErr);closeRecipeModal();
+};
+// Riga ricetta nelle liste di scelta (planner, spesa)
+function pickCardHTML(r,fn){var fi=fonteInfo(r);return'<div class="recipe-card" style="margin-bottom:8px" onclick="'+fn+'(\''+safeId(r.id)+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+(r._priv?'&#128274; ':'')+esc(r.nome)+'</span><span class="tag tag-'+fi.cls+'">'+fi.short+'</span></div></div>';}
 function showShopIngChecklist(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
   shopAddRecipeId=id;
@@ -1621,7 +1693,7 @@ window.renderShopPickList=function(q){
   var nq=normTxt(q||'');
   var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
   var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">+ altre '+(f.length-80)+' — affina la ricerca</p>':'';
-  document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="showShopIngChecklist(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('')+extra;
+  document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return pickCardHTML(r,'showShopIngChecklist');}).join('')+extra;
 };
 window.confirmShopAdd=function(){
   var uid=currentUser.uid;
@@ -1699,15 +1771,26 @@ function resetRecipeForm(){
   document.getElementById('r-fonte').value='mamma';
   document.getElementById('ing-list').innerHTML=buildIngFormHtml([]);
   document.querySelectorAll('#r-tags-selection .tag-toggle').forEach(function(b){b.classList.remove('active');});
-  editingRecipeId=null;
+  editingRecipeId=null;editingRecipePriv=false;
+  recipeVis=loadRecipeVisPref();renderRecipeVis('');
   document.getElementById('edit-mode-bar').style.display='none';
   document.getElementById('save-recipe-btn').textContent='Salva ricetta';
   document.getElementById('aggiungi-title').textContent='Aggiungi ricetta';
 }
+// Visibilità nel form: si ricorda l'ultima scelta su questo telefono, la prima volta "Solo per me"
+var editingRecipePriv=false;
+function loadRecipeVisPref(){try{return localStorage.getItem('lmc_recipe_vis')==='pub'?'pub':'priv';}catch(e){return'priv';}}
+function renderRecipeVis(lockedHint){
+  var pub=document.getElementById('r-vis-pub'),priv=document.getElementById('r-vis-priv');
+  pub.classList.toggle('active',recipeVis==='pub');priv.classList.toggle('active',recipeVis==='priv');
+  pub.disabled=priv.disabled=!!lockedHint;
+  document.getElementById('r-vis-hint').textContent=lockedHint||(recipeVis==='pub'?'La vedono tutti quelli che usano l’app.':'La vedi solo tu, dal tuo account.');
+}
+window.setRecipeVis=function(v){recipeVis=v==='pub'?'pub':'priv';renderRecipeVis('');};
 window.toggleRecipeTag=function(btn){btn.classList.toggle('active');};
 function parseQty(s){if(!s)return null;s=s.trim();if(s.indexOf('/')>0){var p=s.split('/');return parseFloat(p[0])/parseFloat(p[1]);}if(s.indexOf('-')>0)return parseFloat(s.split('-')[0]);return parseFloat(s.replace(',','.'));}
 function parseIngLine(line){var qb=/^q\.b\.?\s*(.*)/i.exec(line);if(qb)return{qty:null,unit:'q.b.',name:(qb[1]||'').trim()||'q.b.'};var numRx=/^(\d+(?:[\/\-]\d+)?(?:[.,]\d+)?)\s*/;var nm=numRx.exec(line);if(!nm)return null;var qty=parseQty(nm[1]);var rest=line.substring(nm[0].length).trim();var um=/^(g|gr|kg|ml|l\b|lt|cl|dl|n°|pz|cucchiai[oa]?|cucchiaini?[oa]?|bicchieri?[eo]?|spicchi?[oa]?|fette?[ae]?|bustine?[ae]?|foglie?[ae]?|rametti?[oi]?|pizzichi?[oi]?)\s+(?:di\s+)?(.+)/i.exec(rest);if(um)return{qty:qty,unit:um[1].toLowerCase(),name:um[2].trim()};if(rest)return{qty:qty,unit:'',name:rest};return null;}
-function parseRecipeText(text){var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);if(!lines.length)return null;var nome='',tempo='',porzioni=4,ingredienti=[],proc=[],section='start';lines.forEach(function(line){if(/^ingredienti/i.test(line)){section='ing';return;}if(/^(procedimento|preparazione|come si (fa|prepara)|preparate)/i.test(line)){section='proc';return;}if(!nome&&line.length>2&&line.length<120){nome=line;return;}var tm=line.match(/(?:tempo|preparazione|cottura)\s*:?\s*(.{3,25})/i);if(tm&&!tempo){tempo=tm[1].trim();return;}var pm=line.match(/^(\d+)\s*(?:x|persone?|porzioni?|dosi?)/i);if(pm){porzioni=parseInt(pm[1])||4;return;}if(section==='ing'||section==='start'){var ing=parseIngLine(line);if(ing){ingredienti.push(ing);return;}}if(section==='proc'||/^\d+[\.\)]\s/.test(line)){section='proc';proc.push(line.replace(/^\d+[\.\)]\s*/,''));}});if(!ingredienti.length)lines.forEach(function(line){var ing=parseIngLine(line);if(ing)ingredienti.push(ing);});if(!proc.length)lines.filter(function(l){return/^\d+[\.\)]\s/.test(l);}).forEach(function(s){proc.push(s.replace(/^\d+[\.\)]\s*/,''));});return{nome:nome||'Nuova ricetta',tempo:tempo,porzioni:porzioni,ingredienti:ingredienti,procedimento:proc.map(function(s,i){return(i+1)+'. '+s;}).join('\n')};}
+function parseRecipeText(text){var lines=text.split(/[\n\r]+/).map(function(l){return l.trim();}).filter(Boolean);if(!lines.length)return null;var nome='',tempo='',porzioni=4,ingredienti=[],proc=[],section='start';lines.forEach(function(line){if(/^ingredienti/i.test(line)){section='ing';return;}if(/^(procedimento|preparazione|come si (fa|prepara)|preparate)\s*:?$/i.test(line)){section='proc';return;}if(!nome&&line.length>2&&line.length<120){nome=line;return;}var tm=line.length<=40&&line.match(/^(?:tempo|preparazione|cottura)(?:\s+totale)?\s*:?\s*(.{2,25})$/i);if(tm&&!tempo){tempo=tm[1].trim();return;}var pm=line.match(/^(?:per\s+)?(\d+)\s*(?:x|persone?|porzioni?|dosi?)/i);if(pm){porzioni=parseInt(pm[1])||4;return;}if(section==='ing'||section==='start'){var ing=parseIngLine(line);if(ing){ingredienti.push(ing);return;}}if(section==='proc'||/^\d+[\.\)]\s/.test(line)){section='proc';proc.push(line.replace(/^\d+[\.\)]\s*/,''));}});if(!ingredienti.length)lines.forEach(function(line){var ing=parseIngLine(line);if(ing)ingredienti.push(ing);});if(!proc.length)lines.filter(function(l){return/^\d+[\.\)]\s/.test(l);}).forEach(function(s){proc.push(s.replace(/^\d+[\.\)]\s*/,''));});return{nome:nome||'Nuova ricetta',tempo:tempo,porzioni:porzioni,ingredienti:ingredienti,procedimento:proc.map(function(s,i){return(i+1)+'. '+s;}).join('\n')};}
 window.parseFromText=function(){
   var text=document.getElementById('parse-text').value.trim();
   if(!text){document.getElementById('parse-text').focus();return;}
@@ -1724,16 +1807,20 @@ window.parseFromText=function(){
 function getSelectedTags(){return Array.from(document.querySelectorAll('#r-tags-selection .tag-toggle.active')).map(function(b){return b.dataset.tag;});}
 function setSelectedTags(tags){document.querySelectorAll('#r-tags-selection .tag-toggle').forEach(function(b){b.classList.toggle('active',(tags||[]).indexOf(b.dataset.tag)>=0);});}
 window.openEditRecipe=function(id){
-  var r=recipes.find(function(x){return x.id===id;});if(!r)return;
+  var r=recipes.find(function(x){return x.id===id;});if(!r||!canEdit(r))return;
   closeRecipeModal();
-  editingRecipeId=id;
+  editingRecipeId=id;editingRecipePriv=!!r._priv;
   document.getElementById('r-nome').value=r.nome||'';
   document.getElementById('r-foto').value=r.foto||'';
   document.getElementById('r-fonte').value=r.fonte||'mamma';
   document.getElementById('r-autore').value=r.addedBy||'';
   document.getElementById('r-link').value=r.link||'';
   document.getElementById('r-tempo').value=r.tempo||'';
-  document.getElementById('r-porzioni').value=r.porzioni||4;
+  // porzioni scritte a parole ("10-15 crepes") non entrano in un campo numerico: mostro il numero, il testo resta se non lo cambi
+  var pz=parseInt(r.porzioni);document.getElementById('r-porzioni').value=pz>0?pz:'';
+  recipeVis=r._priv?'priv':'pub';
+  var own=r._priv||(r.ownerUid&&r.ownerUid===currentUser.uid);
+  renderRecipeVis(own?'':'Ricetta condivisa'+(r.addedBy?' da '+r.addedBy:'')+': solo chi l’ha aggiunta può renderla privata.');
   document.getElementById('r-procedimento').value=r.procedimento||'';
   document.getElementById('r-note').value=r.note||'';
   var ingList=document.getElementById('ing-list');
@@ -1749,22 +1836,43 @@ window.cancelEditRecipe=function(){resetRecipeForm();};
 window.saveRecipe=function(){
   var nome=document.getElementById('r-nome').value.trim();
   if(!nome){alert('Inserisci il nome!');return;}
+  var orig=editingRecipeId?recipes.find(function(x){return x.id===editingRecipeId&&!!x._priv===editingRecipePriv;}):null;
+  if(editingRecipeId&&!orig){alert('Questa ricetta non esiste più.');resetRecipeForm();return;}
+  if(orig&&!canEdit(orig)){alert('Puoi modificare solo le ricette che hai aggiunto tu.');return;}
   if(!editingRecipeId){
     var dup=recipes.find(function(x){return normTxt(x.nome||'')===normTxt(nome);});
     if(dup&&!confirm('Esiste già una ricetta chiamata "'+dup.nome+'".\nVuoi salvarla lo stesso come duplicato?'))return;
   }
   var ingredienti=readIngForm();
-  var data={nome:nome,foto:document.getElementById('r-foto').value.trim()||null,fonte:document.getElementById('r-fonte').value,link:document.getElementById('r-link').value.trim(),tempo:document.getElementById('r-tempo').value.trim(),porzioni:parseInt(document.getElementById('r-porzioni').value)||4,ingredienti:ingredienti,procedimento:document.getElementById('r-procedimento').value.trim(),note:document.getElementById('r-note').value.trim(),tags:getSelectedTags()};
-  if(editingRecipeId){
-    db.ref('recipes/'+editingRecipeId).update(data).catch(dbErr);
+  var pzField=parseInt(document.getElementById('r-porzioni').value),porzioni=pzField>0?pzField:4;
+  if(orig&&orig.porzioni!=null&&String(orig.porzioni).trim()!==String(parseInt(orig.porzioni))){
+    // porzioni a parole: restano com'erano finché il numero non viene cambiato
+    if(!(pzField>0)||pzField===parseInt(orig.porzioni))porzioni=orig.porzioni;
+  }
+  var autore=document.getElementById('r-autore').value.trim();
+  var data={nome:nome,foto:document.getElementById('r-foto').value.trim()||null,fonte:document.getElementById('r-fonte').value,link:document.getElementById('r-link').value.trim(),tempo:document.getElementById('r-tempo').value.trim(),porzioni:porzioni,ingredienti:ingredienti,procedimento:document.getElementById('r-procedimento').value.trim(),note:document.getElementById('r-note').value.trim(),tags:getSelectedTags()};
+  var wantPriv=recipeVis==='priv';
+  if(orig){
+    if(autore)data.addedBy=autore;
+    var own=orig._priv||(orig.ownerUid&&orig.ownerUid===currentUser.uid);
+    if(own&&wantPriv!==!!orig._priv){
+      // Cambio di visibilità: la ricetta si sposta con la stessa chiave, così planner e preferiti restano validi
+      var upd={};
+      upd[recipePath(wantPriv,orig.id)]=Object.assign(recipeData(orig),data,{ownerUid:currentUser.uid});
+      upd[recipePath(!!orig._priv,orig.id)]=null;
+      db.ref().update(upd).catch(dbErr);
+      showToast(wantPriv?'\u{1F512} Ora la vedi solo tu':'\u{1F465} Ora la vedono tutti');
+    }else{
+      recipeRef(orig).update(data).catch(dbErr);
+    }
     resetRecipeForm();
     showPage('ricette',document.querySelectorAll('.nav-item')[2]);
   }else{
-    var autore=document.getElementById('r-autore').value.trim();
-    data.addedBy=autore||(currentUser.displayName||currentUser.email);data.addedAt=Date.now();
-    db.ref('recipes').push(data).catch(dbErr);
+    data.addedBy=autore||(currentUser.displayName||currentUser.email);data.addedAt=Date.now();data.ownerUid=currentUser.uid;
+    try{localStorage.setItem('lmc_recipe_vis',recipeVis);}catch(e){}
+    db.ref(wantPriv?'users/'+currentUser.uid+'/recipes':'recipes').push(data).catch(dbErr);
     resetRecipeForm();
-    alert('Ricetta salvata! La vedono tutti.');
+    alert(wantPriv?'Ricetta salvata! La vedi solo tu.':'Ricetta salvata! La vedono tutti.');
     showPage('ricette',document.querySelectorAll('.nav-item')[2]);
   }
 };
@@ -1796,13 +1904,46 @@ window.copyPrevWeek=function(){
     var dst=new Date(monThis);dst.setDate(monThis.getDate()+i);
     var sk=src.getFullYear()+'-'+(src.getMonth()+1)+'-'+src.getDate();
     var dk=dst.getFullYear()+'-'+(dst.getMonth()+1)+'-'+dst.getDate();
-    if(planner[sk])keys[dk]=planner[sk];
+    if(planner[sk]){
+      // Del pasto dal freezer si copia solo il nome: il legame col freezer resta alla settimana vera,
+      // altrimenti cancellando la copia "tornerebbe" in freezer qualcosa mai tolto
+      var c=JSON.parse(JSON.stringify(planner[sk]));
+      Object.keys(c).forEach(function(k){if(/_freezer_(id|data|qty_used)$/.test(k))delete c[k];});
+      keys[dk]=c;
+    }
   }
   if(!Object.keys(keys).length){alert('La settimana precedente è vuota.');return;}
   var lbl=monThis.getDate()+' '+MONTHS_SHORT[monThis.getMonth()];
   if(!confirm('Copiare i pasti della settimana precedente nella settimana del '+lbl+'?'))return;
   db.ref('users/'+currentUser.uid+'/planner').update(keys).catch(dbErr);
 };
+// Cella del pasto nella vista mese: tutti i piatti in fila, il ✕ toglie il primo
+function monthMealCell(key,entry,base){
+  var slots=mealSlots(entry,base);
+  if(!slots.length)return'<div class="meal-cell"><span class="meal-cell-text empty" onclick="openPickModal(\''+key+'\',\''+base+'\')">&mdash;</span><button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\''+base+'\')">+</button></div>';
+  var fc=entry[base]==='__fuori_casa',first=slots[0];
+  var html='<div class="meal-cell"><span class="meal-cell-text"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="openPickModal(\''+key+'\',\''+first+'\')">'+esc(dishLabel(entry,first))+
+    (!fc&&entry[first+'_porzioni']?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry[first+'_porzioni']+'</span>':'');
+  if(!fc)slots.slice(1).forEach(function(s){html+='<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(dishLabel(entry,s))+(entry[s+'_porzioni']?'&times;'+entry[s+'_porzioni']:'')+'</span>';});
+  return html+'</span><button class="meal-rm-btn" aria-label="Togli il piatto" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button></div>';
+}
+// Blocco del pasto nella vista settimana: una riga per piatto (tocca per cambiarlo, ✕ per toglierlo) + "altro piatto"
+function weekMealBlock(key,entry,base,label){
+  var slots=mealSlots(entry,base),fc=entry[base]==='__fuori_casa',first=slots[0]||base;
+  function por(s){return!fc&&entry[s+'_porzioni']?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry[s+'_porzioni']+'</span>':'';}
+  var html='<div class="week-meal-row"><span class="week-meal-label">'+label+'</span>'+
+    '<span class="week-meal-text'+(slots.length?'':' empty')+'"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="openPickModal(\''+key+'\',\''+first+'\')">'+(slots.length?esc(dishLabel(entry,first)):'Aggiungi')+por(first)+'</span>'+
+    (slots.length?'<button class="meal-rm-btn" aria-label="Togli il piatto" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\''+base+'\')">+</button>')+
+    '</div>';
+  if(fc||!slots.length)return html;
+  slots.slice(1).forEach(function(s){
+    html+='<div class="week-meal-alt"><span style="flex:1;font-size:13px;cursor:pointer;color:var(--charcoal);line-height:1.35" onclick="openPickModal(\''+key+'\',\''+s+'\')">'+esc(dishLabel(entry,s))+por(s)+'</span>'+
+      '<button class="meal-rm-btn" aria-label="Togli il piatto" onclick="quickClearMeal(\''+key+'\',\''+s+'\')">&#x2715;</button></div>';
+  });
+  var nx=nextSlot(entry,base);
+  if(nx)html+='<div class="week-meal-alt"><button class="extra-add-btn" style="width:auto" onclick="openPickModal(\''+key+'\',\''+nx+'\')">+ altro piatto</button></div>';
+  return html;
+}
 function renderPlanner(){if(plannerView==='week')renderPlannerWeek();else renderPlannerMonth();}
 function renderPlannerMonth(){
   var y=currentMonth.getFullYear(),m=currentMonth.getMonth();
@@ -1814,11 +1955,8 @@ function renderPlannerMonth(){
     var isToday=today.getDate()===d&&today.getMonth()===m&&today.getFullYear()===y;
     var dn=dayNutrition(key);
     var kcalBadge=(dn.ok&&dn.kcal>0)?'<span style="font-size:9px;color:var(--charcoal-light);display:block;margin-top:2px;line-height:1.4">~'+dn.kcal+' kcal</span>':'';
-    var fcStyle='color:var(--sage);font-style:italic';
-    var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
     rows+='<tr class="'+(isToday?'today-row':'')+'"><td><div class="day-col"><span class="dow">'+DAYS[date.getDay()]+'</span>'+d+kcalBadge+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.pranzo?'':'empty')+'"'+(pFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'),entry.pranzo_ings,entry.pranzo_freezer_name)):'&mdash;')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+(!pFC&&entry.pranzo2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?'&times;'+entry.pranzo2_porzioni:'')+'</span>':'')+'</span>'+(entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>')+'</div></td>'+
-      '<td><div class="meal-cell"><span class="meal-cell-text '+(entry.cena?'':'empty')+'"'+(cFC?' style="'+fcStyle+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'),entry.cena_ings,entry.cena_freezer_name)):'&mdash;')+(!cFC&&entry.cena&&entry.cena_porzioni?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+(!cFC&&entry.cena2?'<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?'&times;'+entry.cena2_porzioni:'')+'</span>':'')+'</span>'+(entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>')+'</div></td></tr>';
+      '<td>'+monthMealCell(key,entry,'pranzo')+'</td><td>'+monthMealCell(key,entry,'cena')+'</td></tr>';
   }
   document.getElementById('planner-days').innerHTML='<div class="planner-wrap"><table class="planner-table"><thead><tr><th>Giorno</th><th>Pranzo</th><th>Cena</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
@@ -1835,22 +1973,9 @@ function renderPlannerWeek(){
     var key=date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
     var entry=planner[key]||{};
     var isToday=date.toDateString()===today.toDateString();
-    var pFC=entry.pranzo==='__fuori_casa',cFC=entry.cena==='__fuori_casa';
-    var fcSty='color:var(--sage);font-style:italic';
     html+='<div class="week-day-card'+(isToday?' today':'')+'">'+
       '<div class="week-day-header">'+DAYS_FULL[i]+' '+date.getDate()+' '+MONTHS_SHORT[date.getMonth()]+'</div>'+
-      '<div class="week-meal-row"><span class="week-meal-label">Pranzo</span>'+
-      '<span class="week-meal-text'+(entry.pranzo?'':' empty')+'"'+(pFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'pranzo\')">'+(entry.pranzo?esc(mealLabel(mealDisplay(entry,'pranzo'),entry.pranzo_ings,entry.pranzo_freezer_name)):'Aggiungi')+(!pFC&&entry.pranzo&&entry.pranzo_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.pranzo_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'pranzo\')">+</button>'+(!pFC&&entry.pranzo?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'pranzo\')">&#x2715;</button>':'')+
-      (!pFC&&entry.pranzo&&!entry.pranzo2?'<button class="meal-alt-btn" aria-label="Aggiungi piatto alternativo" onclick="openPickModal(\''+key+'\',\'pranzo2\')" title="Aggiungi alternativa">⊕</button>':'')+
-      '</div>'+
-      (!pFC&&entry.pranzo2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'pranzo2\')">'+esc(mealDisplay(entry,'pranzo2'))+(entry.pranzo2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.pranzo2_porzioni+'</span>':'')+'</span></div>':'')+
-      '<div class="week-meal-row"><span class="week-meal-label">Cena</span>'+
-      '<span class="week-meal-text'+(entry.cena?'':' empty')+'"'+(cFC?' style="'+fcSty+'"':'')+' onclick="openPickModal(\''+key+'\',\'cena\')">'+(entry.cena?esc(mealLabel(mealDisplay(entry,'cena'),entry.cena_ings,entry.cena_freezer_name)):'Aggiungi')+(!cFC&&entry.cena&&entry.cena_porzioni?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry.cena_porzioni+'</span>':'')+'</span>'+
-      '<button class="meal-add-btn" aria-label="Scegli il pasto" onclick="openPickModal(\''+key+'\',\'cena\')">+</button>'+(!cFC&&entry.cena?'<button class="meal-rm-btn" onclick="quickClearMeal(\''+key+'\',\'cena\')">&#x2715;</button>':'')+
-      (!cFC&&entry.cena&&!entry.cena2?'<button class="meal-alt-btn" aria-label="Aggiungi piatto alternativo" onclick="openPickModal(\''+key+'\',\'cena2\')" title="Aggiungi alternativa">⊕</button>':'')+
-      '</div>'+
-      (!cFC&&entry.cena2?'<div class="week-meal-alt"><span class="week-meal-label" style="font-size:10px;opacity:0.6">alt</span><span style="flex:1;font-size:12px;cursor:pointer;color:var(--charcoal)" onclick="openPickModal(\''+key+'\',\'cena2\')">'+esc(mealDisplay(entry,'cena2'))+(entry.cena2_porzioni?' <span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry.cena2_porzioni+'</span>':'')+'</span></div>':'')+
+      weekMealBlock(key,entry,'pranzo','Pranzo')+weekMealBlock(key,entry,'cena','Cena')+
       (function(){
         var extras=entry.extras||[];
         var chips=extras.map(function(ex,idx){
@@ -1876,18 +2001,23 @@ window.renderPickList=function(q){
     var favs=recipes.filter(function(r){return!!userFavorites[r.id];}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
     var hint=favs.length?'':'<p style="font-size:13px;color:var(--charcoal-light);text-align:center;padding:12px 0">Nessun preferito ancora.<br>Cerca per nome per trovare le ricette.</p>';
     var head=favs.length?'<p style="font-size:11px;font-weight:600;color:var(--charcoal-mid);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">⭐ Preferiti</p>':'';
-    document.getElementById('pick-list').innerHTML=hint+head+favs.map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('');
+    document.getElementById('pick-list').innerHTML=hint+head+favs.map(function(r){return pickCardHTML(r,'selectMeal');}).join('');
     return;
   }
   var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
   var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">+ altre '+(f.length-80)+' — affina la ricerca</p>':'';
-  document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return'<div class="recipe-card" style="margin-bottom:8px" onclick="selectMeal(\''+r.id+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+esc(r.nome)+'</span><span class="tag tag-'+r.fonte+'">'+(r.fonte==='mamma'?'Mamma':'Web')+'</span></div></div>';}).join('')+extra;
+  document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">Nessuna ricetta trovata</p>':f.slice(0,80).map(function(r){return pickCardHTML(r,'selectMeal');}).join('')+extra;
 };
 window.changePlannerPortions=function(d){plannerPortions=Math.max(1,plannerPortions+d);document.getElementById('planner-portions-num').textContent=plannerPortions;};
 window.openPickModal=function(key,meal){
   pickTarget={key:key,meal:meal};
   plannerPortions=(planner[key]||{})[meal+'_porzioni']||1;
   document.getElementById('planner-portions-num').textContent=plannerPortions;
+  // riapre sempre dal primo passo (chiudendo il foglio a metà restava sul passo vecchio)
+  ['pick-step2','pick-step3','pick-step4'].forEach(function(s){document.getElementById(s).style.display='none';});
+  document.getElementById('pick-step1').style.display='block';
+  // "Fuori casa" vale per tutto il pasto: non si offre per il 2°, 3°… piatto
+  document.getElementById('pick-fc-tile').style.display=slotBase(meal)!==meal?'none':'flex';
   document.getElementById('pick-search').value='';renderPickList('');
   document.getElementById('pick-modal').style.display='flex';
   setTimeout(function(){document.getElementById('pick-search').focus();},150);
@@ -1955,6 +2085,9 @@ function mealLabel(v,ings,freezerName){
 window.setFuoriCasa=function(){
   if(!pickTarget)return;
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
+  var others=mealSlots(entry,slotBase(pickTarget.meal)).filter(function(s){return s!==pickTarget.meal;});
+  if(others.length&&!confirm('Segnare il pasto come fuori casa? '+(others.length===1?'Tolgo anche l\'altro piatto':'Tolgo anche gli altri '+others.length+' piatti')+' di questo pasto.'))return;
+  others.forEach(function(s){restoreFreezerItem(uid,entry,s);slotFieldKeys(entry,s).forEach(function(k){delete entry[k];});});
   restoreFreezerItem(uid,entry,pickTarget.meal);
   entry[pickTarget.meal]='__fuori_casa';
   delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];deleteFreezerFields(entry,pickTarget.meal);
@@ -2129,6 +2262,7 @@ window.clearMeal=function(){
   var uid=currentUser.uid,entry=Object.assign({},planner[pickTarget.key]||{});
   restoreFreezerItem(uid,entry,pickTarget.meal);
   delete entry[pickTarget.meal];delete entry[pickTarget.meal+'_porzioni'];delete entry[pickTarget.meal+'_skip'];delete entry[pickTarget.meal+'_id'];delete entry[pickTarget.meal+'_ings'];deleteFreezerFields(entry,pickTarget.meal);
+  compactMeal(entry,slotBase(pickTarget.meal));
   if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+pickTarget.key).remove().catch(dbErr);
   else db.ref('users/'+uid+'/planner/'+pickTarget.key).set(entry).catch(dbErr);
   document.getElementById('pick-modal').style.display='none';
@@ -2137,6 +2271,7 @@ window.quickClearMeal=function(key,meal){
   var uid=currentUser.uid,entry=Object.assign({},planner[key]||{});
   restoreFreezerItem(uid,entry,meal);
   delete entry[meal];delete entry[meal+'_porzioni'];delete entry[meal+'_skip'];delete entry[meal+'_id'];delete entry[meal+'_ings'];deleteFreezerFields(entry,meal);
+  compactMeal(entry,slotBase(meal));
   if(!Object.keys(entry).length)db.ref('users/'+uid+'/planner/'+key).remove().catch(dbErr);
   else db.ref('users/'+uid+'/planner/'+key).set(entry).catch(dbErr);
 };
@@ -2169,36 +2304,37 @@ function shopWeekSort(){
   return mon.getFullYear()+'-'+(mon.getMonth()+1)+'-'+mon.getDate();
 }
 window.syncPlannerToShop=function(){
-  showToast('\u{1F4C5} Sto riempiendo la lista dal planner…');
-  // Trova tutte le settimane nel planner
+  // Settimane dalla corrente in poi: le liste delle settimane passate restano com'erano
+  function keyDate(k){var p=String(k||'').split('-');return p.length===3?new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])):null;}
+  function mondayOf(d){var day=d.getDay();return new Date(d.getFullYear(),d.getMonth(),d.getDate()-(day===0?6:day-1));}
+  var curMon=mondayOf(new Date());
   var weekMondays={};
   Object.keys(planner).forEach(function(key){
-    var p=key.split('-');if(p.length!==3)return;
-    var d=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
-    var day=d.getDay(),mon=new Date(d);
-    mon.setDate(d.getDate()-(day===0?6:day-1));
+    var d=keyDate(key);if(!d)return;
+    var mon=mondayOf(d);if(mon<curMon)return;
     var mk=mon.getFullYear()+'-'+(mon.getMonth()+1)+'-'+mon.getDate();
     if(!weekMondays[mk])weekMondays[mk]=mon;
   });
-  if(!Object.keys(weekMondays).length)return;
+  if(!Object.keys(weekMondays).length){showToast('Nessun pasto nel planner da questa settimana in poi.');return;}
+  showToast('\u{1F4C5} Sto riempiendo la lista dal planner…');
   // Ricorda cosa era già spuntato (per settimana+ingrediente) prima di rigenerare
   var checkedKeys={};
   shopping.filter(function(s){return s.fromPlanner&&s.checked;}).forEach(function(s){
     var c=canonQty(s.ingQty,s.ingUnit||'');
     checkedKeys[(s.weekSort||'')+'|'+(s.ingName||'')+'|'+c.unit]=true;
   });
-  // Rimuovi tutti i fromPlanner esistenti
-  shopping.filter(function(s){return s.fromPlanner;}).forEach(function(s){shopRef().child(s.id).remove().catch(dbErr);});
-  // Aggiungi ingredienti per ogni settimana del planner
+  // Un solo update: tolgo i fromPlanner delle settimane rigenerate e aggiungo i nuovi (niente centinaia di scritture singole)
+  var ref=shopRef(),updates={};
+  shopping.filter(function(s){if(!s.fromPlanner)return false;var d=keyDate(s.weekSort);return d&&d>=curMon;}).forEach(function(s){updates[s.id]=null;});
+  function add(item){updates[ref.push().key]=item;}
   Object.keys(weekMondays).sort().forEach(function(mk){
     var mon=weekMondays[mk];
     var weekKeys=Array.from({length:7},function(_,i){var d=new Date(mon);d.setDate(mon.getDate()+i);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();});
     var mealData={},ingMeals=[];
     weekKeys.forEach(function(key){
       var e=planner[key]||{};
-      ['pranzo','pranzo2','cena','cena2'].forEach(function(m){
-        if(!e[m])return;
-        if(e[m]==='__fuori_casa'||e[m]==='__dal_freezer')return;
+      allMealSlots(e).forEach(function(m){
+        if(e[m]==='__dal_freezer')return;
         if(e[m]==='__ingredienti'){
           if(e[m+'_ings']&&e[m+'_ings'].length)ingMeals.push(e[m+'_ings']);
           return;
@@ -2212,27 +2348,29 @@ window.syncPlannerToShop=function(){
     Object.entries(mealData).forEach(function(entry){
       var d=entry[1],recipe=d.recipe,nome=recipe.nome;
       (recipe.ingredienti||[]).forEach(function(ing){
-        if(d.skip[ing.name])return;
+        if(!ing||typeof ing!=='object'||!ing.name||d.skip[ing.name])return;
         var ingName=ing.name.toLowerCase(),ingUnit=normalizeUnit(ing.unit||'');
         var ingQty=(ing.qty!=null?ing.qty*d.tot:null);
         var wasChecked=!!checkedKeys[mk+'|'+ingName+'|'+canonQty(ingQty,ingUnit).unit];
-        shopRef().push({
+        add({
           text:shopTxt(ing,d.tot),ingName:ingName,ingUnit:ingUnit,ingQty:ingQty,
           category:ingCategory(ing.name),source:nome+' (\xd7'+d.tot+' porz.)',
           weekSort:mk,checked:wasChecked,fromPlanner:true
-        }).catch(dbErr);
+        });
       });
     });
     ingMeals.forEach(function(ings){
       ings.forEach(function(ing){
+        if(!ing||!ing.name)return;
         var ingName=ing.name.toLowerCase(),ingUnit=normalizeUnit(ing.unit||'');
         var vs=ing.qty!=null?(ing.qty%1===0?ing.qty:+ing.qty.toFixed(2)):'';
         var txt=(vs?vs+' ':'')+( ing.unit&&ing.unit!=='q.b.'?ing.unit+' ':'')+ing.name;
-        shopRef().push({text:txt,ingName:ingName,ingUnit:ingUnit,ingQty:ing.qty||null,
+        add({text:txt,ingName:ingName,ingUnit:ingUnit,ingQty:ing.qty||null,
           category:ingCategory(ing.name),source:'Ingredienti (planner)',weekSort:mk,checked:false,fromPlanner:true});
       });
     });
   });
+  ref.update(updates).catch(dbErr);
 };
 
 // Converte in unità canonica per sommare quantità omogenee (kg→g, L/cl/dl→ml)
@@ -2560,10 +2698,44 @@ window.shareShopList=function(){
 };
 function showToast(msg){
   var t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:var(--cream);padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;';
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--charcoal);color:var(--cream);padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;z-index:9999;pointer-events:none;max-width:calc(100% - 32px);text-align:center;';
   t.textContent=msg;document.body.appendChild(t);
   setTimeout(function(){if(t.parentNode)document.body.removeChild(t);},2200);
 }
+
+// ── SEGNALA UN PROBLEMA ──────────────────────────────────────
+// Apre l'app di posta di chi segnala, con descrizione + dettagli tecnici già scritti
+var BUG_EMAIL='federicamessi2000@hotmail.com';
+window.openBugReport=function(){
+  document.getElementById('user-modal').style.display='none';
+  document.getElementById('bug-text').value='';
+  document.getElementById('bug-modal').style.display='flex';
+  setTimeout(function(){document.getElementById('bug-text').focus();},150);
+};
+function bugReportText(){
+  var desc=document.getElementById('bug-text').value.trim().slice(0,800)||'(nessuna descrizione)';
+  var page=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
+  var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  var nPriv=recipes.filter(function(r){return r._priv;}).length;
+  return[desc,'','— Dettagli tecnici —',
+    'Versione: '+APP_VERSION,
+    'Data: '+new Date().toLocaleString('it-IT'),
+    'Utente: '+(currentUser?(currentUser.displayName||'')+' <'+(currentUser.email||'')+'>':'non connesso'),
+    'Pagina: '+page,
+    'App installata: '+(standalone?'sì':'no')+' · Online: '+(navigator.onLine?'sì':'no')+' · Schermo: '+window.innerWidth+'×'+window.innerHeight,
+    'Ricette: '+(recipes.length-nPriv)+' condivise ('+recipesState.pub+'), '+nPriv+' private ('+recipesState.priv+')',
+    'Browser: '+navigator.userAgent.slice(0,160),
+    'Errori recenti: '+(_errLog.length?'\n'+_errLog.slice(-3).map(function(e){return e.slice(0,150);}).join('\n'):'nessuno')
+  ].join('\n');
+}
+window.sendBugReport=function(){
+  var subj='La Mia Cucina — segnalazione ('+APP_VERSION+')';
+  window.location.href='mailto:'+BUG_EMAIL+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(bugReportText());
+};
+window.copyBugReport=function(){
+  var t='A: '+BUG_EMAIL+'\n\n'+bugReportText();
+  navigator.clipboard.writeText(t).then(function(){showToast('📋 Copiato: incollalo in una mail a '+BUG_EMAIL);}).catch(function(){alert(t);});
+};
 
 // ── CONGELATORE ──────────────────────────────────────────────
 var FREEZE_CATS=["Carne","Pesce","Piatti pronti","Verdure","Pane e Dolci","Altro"];
