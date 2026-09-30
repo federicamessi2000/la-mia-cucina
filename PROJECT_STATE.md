@@ -14,7 +14,7 @@ Single-file PWA (vanilla JS + Firebase RTDB + Google Auth) con ~980 ricette, ape
 - Ricette condivise o private ("Solo per me", in `users/<uid>/recipes`): categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL; modifica/elimina solo l'autore o la famiglia
 - Aggiungi/modifica ricette (con categoria), parser "importa da testo"; due libri importati (fonte "Libro")
 - Planner mensile/settimanale privato (fino a 6 piatti per pranzo/cena + extra), kcal stimate
-- "Segnala un problema": mailto precompilato con dettagli tecnici ed errori recenti
+- "Segnala un problema": salvata in `bugReports` con dettagli tecnici ed errori recenti; Federica le legge in "Segnalazioni" (badge sull'avatar)
 - Lista spesa per settimana: da planner (sync che preserva gli spuntati), da ricetta,
   manuale, catalogo con 400+ ingredienti; merge automatico unità (g/kg, ml/L);
   categorie ordinabili "a giro supermercato"; condivisione via testo; spesa condivisa (codice famiglia)

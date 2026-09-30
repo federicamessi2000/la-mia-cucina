@@ -23,6 +23,14 @@
       }
     },
 
+    "bugReports": {
+      ".read": "auth != null && auth.token.email === 'federicamessi2000@gmail.com'",
+      "$reportId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid) || auth.token.email === 'federicamessi2000@gmail.com')",
+        ".validate": "newData.hasChildren(['text', 'uid', 'createdAt']) && newData.child('text').isString() && newData.child('text').val().length <= 2000 && (!newData.child('details').exists() || (newData.child('details').isString() && newData.child('details').val().length <= 3000))"
+      }
+    },
+
     "families": {
       "$code": {
         ".read": "auth != null && data.child('members').child(auth.uid).exists()",

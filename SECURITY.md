@@ -10,6 +10,7 @@ famiglia). Regole pubblicate dalla Console; il file sorgente resta `database.rul
 | Ricette condivise (`recipes`) | chiunque abbia fatto l'accesso | chi le crea (a suo nome, `ownerUid`); modifica/elimina solo l'autore o un account di famiglia |
 | Ricette private, planner, spesa privata, congelatore, preferiti (`users/<uid>`) | solo il proprietario | solo il proprietario |
 | Spesa condivisa (`families/<codice>`) | solo i membri | i membri; chi conosce il codice può unirsi |
+| Segnalazioni (`bugReports`) | solo l'account di Federica (gmail) | chiunque può crearne una a suo nome; risolve/elimina solo Federica |
 
 Account di famiglia (possono modificare anche le ricette senza autore, es. quelle di mamma):
 Federica, Daniele, Alessandro, Maria Grazia. Le regole validano anche chiave, nome (max 200

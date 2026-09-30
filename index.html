@@ -371,6 +371,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
 <div id="app-screen">
   <div class="topbar">
     <h1>La Mia <span>Cucina</span></h1>
+    <span id="reports-dot" aria-hidden="true" style="display:none;position:absolute;top:calc(10px + env(safe-area-inset-top));right:16px;width:11px;height:11px;border-radius:50%;background:var(--terracotta);box-shadow:0 0 0 2px var(--warm-white);z-index:2;pointer-events:none"></span>
     <button class="user-btn" aria-label="Il tuo profilo" onclick="openUserModal()" id="user-btn-inner"><div class="user-initials" id="user-initials">?</div></button>
   </div>
 
@@ -721,6 +722,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     </div>
     <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;">Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti o restare solo tua.<br>Il tuo planner è privato.</p>
     <div id="family-section"></div>
+    <div id="reports-entry"></div>
     <button class="btn btn-outline btn-full" onclick="openBugReport()" style="margin-bottom:10px">&#128030; Segnala un problema</button>
     <button class="btn btn-danger btn-full" onclick="doSignOut()" style="margin-top:4px">Esci dall&apos;account</button>
     <p id="app-version" style="text-align:center;font-size:11px;color:var(--charcoal-light);margin-top:14px"></p>
@@ -734,11 +736,17 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     <h2>Segnala un problema</h2>
     <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:12px;line-height:1.55">Scrivi cosa &egrave; successo e cosa stavi facendo. I dettagli tecnici (versione, telefono, errori recenti) li aggiungo io.</p>
     <div class="form-group"><textarea id="bug-text" placeholder="Es. Quando salvo una ricetta non compare nella lista&hellip;"></textarea></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-primary" style="flex:1" onclick="sendBugReport()">&#9993;&#65039; Invia email</button>
-      <button class="btn btn-outline" onclick="copyBugReport()">Copia testo</button>
-    </div>
-    <p style="font-size:11.5px;color:var(--charcoal-light);margin-top:10px;line-height:1.5">Si apre la tua app di posta con il messaggio pronto: premi Invia. Se non si apre, usa &laquo;Copia testo&raquo; e mandalo a federicamessi2000@hotmail.com.</p>
+    <button class="btn btn-primary btn-full" id="bug-send-btn" onclick="sendBugReport()">&#128232; Invia segnalazione</button>
+    <p style="font-size:11.5px;color:var(--charcoal-light);margin-top:10px;line-height:1.5">La segnalazione arriva direttamente a Federica, dentro l&apos;app, insieme al tuo nome.</p>
+  </div>
+</div>
+
+<!-- MODAL SEGNALAZIONI (solo per l'account di Federica) -->
+<div class="modal-overlay" id="reports-modal" style="display:none" onclick="if(event.target.id==='reports-modal')document.getElementById('reports-modal').style.display='none'">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-handle"></div>
+    <h2>&#128229; Segnalazioni</h2>
+    <div id="reports-list"></div>
   </div>
 </div>
 
@@ -869,7 +877,7 @@ window.addEventListener('online',updateOnline);window.addEventListener('offline'
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-var APP_VERSION='2026-09-30.3';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
+var APP_VERSION='2026-09-30.4';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent='Versione '+APP_VERSION;});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
@@ -1208,7 +1216,7 @@ window.leaveFamily=function(){
   db.ref('families/'+familyCode+'/members/'+currentUser.uid).remove().catch(dbErr);
   db.ref('users/'+currentUser.uid+'/familyCode').remove().catch(dbErr);
 };
-window.openUserModal=function(){document.getElementById('user-modal').style.display='flex';renderFamilySection();};
+window.openUserModal=function(){document.getElementById('user-modal').style.display='flex';renderFamilySection();renderReportsEntry();};
 
 auth.onAuthStateChanged(function(user){
   document.getElementById('loading-screen').style.display='none';
@@ -1237,8 +1245,8 @@ auth.onAuthStateChanged(function(user){
     if(_pubRecipesRef){_pubRecipesRef.off();_pubRecipesRef=null;}
     recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};
     // anche planner, spesa, freezer e preferiti: chi entra dopo non deve vedere quelli di prima
-    planner={};shopping=[];freezer=[];userFavorites={};familyCode=null;userCatOrder=CATS.map(function(_,i){return i;});
-    renderPlanner();renderShopping();renderFreezer();renderRecipes();
+    planner={};shopping=[];freezer=[];userFavorites={};familyCode=null;userCatOrder=CATS.map(function(_,i){return i;});bugReports=[];
+    renderPlanner();renderShopping();renderFreezer();renderRecipes();renderReportsEntry();
     document.getElementById('app-screen').style.display='none';
     document.getElementById('login-screen').style.display='flex';
   }
@@ -1312,6 +1320,7 @@ function initPrivate(){
     renderShopping();
   });
   renderShopWeekNav();
+  listenBugReports();
 }
 
 window.showPage=function(name,el){
@@ -2769,20 +2778,21 @@ function showToast(msg){
 }
 
 // ── SEGNALA UN PROBLEMA ──────────────────────────────────────
-// Apre l'app di posta di chi segnala, con descrizione + dettagli tecnici già scritti
-var BUG_EMAIL='federicamessi2000@hotmail.com';
+// La segnalazione finisce nel database (bugReports) e la legge solo l'account di Federica,
+// nella sezione "Segnalazioni" del profilo: chi segnala non vede nessun indirizzo email.
+var REPORTS_ADMIN='federicamessi2000@gmail.com',bugReports=[];
+function isReportsAdmin(){return!!(currentUser&&currentUser.email===REPORTS_ADMIN);}
 window.openBugReport=function(){
   document.getElementById('user-modal').style.display='none';
   document.getElementById('bug-text').value='';
   document.getElementById('bug-modal').style.display='flex';
   setTimeout(function(){document.getElementById('bug-text').focus();},150);
 };
-function bugReportText(){
-  var desc=document.getElementById('bug-text').value.trim().slice(0,800)||'(nessuna descrizione)';
+function bugReportDetails(){
   var page=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
   var nPriv=recipes.filter(function(r){return r._priv;}).length;
-  return[desc,'','— Dettagli tecnici —',
+  return[
     'Versione: '+APP_VERSION,
     'Data: '+new Date().toLocaleString('it-IT'),
     'Utente: '+(currentUser?(currentUser.displayName||'')+' <'+(currentUser.email||'')+'>':'non connesso'),
@@ -2790,17 +2800,50 @@ function bugReportText(){
     'App installata: '+(standalone?'sì':'no')+' · Online: '+(navigator.onLine?'sì':'no')+' · Schermo: '+window.innerWidth+'×'+window.innerHeight,
     'Ricette: '+(recipes.length-nPriv)+' condivise ('+recipesState.pub+'), '+nPriv+' private ('+recipesState.priv+')',
     'Browser: '+navigator.userAgent.slice(0,160),
-    'Errori recenti: '+(_errLog.length?'\n'+_errLog.slice(-3).map(function(e){return e.slice(0,150);}).join('\n'):'nessuno')
+    'Errori recenti: '+(_errLog.length?'\n'+_errLog.map(function(e){return e.slice(0,200);}).join('\n'):'nessuno')
   ].join('\n');
 }
 window.sendBugReport=function(){
-  var subj='La Mia Cucina — segnalazione ('+APP_VERSION+')';
-  window.location.href='mailto:'+BUG_EMAIL+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(bugReportText());
+  var text=document.getElementById('bug-text').value.trim();
+  if(!text){showToast('Scrivi prima cosa è successo');document.getElementById('bug-text').focus();return;}
+  var btn=document.getElementById('bug-send-btn');btn.disabled=true;
+  db.ref('bugReports').push({text:text.slice(0,2000),details:bugReportDetails().slice(0,3000),uid:currentUser.uid,
+    name:currentUser.displayName||'',email:currentUser.email||'',version:APP_VERSION,createdAt:Date.now(),status:'nuova'})
+    .then(function(){document.getElementById('bug-modal').style.display='none';showToast('✅ Segnalazione inviata, grazie!');})
+    .catch(dbErr).then(function(){btn.disabled=false;});
 };
-window.copyBugReport=function(){
-  var t='A: '+BUG_EMAIL+'\n\n'+bugReportText();
-  navigator.clipboard.writeText(t).then(function(){showToast('📋 Copiato: incollalo in una mail a '+BUG_EMAIL);}).catch(function(){alert(t);});
-};
+// Casella "Segnalazioni": solo l'account di Federica la vede (anche le regole del database lo impongono)
+function listenBugReports(){
+  if(!isReportsAdmin())return;
+  var ref=db.ref('bugReports');_privateRefs.push(ref);
+  ref.on('value',function(snap){
+    bugReports=[];snap.forEach(function(c){bugReports.push(Object.assign({},c.val(),{id:c.key}));});
+    bugReports.sort(function(a,b){return(b.createdAt||0)-(a.createdAt||0);});
+    renderReportsEntry();
+    if(document.getElementById('reports-modal').style.display==='flex')renderReports();
+  },function(e){logErr('segnalazioni: '+(e&&(e.code||e.message)||e));});
+}
+function renderReportsEntry(){
+  var n=isReportsAdmin()?bugReports.filter(function(r){return r.status!=='risolta';}).length:0;
+  document.getElementById('reports-dot').style.display=n?'block':'none';
+  document.getElementById('reports-entry').innerHTML=isReportsAdmin()?'<button class="btn btn-outline btn-full" onclick="openReports()" style="margin-bottom:10px">&#128229; Segnalazioni'+(n?' <strong style="color:var(--terracotta)">('+n+' da vedere)</strong>':'')+'</button>':'';
+}
+window.openReports=function(){document.getElementById('user-modal').style.display='none';renderReports();document.getElementById('reports-modal').style.display='flex';};
+function renderReports(){
+  var el=document.getElementById('reports-list');
+  if(!bugReports.length){el.innerHTML='<div class="empty-state"><p>Nessuna segnalazione.</p></div>';return;}
+  el.innerHTML=bugReports.map(function(r){
+    var id=safeId(r.id),done=r.status==='risolta';
+    return'<div style="border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px'+(done?';opacity:.55':'')+'">'+
+      '<div style="font-size:11.5px;color:var(--charcoal-light);margin-bottom:6px">'+esc(new Date(r.createdAt||0).toLocaleString('it-IT'))+' · '+esc(r.name||'')+' &lt;'+esc(r.email||'')+'&gt;'+(done?' · ✅ risolta':'')+'</div>'+
+      '<div style="font-size:14px;white-space:pre-wrap;margin-bottom:8px">'+esc(r.text)+'</div>'+
+      (r.details?'<details style="font-size:12px;color:var(--charcoal-mid)"><summary style="cursor:pointer">Dettagli tecnici</summary><div style="white-space:pre-wrap;font-size:11.5px;margin-top:6px;font-family:monospace">'+esc(r.details)+'</div></details>':'')+
+      '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-outline btn-sm" onclick="toggleReport(\''+id+'\')">'+(done?'Riapri':'&#10003; Risolta')+'</button>'+
+      '<button class="btn btn-danger btn-sm" onclick="deleteReport(\''+id+'\')">Elimina</button></div></div>';
+  }).join('');
+}
+window.toggleReport=function(id){var r=bugReports.find(function(x){return x.id===id;});if(!r)return;db.ref('bugReports/'+id+'/status').set(r.status==='risolta'?'nuova':'risolta').catch(dbErr);};
+window.deleteReport=function(id){if(!confirm('Eliminare questa segnalazione?'))return;db.ref('bugReports/'+id).remove().catch(dbErr);};
 
 // ── CONGELATORE ──────────────────────────────────────────────
 var FREEZE_CATS=["Carne","Pesce","Piatti pronti","Verdure","Pane e Dolci","Altro"];
