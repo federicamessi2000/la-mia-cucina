@@ -1,5 +1,7 @@
-var CACHE = 'cucina-v23';
+var CACHE = 'cucina-v24';
 var PRECACHE = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+// Librerie Firebase (versionate) e font Google: prese dalla cache se ci sono, così l'app si apre anche offline
+var CDN = /^https:\/\/(www\.gstatic\.com\/firebasejs\/|fonts\.googleapis\.com\/|fonts\.gstatic\.com\/)/;
 
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(PRECACHE); }));
@@ -19,6 +21,18 @@ self.addEventListener('fetch', function(e) {
   // Solo GET: la Cache API non può salvare POST & co.
   if (e.request.method !== 'GET') { return; }
   var url = e.request.url;
+  if (CDN.test(url)) {
+    e.respondWith(caches.match(e.request).then(function(hit) {
+      return hit || fetch(e.request).then(function(r) {
+        if (r.ok) {
+          var clone = r.clone();
+          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+        }
+        return r;
+      });
+    }));
+    return;
+  }
   if (
     url.includes('firebaseio.com') ||
     url.includes('firebasedatabase.app') ||
