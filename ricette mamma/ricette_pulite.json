@@ -1,116 +1,5 @@
 [
   {
-    "id": 444,
-    "titolo": "10 trucchi per pulire la casa con ingredienti naturali",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "aceto bianco"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "bicarbonato di sodio"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "limone"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "sale da cucina"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "cremor tartaro"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "acqua ossigenata"
-      },
-      {
-        "quantita": "1",
-        "unita": "fetta",
-        "nome": "pane"
-      }
-    ],
-    "procedimento": [
-      "Doccia: mettere dell'aceto bianco in un sacchetto di plastica per alimenti, infilarlo sulla rosa della doccia e chiuderlo bene con un filo; lasciare agire qualche ora, poi passare una spugna umida.",
-      "Materassi: passare l'aspirapolvere, cospargere l'intera superficie con bicarbonato di sodio, lasciare agire un paio d'ore e ripassare l'aspirapolvere.",
-      "Taglieri: tagliare un limone, cospargere il tagliere con sale, sfregare con il limone tagliato e risciacquare con abbondante acqua.",
-      "Forno a microonde: mettere all'interno un contenitore con acqua e aceto, accendere alla massima temperatura per almeno 2 minuti, poi togliere il contenitore e asciugare con un panno.",
-      "Spazzolini da denti: immergerli in un bicchiere con aceto bianco per qualche ora, poi risciacquare.",
-      "Tostapane: pulire l'esterno con cremor tartaro, un po' d'acqua e una spugnetta; rimuovere briciole e residui interni tramite i cassettini estraibili.",
-      "Forno: mescolare bicarbonato di sodio con pochissima acqua fino a ottenere una pasta densa, spalmarla sulla superficie interna e lasciare agire tutta la notte; al mattino spruzzare aceto, pulire con un panno bagnato e accendere il forno per una ventina di minuti a bassa temperatura per asciugare.",
-      "Tapparelle e persiane: imbevere una calza di cotone con acqua e aceto, infilarla sulla mano e passarla sulle superfici, poi asciugare con un calzino asciutto.",
-      "Quadri e dipinti: passare il lato della mollica di una fetta di pane sulla superficie per rimuovere la polvere.",
-      "Teglie: riempire una tazza per un quarto con bicarbonato di sodio e aggiungere acqua ossigenata fino a ottenere una pasta morbida, sfregare le teglie, lasciare agire qualche ora, poi risciacquare e asciugare."
-    ],
-    "note": "Contenuto non culinario: raccolta di metodi naturali per la pulizia domestica.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/444/DSC01403-copy.jpg",
-      "foto_ricette/444/Limpiar-con-limon-500x325.gif",
-      "foto_ricette/444/cleaning-blinds-2.jpg",
-      "foto_ricette/444/cleaning-blinds.jpg",
-      "foto_ricette/444/come-pulire-materasso-acari.jpg",
-      "foto_ricette/444/come-scegliere-tra-vasca-e-doccia.jpg",
-      "foto_ricette/444/cookie-sheets-before-and-after1.jpg",
-      "foto_ricette/444/doccia-con-calcare.jpg",
-      "foto_ricette/444/pulire-forno.jpg",
-      "foto_ricette/444/pulire-il-forno-a-microonde.jpg",
-      "foto_ricette/444/quadro-sporco.jpg",
-      "foto_ricette/444/spazzolino.jpg",
-      "foto_ricette/444/teglia-sporca.bmp",
-      "foto_ricette/444/tosta-pulito.jpg",
-      "foto_ricette/444/tosta-sporco.jpg"
-    ]
-  },
-  {
-    "id": 14922,
-    "titolo": "75 GR. CACAO AMARO",
-    "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
-    "difficolta": "",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/14922/Immagine.png"
-    ]
-  },
-  {
-    "id": 8609,
-    "titolo": "A braccia aperte. Suor Pura Pagani (estratto dal libro)",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Questo blocco non contiene una ricetta: è un estratto dal libro di Lorenza Farina \"A braccia aperte. Suor Pura Pagani\" (Edizioni Paoline, 2016; 2ª ed. 2019; 3ª ed. 2020). I proventi dei diritti d'autore sono devoluti alla costruzione della Casa Accoglienza «Madre della Misericordia» a Scaldaferro (VI).",
-    "fonte_originale": "Lorenza Farina, A braccia aperte. Suor Pura Pagani, Edizioni Paoline"
-  },
-  {
     "id": 119,
     "titolo": "Appunti di ricette varie (tacchino, pasta, gnocchi)",
     "categoria": "Altro",
@@ -250,38 +139,60 @@
     "fonte_originale": ""
   },
   {
-    "id": 15650,
-    "titolo": "CANTUCCA",
-    "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
-    "difficolta": "",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/15650/Immagine.png"
-    ]
-  },
-  {
     "id": 15686,
-    "titolo": "Come sostituire la farina",
+    "titolo": "Come sostituire la farina 00 nei dolci",
     "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
+    "tag": [],
     "difficolta": "",
     "porzioni": "",
     "tempo_preparazione_min": null,
     "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
+    "ingredienti": [
+      {
+        "quantita": "60",
+        "unita": "g",
+        "nome": "farina di riso - Opzione 1"
+      },
+      {
+        "quantita": "40",
+        "unita": "g",
+        "nome": "fecola - Opzione 1"
+      },
+      {
+        "quantita": "60",
+        "unita": "g",
+        "nome": "farina di grano saraceno - Opzione 2"
+      },
+      {
+        "quantita": "20",
+        "unita": "g",
+        "nome": "farina di riso - Opzione 2"
+      },
+      {
+        "quantita": "20",
+        "unita": "g",
+        "nome": "amido di mais - Opzione 2"
+      },
+      {
+        "quantita": "20",
+        "unita": "g",
+        "nome": "farina di mais - Opzione 3"
+      },
+      {
+        "quantita": "40",
+        "unita": "g",
+        "nome": "farina di riso - Opzione 3"
+      },
+      {
+        "quantita": "40",
+        "unita": "g",
+        "nome": "fecola di patate - Opzione 3"
+      }
+    ],
+    "procedimento": [
+      "100 g di farina 00 si possono sostituire con una di queste combinazioni."
+    ],
+    "note": "Trascritta dalla foto «Passione dolci».",
     "fonte_originale": "",
     "foto_files": [
       "foto_ricette/15686/Immagine.png"
@@ -326,7 +237,7 @@
   {
     "id": 12084,
     "titolo": "Crepes",
-    "categoria": "Altro",
+    "categoria": "Dolci",
     "tag": [
       "vegetariano",
       "veloce"
@@ -363,7 +274,7 @@
   {
     "id": 356,
     "titolo": "Crepes ricetta base",
-    "categoria": "Altro",
+    "categoria": "Dolci",
     "tag": [
       "vegetariano",
       "dolce",
@@ -424,157 +335,75 @@
     ]
   },
   {
-    "id": 15725,
-    "titolo": "er 40-50 mimeti-",
-    "categoria": "Altro",
+    "id": 15778,
+    "titolo": "Torta di mele (La Cucina Italiana)",
+    "categoria": "Torte",
     "tag": [
-      "da-foto"
+      "dolce",
+      "al-forno",
+      "vegetariano"
     ],
     "difficolta": "",
     "porzioni": "",
     "tempo_preparazione_min": null,
     "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/15725/Immagine.png"
-    ]
-  },
-  {
-    "id": 13779,
-    "titolo": "Esca antiformiche al dentifricio",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": 5,
-    "tempo_cottura_min": null,
     "ingredienti": [
       {
-        "quantita": "3",
-        "unita": "cucchiai",
+        "quantita": "",
+        "unita": "",
         "nome": "zucchero"
       },
       {
-        "quantita": "4",
-        "unita": "cucchiai",
+        "quantita": "",
+        "unita": "",
+        "nome": "uova"
+      },
+      {
+        "quantita": "",
+        "unita": "",
+        "nome": "burro a cubetti"
+      },
+      {
+        "quantita": "",
+        "unita": "",
         "nome": "farina"
       },
       {
-        "quantita": "3",
-        "unita": "cucchiai",
-        "nome": "dentifricio"
+        "quantita": "",
+        "unita": "",
+        "nome": "latte"
       },
       {
-        "quantita": "3",
-        "unita": "cucchiai",
-        "nome": "acqua"
+        "quantita": "",
+        "unita": "",
+        "nome": "limone (scorza e succo)"
+      },
+      {
+        "quantita": "",
+        "unita": "",
+        "nome": "lievito per dolci"
+      },
+      {
+        "quantita": "",
+        "unita": "",
+        "nome": "mele"
+      },
+      {
+        "quantita": "q.b.",
+        "unita": "",
+        "nome": "zucchero di canna"
       }
     ],
     "procedimento": [
-      "Mescola in una ciotola lo zucchero, la farina, il dentifricio e l'acqua fino a ottenere una pasta omogenea.",
-      "Forma con l'impasto delle piccole palline che serviranno da esca.",
-      "Posiziona le palline nelle zone in cui sono presenti formiche e acari (cucina, dispensa, dietro i mobili).",
-      "Lo zucchero attira gli insetti, mentre il dentifricio agisce eliminandoli.",
-      "Ripeti l'operazione 2-3 volte alla settimana fino alla completa scomparsa degli insetti."
+      "In una ciotola lavorate lo zucchero con le uova.",
+      "Aggiungete il burro a cubetti e continuate a impastare.",
+      "Continuate con la farina, il latte, la scorza del limone, il lievito per dolci.",
+      "Nel frattempo tagliate le mele a fettine sottili e mettetele in un'altra ciotola con il succo di limone in modo che non anneriscano.",
+      "Stendete l'impasto su una teglia per dolci.",
+      "Adagiateci sopra le mele in modo regolare. Spolverate a piacere con lo zucchero di canna.",
+      "Infornate a 180 gradi per circa 40 minuti. Fate la prova stecchino prima di sfornare."
     ],
-    "note": "Non è una ricetta alimentare ma un rimedio casalingo per eliminare formiche e acari. Tenere lontano da bambini e animali.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 8199,
-    "titolo": "Istruzioni per i pasti del cane",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "biscotto grande (mattina)"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "strisce morbide di anatra"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "salamino essiccato"
-      },
-      {
-        "quantita": "1",
-        "unita": "fettina",
-        "nome": "manzo"
-      },
-      {
-        "quantita": "1",
-        "unita": "fettina",
-        "nome": "carne bianca (tacchino o lonza, no pollo)"
-      },
-      {
-        "quantita": "1",
-        "unita": "goccio",
-        "nome": "olio"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "pane a pezzetti"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "omogeneizzato di manzo e carote (sera)"
-      },
-      {
-        "quantita": "30",
-        "unita": "g",
-        "nome": "prosciutto cotto sminuzzato o omogeneizzato di prosciutto"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "grissini o pane (notte)"
-      },
-      {
-        "quantita": "fino a 3",
-        "unita": "",
-        "nome": "biscotti TURCO della Galbusera"
-      }
-    ],
-    "procedimento": [
-      "Al mattino lasciare a Sonny un biscotto grande spezzato e schiacciato con qualche striscia morbida di anatra; di solito non mangia. Se abbaia, darle un salamino essiccato (in bagno, dove ci sono i biscotti) tagliato a pezzettini. Cambiare sempre l'acqua.",
-      "Verso le 12.30-13.00 cuocere con un goccio di olio una fettina di manzo con una fettina di carne bianca (tacchino o lonza, no pollo); a fine cottura aggiungere un po' d'acqua per fare un sughino in cui mettere la carne tagliata a pezzettini piccoli, oppure inzuppare un po' di pane a pezzetti. La carne congelata va scongelata 5 minuti in un contenitore con acqua prima di cuocerla.",
-      "La sera dopo le 19.00 dare un omogeneizzato di manzo e carote (sotto la TV in cucina); se cerca ancora cibo dare anche 30 g di prosciutto cotto sminuzzato o omogeneizzato di prosciutto. Nel boccetto svuotato dell'omogeneizzato di manzo aggiungere acqua fino a metà, scaldare 10 secondi nel microonde, mettervi piccoli pezzi di pane, lasciarli ammorbidire e versarli nella ciotola prima della notte.",
-      "Di notte lasciare sempre qualcosa: grissini, pane a pezzi o un omogeneizzato al prosciutto se non già mangiato. Le piacciono anche i biscotti TURCO della Galbusera (massimo tre)."
-    ],
-    "note": "Le fettine di carne (vitellone, lonza, tacchino) sono nel cassetto più basso del freezer. In frigo ci sono gocce di cannabis mai date: se di notte è agitata, provare una goccia prima di dormire. Il Rimadyl è un antinfiammatorio. Questo blocco non è una ricetta culinaria ma una nota di accudimento del cane.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/8199/IMG_3091.jpeg"
-    ]
-  },
-  {
-    "id": 15778,
-    "titolo": "LA CUCINA",
-    "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
-    "difficolta": "",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
+    "note": "Nella foto ci sono solo i passaggi: le dosi non sono indicate. — Trascritta da «La Cucina Italiana».",
     "fonte_originale": "",
     "foto_files": [
       "foto_ricette/15778/Immagine.png"
@@ -603,635 +432,76 @@
     "fonte_originale": ""
   },
   {
-    "id": 8747,
-    "titolo": "Lista cose da portare alla Pantana",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
+    "id": 16709,
+    "titolo": "Torta di Santa Rita",
+    "categoria": "Torte",
+    "tag": [
+      "dolce",
+      "al-forno",
+      "facile",
+      "vegetariano"
+    ],
+    "difficolta": "",
     "porzioni": "",
     "tempo_preparazione_min": null,
     "tempo_cottura_min": null,
     "ingredienti": [
       {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Antizanzare"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Stuoia"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "Frullatore con i suoi pezzi"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "Mattarello"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "Asse di legno"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Cucchiaio e cucchiaino"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Contenitori di vetro"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Domopak"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Elastici"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Bicchieri di plastica"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Acqua naturale"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "Bilancia"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Limoni"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Farina 00"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Farina 0"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Farina Manitoba"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Farina di semola"
-      },
-      {
-        "quantita": "2",
-        "unita": "",
-        "nome": "Crema di marroni"
-      }
-    ],
-    "procedimento": [
-      "Lista di utensili e ingredienti da portare; non è una ricetta vera e propria."
-    ],
-    "note": "Si tratta di una lista di cose da portare, non di una ricetta.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 4487,
-    "titolo": "Lista della spesa",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "8",
-        "unita": "mt",
-        "nome": "nastro"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "album cartoncini colorati"
-      },
-      {
-        "quantita": "1",
-        "unita": "",
-        "nome": "bucatrice"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "uva"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "pomodorini"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "pomodori"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "uvetta"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "cipolla"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "finocchio"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "aglio"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "scalogno"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "broccoli"
-      },
-      {
-        "quantita": "3",
-        "unita": "",
-        "nome": "album fogli colorati spessi"
-      },
-      {
-        "quantita": "2",
-        "unita": "",
-        "nome": "tappetini Sonny"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "lenti Pietro"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "salvaslip Carefree"
-      },
-      {
-        "quantita": "2",
-        "unita": "",
-        "nome": "pesto"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "Ovomaltina"
-      },
-      {
-        "quantita": "4",
-        "unita": "",
-        "nome": "latte HD azzurro"
-      },
-      {
-        "quantita": "3",
-        "unita": "",
-        "nome": "mozzarella per pizza"
-      },
-      {
-        "quantita": "3",
-        "unita": "",
-        "nome": "mozzarella"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "pasta brisée"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "acqua distillata"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "ammoniaca"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "ricotta di capra"
-      },
-      {
-        "quantita": "2",
-        "unita": "",
-        "nome": "speck"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "lamette Gillette Fusion"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "marmellata di amarene"
-      },
-      {
-        "quantita": "4",
-        "unita": "",
-        "nome": "bistecche"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "fettine di tacchino"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "farina manitoba"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "succhi"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "uova"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "arance"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "scamorzine"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "stracapra e caciotta di capra"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "stracciatella"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "zucchero di canna"
-      }
-    ],
-    "procedimento": [],
-    "note": "Questa voce non è una ricetta ma una lista della spesa con varie sezioni (anche per Dani e per Ginevra: gocciole, nutella, tonno, fagioli rossi in scatola).",
-    "fonte_originale": ""
-  },
-  {
-    "id": 9250,
-    "titolo": "Lista della spesa",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "2",
-        "unita": "",
-        "nome": "latte"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "mozzarella di bufala"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "mandorle"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "noci"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "banane"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "frutti rossi"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "zucchero bianco"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "candeggina"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "trita Sonny: 2 tacchino, 1 vitellone"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "burro di panna di latte"
-      },
-      {
-        "quantita": "2",
-        "unita": "kg",
-        "nome": "farina 0"
-      },
-      {
-        "quantita": "2",
-        "unita": "kg",
+        "quantita": "200",
+        "unita": "g",
         "nome": "farina 00"
       },
       {
-        "quantita": "2",
-        "unita": "",
-        "nome": "Philadelphia light"
-      },
-      {
-        "quantita": "4",
-        "unita": "",
-        "nome": "Lindt"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "uova (entrambe)"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "carote"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "prosciutto cotto"
-      }
-    ],
-    "procedimento": [],
-    "note": "Questo testo non è una ricetta ma una lista della spesa.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 10733,
-    "titolo": "Lista della spesa",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Questo blocco non è una ricetta ma una lista della spesa (mozzarella, omogeneizzati, fettine di tacchino e pollo, sugo, verdure, frutta, salumi, latticini, farine e articoli vari).",
-    "fonte_originale": ""
-  },
-  {
-    "id": 10399,
-    "titolo": "Lista della spesa con dolce di grano e ricotta",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "200",
-        "unita": "g",
-        "nome": "grano precotto"
-      },
-      {
-        "quantita": "200",
-        "unita": "g",
-        "nome": "latte"
-      },
-      {
-        "quantita": "300",
-        "unita": "g",
-        "nome": "ricotta vaccina"
-      },
-      {
-        "quantita": "170",
+        "quantita": "150",
         "unita": "g",
         "nome": "zucchero"
       },
       {
-        "quantita": "3",
-        "unita": "",
-        "nome": "tuorli"
+        "quantita": "100",
+        "unita": "g",
+        "nome": "burro"
       },
       {
         "quantita": "3",
         "unita": "",
-        "nome": "albumi a neve"
-      },
-      {
-        "quantita": "1",
-        "unita": "fialetta",
-        "nome": "aroma di arancia"
-      },
-      {
-        "quantita": "1 pizzicone",
-        "unita": "",
-        "nome": "cannella"
+        "nome": "uova"
       },
       {
         "quantita": "100",
-        "unita": "g",
-        "nome": "canditi misti di arancio e cedro"
+        "unita": "ml",
+        "nome": "latte"
       },
       {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "buccia di limone"
-      }
-    ],
-    "procedimento": [
-      "Nota: il testo è una lista della spesa e appunti. In coda riporta gli ingredienti per un dolce a base di grano e ricotta (tipo pastiera): grano precotto, latte, ricotta vaccina, zucchero, tuorli, albumi montati a neve, aroma di arancia, cannella, canditi e buccia di limone.",
-      "Non sono indicati i passaggi di preparazione nel testo originale."
-    ],
-    "note": "Il blocco è una lista della spesa mista ad altri appunti; gli ingredienti riportati appartengono a un dolce di grano e ricotta privo di procedimento.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 951,
-    "titolo": "Menù: Antipasto Rio Basco e portate",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "gamberetti"
+        "quantita": "1",
+        "unita": "bustina",
+        "nome": "lievito"
       },
       {
-        "quantita": "q.b.",
+        "quantita": "1",
         "unita": "",
-        "nome": "soncino"
+        "nome": "limone (scorza)"
       },
       {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "noci"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "patate lesse"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "scaglie di parmigiano"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "olio"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "limone"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
+        "quantita": "1",
+        "unita": "pizzico",
         "nome": "sale"
       },
       {
         "quantita": "q.b.",
         "unita": "",
-        "nome": "sedano"
+        "nome": "zucchero a velo"
       }
     ],
     "procedimento": [
-      "Per l'Antipasto Rio Basco condite gamberetti, soncino, noci, patate lesse e scaglie di parmigiano con olio, limone e sale (eventualmente sedano).",
-      "Portate del menù previste: risotto con zafferano, salsiccia e funghi; rigatoni con pomodorini, melanzane e stracciatella o ricotta; vitello tonnato; fiori di zucca fritti; salumi; gelato alla crema."
+      "Preriscalda il forno a 180 °C. Imburra la tortiera.",
+      "Monta uova e zucchero finché spumosi.",
+      "Aggiungi burro fuso tiepido, scorza e latte. Mescola.",
+      "Setaccia farina, lievito, sale. Unisci piano al composto.",
+      "Versa l'impasto nella tortiera (24 cm).",
+      "Inforna per 35 minuti. Fai la prova stecchino.",
+      "Lascia raffreddare e spolvera con zucchero a velo."
     ],
-    "note": "Appunto di menù con elenco di portate, non una ricetta dettagliata.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 13751,
-    "titolo": "Metodo naturale per pulire il forno con bicarbonato e aceto",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": 5,
-    "tempo_cottura_min": null,
-    "ingredienti": [
-      {
-        "quantita": "1",
-        "unita": "cucchiaio",
-        "nome": "bicarbonato di sodio"
-      },
-      {
-        "quantita": "1",
-        "unita": "cucchiaio",
-        "nome": "sale"
-      },
-      {
-        "quantita": "2",
-        "unita": "cucchiai",
-        "nome": "acqua"
-      },
-      {
-        "quantita": "q.b.",
-        "unita": "",
-        "nome": "aceto"
-      }
-    ],
-    "procedimento": [
-      "Mescolare un cucchiaio di bicarbonato di sodio, un cucchiaio di sale e due cucchiai d'acqua fino a formare una pasta densa.",
-      "Applicare la pasta sulle aree sporche del forno e lasciarla agire (più a lungo, meglio è).",
-      "Disinfettare il forno con una miscela di acqua e aceto: spruzzare e pulire con un panno umido.",
-      "Lasciare asciugare con lo sportello del forno aperto."
-    ],
-    "note": "Non è una ricetta di cucina ma un metodo naturale per pulire il forno. In alternativa si possono usare bicarbonato, aceto e sapone per piatti.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 1040,
-    "titolo": "Nuova nota",
-    "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
-    "difficolta": "",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/1040/Pasted Image 0.jpeg"
-    ]
-  },
-  {
-    "id": 16709,
-    "titolo": "Nuova nota",
-    "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
-    "difficolta": "",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
+    "note": "Tortiera da 24 cm. — Trascritta dalla foto «Passione dolci».",
     "fonte_originale": "",
     "foto_files": [
       "foto_ricette/16709/Immagine.png"
@@ -1239,67 +509,122 @@
   },
   {
     "id": 15970,
-    "titolo": "Pasta Rummo o",
-    "categoria": "Altro",
+    "titolo": "Gnocchi con fonduta (Pasta Rummo)",
+    "categoria": "Primi",
     "tag": [
-      "da-foto"
+      "salato",
+      "vegetariano"
     ],
     "difficolta": "",
-    "porzioni": "",
+    "porzioni": "2",
     "tempo_preparazione_min": null,
     "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
+    "ingredienti": [
+      {
+        "quantita": "500",
+        "unita": "g",
+        "nome": "gnocchi di patate Rummo"
+      },
+      {
+        "quantita": "250",
+        "unita": "g",
+        "nome": "fontina"
+      },
+      {
+        "quantita": "2",
+        "unita": "",
+        "nome": "uova (solo i tuorli)"
+      },
+      {
+        "quantita": "200",
+        "unita": "ml",
+        "nome": "latte"
+      },
+      {
+        "quantita": "q.b.",
+        "unita": "",
+        "nome": "Parmigiano Reggiano"
+      },
+      {
+        "quantita": "q.b.",
+        "unita": "",
+        "nome": "burro"
+      },
+      {
+        "quantita": "q.b.",
+        "unita": "",
+        "nome": "sale"
+      }
+    ],
+    "procedimento": [
+      "Taglia la fontina a tocchetti. Mettila in una ciotola con il latte e lascia riposare in frigorifero per 12 ore. Trasferisci tutto in una pentola su una fiamma bassissima. Quando sta per raggiungere il bollore, aggiungi due tuorli e un po' di sale. Mescola costantemente senza portare a bollore.",
+      "In pentola con acqua salata, cuoci gli gnocchi di patate. Appena risalgono, sono pronti. Trasferiscili su una padella e abbrustoliscili con il burro.",
+      "Trasferisci la fonduta in una ciotola da portare in tavola assieme alla padella con gli gnocchi. Fuori dal fuoco, aggiungi una spolverata di Parmigiano Reggiano appena grattugiato."
+    ],
+    "note": "La fontina riposa nel latte 12 ore in frigorifero: comincia il giorno prima. — Trascritta da un post di Pasta Rummo.",
     "fonte_originale": "",
     "foto_files": [
       "foto_ricette/15970/Immagine.png"
     ]
   },
   {
-    "id": 9094,
-    "titolo": "Racconto di Natale",
-    "categoria": "Altro",
-    "tag": [
-      "natalizio"
-    ],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Questo testo non è una ricetta ma un racconto natalizio sulla nascita del Salvatore a Betlemme e sull'annuncio degli angeli ai pastori.",
-    "fonte_originale": ""
-  },
-  {
-    "id": 8346,
-    "titolo": "Testo non culinario (catena/profezia)",
-    "categoria": "Altro",
-    "tag": [],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Il testo originale non è una ricetta: si tratta di un messaggio a catena di carattere religioso (presunta profezia di Fatima). Nessun contenuto culinario da strutturare.",
-    "fonte_originale": ""
-  },
-  {
     "id": 15659,
-    "titolo": "TORTA AL MANDARINO",
-    "categoria": "Altro",
+    "titolo": "Torta al mandarino",
+    "categoria": "Torte",
     "tag": [
-      "da-foto"
+      "dolce",
+      "al-forno",
+      "facile",
+      "vegetariano"
     ],
     "difficolta": "",
     "porzioni": "",
     "tempo_preparazione_min": null,
     "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
+    "ingredienti": [
+      {
+        "quantita": "3",
+        "unita": "",
+        "nome": "uova"
+      },
+      {
+        "quantita": "120",
+        "unita": "g",
+        "nome": "zucchero"
+      },
+      {
+        "quantita": "150",
+        "unita": "ml",
+        "nome": "succo di mandarino"
+      },
+      {
+        "quantita": "2",
+        "unita": "",
+        "nome": "mandarini (scorza grattugiata)"
+      },
+      {
+        "quantita": "150",
+        "unita": "ml",
+        "nome": "olio di semi"
+      },
+      {
+        "quantita": "250",
+        "unita": "g",
+        "nome": "farina 00"
+      },
+      {
+        "quantita": "1",
+        "unita": "bustina",
+        "nome": "lievito per dolci"
+      }
+    ],
+    "procedimento": [
+      "Montare le uova con lo zucchero.",
+      "Aggiungere l'olio, il succo del mandarino, la scorza grattugiata e la farina setacciata. Mescolare molto bene con le fruste.",
+      "Infine aggiungere il lievito.",
+      "Cuocere in forno statico a 180° per 35 minuti, in una teglia da 22 cm."
+    ],
+    "note": "Teglia da 22 cm, forno statico. — Trascritta dalla foto «Passione dolci».",
     "fonte_originale": "",
     "foto_files": [
       "foto_ricette/15659/Immagine.png"
@@ -1307,40 +632,139 @@
   },
   {
     "id": 16018,
-    "titolo": "TRIS DI DOLGI ALLE CAROTE",
-    "categoria": "Altro",
+    "titolo": "Tris di dolci alle carote",
+    "categoria": "Torte",
     "tag": [
-      "da-foto"
+      "dolce",
+      "al-forno",
+      "vegetariano"
     ],
     "difficolta": "",
     "porzioni": "",
     "tempo_preparazione_min": null,
     "tempo_cottura_min": null,
-    "ingredienti": [],
+    "ingredienti": [
+      {
+        "quantita": "250",
+        "unita": "g",
+        "nome": "carote - Camille (12 tortine)"
+      },
+      {
+        "quantita": "3",
+        "unita": "",
+        "nome": "uova - Camille (12 tortine)"
+      },
+      {
+        "quantita": "150",
+        "unita": "g",
+        "nome": "zucchero - Camille (12 tortine)"
+      },
+      {
+        "quantita": "80",
+        "unita": "ml",
+        "nome": "olio di semi - Camille (12 tortine)"
+      },
+      {
+        "quantita": "100",
+        "unita": "g",
+        "nome": "farina di mandorle - Camille (12 tortine)"
+      },
+      {
+        "quantita": "150",
+        "unita": "g",
+        "nome": "farina 00 - Camille (12 tortine)"
+      },
+      {
+        "quantita": "1",
+        "unita": "bustina",
+        "nome": "lievito per dolci (16 g) - Camille (12 tortine)"
+      },
+      {
+        "quantita": "1",
+        "unita": "",
+        "nome": "arancia (scorza) - Camille (12 tortine)"
+      },
+      {
+        "quantita": "300",
+        "unita": "g",
+        "nome": "carote - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "3",
+        "unita": "",
+        "nome": "uova - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "160",
+        "unita": "g",
+        "nome": "zucchero - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "100",
+        "unita": "ml",
+        "nome": "olio di semi (o 90 g di burro fuso) - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "200",
+        "unita": "g",
+        "nome": "farina 00 - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "80",
+        "unita": "g",
+        "nome": "farina di mandorle - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "1",
+        "unita": "bustina",
+        "nome": "lievito per dolci (16 g) - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "q.b.",
+        "unita": "",
+        "nome": "scorza di arancia o limone - Torta di carote (stampo 22 cm)"
+      },
+      {
+        "quantita": "250",
+        "unita": "g",
+        "nome": "carote - Plumcake alle carote (da colazione)"
+      },
+      {
+        "quantita": "2",
+        "unita": "",
+        "nome": "uova - Plumcake alle carote (da colazione)"
+      },
+      {
+        "quantita": "150",
+        "unita": "g",
+        "nome": "zucchero - Plumcake alle carote (da colazione)"
+      },
+      {
+        "quantita": "90",
+        "unita": "ml",
+        "nome": "olio di semi (o 90 g di burro fuso) - Plumcake alle carote (da colazione)"
+      },
+      {
+        "quantita": "220",
+        "unita": "g",
+        "nome": "farina 00 - Plumcake alle carote (da colazione)"
+      },
+      {
+        "quantita": "1",
+        "unita": "bustina",
+        "nome": "lievito per dolci (16 g) - Plumcake alle carote (da colazione)"
+      },
+      {
+        "quantita": "120",
+        "unita": "ml",
+        "nome": "latte (o succo d'arancia) - Plumcake alle carote (da colazione)"
+      }
+    ],
     "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
+    "note": "Nella foto ci sono solo gli ingredienti, senza procedimento (l'immagine potrebbe essere tagliata in fondo). — Trascritta dalla foto.",
     "fonte_originale": "",
     "foto_files": [
       "foto_ricette/16018/Immagine.png"
-    ]
-  },
-  {
-    "id": 14655,
-    "titolo": "Una santita",
-    "categoria": "Altro",
-    "tag": [
-      "da-foto"
-    ],
-    "difficolta": "",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta scritta dentro la foto: vedi immagine.",
-    "fonte_originale": "",
-    "foto_files": [
-      "foto_ricette/14655/Immagine.png"
     ]
   },
   {
@@ -51266,24 +50690,6 @@
     ],
     "note": "",
     "fonte_originale": ""
-  },
-  {
-    "id": 16235,
-    "titolo": "Torta delle Monache senza farina e lievito",
-    "categoria": "Torte",
-    "tag": [
-      "dolce",
-      "senza glutine",
-      "al forno"
-    ],
-    "difficolta": "Facile",
-    "porzioni": "",
-    "tempo_preparazione_min": null,
-    "tempo_cottura_min": null,
-    "ingredienti": [],
-    "procedimento": [],
-    "note": "Ricetta non riportata nel testo: disponibile solo il link alla fonte. Un dolce antico, soffice e profumatissimo senza farina e senza lievito.",
-    "fonte_originale": "blog.giallozafferano.it/renatabriano (Renata Briano)"
   },
   {
     "id": 10072,
