@@ -987,7 +987,7 @@ window.toggleTrOriginal=function(){
 function trSwitchHTML(r,d,pending){
   if(LANG==='it'||pending)return'';
   var b=function(k){return'<button onclick="toggleTrOriginal()" style="background:none;border:none;padding:0;font:inherit;color:var(--terracotta);text-decoration:underline;cursor:pointer">'+t(k)+'</button>';};
-  var h=d._tr?'&#127760; '+t('tr.translatedFrom')+' &middot; '+b('tr.showOriginal'):_trShowOriginal&&trFresh(r)?'&#127760; '+b('tr.showTranslation'):'&#127470;&#127481; '+t('tr.onlyItalian');
+  var h=d._tr?'&#127760; '+t('tr.translatedFrom')+' &middot; '+b('tr.showOriginal'):_trShowOriginal&&trFresh(r)?'&#127760; '+b('tr.showTranslation'):t('tr.notYet');
   return'<div style="font-size:12.5px;color:var(--charcoal-light);margin:-4px 0 12px">'+h+'</div>';
 }
 // nome di ricetta salvato in italiano (es. la provenienza nella spesa) -> nome tradotto, se c'è

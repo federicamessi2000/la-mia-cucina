@@ -356,7 +356,7 @@ var TEXTS={
  "toast.copied":["Copiata negli appunti!","Copied to the clipboard!","In die Zwischenablage kopiert!"],
  "toast.saveFailed":["⚠️ Salvataggio non riuscito. Controlla la connessione.","⚠️ Couldn't save. Check your connection.","⚠️ Speichern fehlgeschlagen. Prüfe deine Verbindung."],
  "tr.loading":["Carico la traduzione…","Loading the translation…","Übersetzung wird geladen…"],
- "tr.onlyItalian":["Per ora solo in italiano","Only in Italian for now","Vorerst nur auf Italienisch"],
+ "tr.notYet":["Non ancora tradotta","Not translated yet","Noch nicht übersetzt"],
  "tr.showOriginal":["Mostra l'originale","Show the original","Original anzeigen"],
  "tr.showTranslation":["Mostra la traduzione","Show the translation","Übersetzung anzeigen"],
  "tr.translatedFrom":["Tradotta dall'italiano","Translated from Italian","Aus dem Italienischen übersetzt"],
