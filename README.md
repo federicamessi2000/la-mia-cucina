@@ -15,7 +15,7 @@ App di ricette di famiglia, mobile-first — ricette condivise, planner dei past
 - **Congelatore** — inventario di cosa c'è in freezer, per categorie e date
 - **Modalità cucina** — un passo alla volta a schermo intero, schermo sempre acceso, timer avviabili direttamente dai tempi scritti nei passi
 - **Bimby / Cookidoo** — esporta qualsiasi ricetta come testo pronto da incollare nelle *Ricette create* di Cookidoo, o condividila su WhatsApp
-- **Lingue** — app in italiano, inglese o tedesco (svizzero): segue la lingua del telefono e si cambia dal profilo; le ricette restano come sono scritte, il catalogo della spesa è tradotto
+- **Lingue** — app in italiano, inglese o tedesco (svizzero): segue la lingua del telefono e si cambia dal profilo; anche le ricette e il catalogo della spesa sono tradotti, con l'originale italiano a un tocco
 - **Segnala un problema** — dal profilo: la segnalazione (descrizione + dettagli tecnici) arriva a Federica nella sezione "Segnalazioni" dell'app, senza email
 
 ## Stack

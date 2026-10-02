@@ -872,7 +872,7 @@ window.addEventListener('online',updateOnline);window.addEventListener('offline'
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-var APP_VERSION='2026-10-01.1';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});});
+var APP_VERSION='2026-10-02.1';console.log('La Mia Cucina',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
@@ -913,11 +913,89 @@ var _ingLabelMap=null;
 function ingLabel(name){
   if(!name||LANG==='it')return name;
   if(!_ingLabelMap){_ingLabelMap={};Object.keys(CATALOG_I18N).forEach(function(k){_ingLabelMap[k.toLowerCase()]=CATALOG_I18N[k];});}
-  var x=_ingLabelMap[String(name).toLowerCase().trim()];
-  return x&&x[LANG]?x[LANG]:name;
+  var k=String(name).toLowerCase().trim(),x=_ingLabelMap[k];
+  return x&&x[LANG]?x[LANG]:(_trIng[k]||name);
 }
 // ricerca nel catalogo: vale sia il nome italiano sia quello tradotto
 function catMatch(c,q){q=normTxt(q);return normTxt(c[0]).includes(q)||normTxt(ingLabel(c[0])).includes(q);}
+// ── RICETTE TRADOTTE ──────────────────────────────────────────
+// Le traduzioni stanno in recipeTr/<lingua>/<id>, accanto alla ricetta italiana (che non cambia).
+// recipeTrIdx/<lingua> porta i nomi tradotti (liste, ricerca, planner) e gli ingredienti (spesa);
+// il resto si scarica aprendo la ricetta. Una ricetta modificata dopo la traduzione si vede in originale.
+var _trIdx=null,_trIng={},_trCache={},_trPending={},_trSlow={},_trShowOriginal=false,_trNameMap=null;
+// impronta del testo italiano (uguale nello script che prepara le traduzioni): dice se la traduzione è ancora valida
+function trSrc(r){
+  var p=[r.nome,r.tempo,r.porzioni,r.note,r.procedimento].map(function(x){return x==null?'':String(x);});
+  (r.ingredienti||[]).forEach(function(i){p.push(typeof i==='string'?'|'+i:(i&&i.sezione?String(i.sezione):'')+'|'+(i&&i.name!=null?String(i.name):''));});
+  return p.join('\u0001');
+}
+function trHash(r){var s=trSrc(r),h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36);}
+function loadTrIdx(){
+  _trIdx=null;_trIng={};_trCache={};_trPending={};_trSlow={};_trNameMap=null;
+  if(LANG==='it'||!currentUser)return;
+  var lang=LANG;
+  db.ref('recipeTrIdx/'+lang).once('value').then(function(s){
+    if(lang!==LANG||!currentUser)return;
+    var v=s.val()||{},ing=v.ing||{};
+    _trIdx=v.n||{};_trNameMap=null;
+    Object.keys(ing).forEach(function(k){var p=ing[k];if(p&&p[0])_trIng[String(p[0]).toLowerCase()]=String(p[1]||'');});
+    renderRecipes();renderPlanner();renderShopping();
+    if(document.getElementById('recipe-cat-page').style.display==='flex')filterRecipeCatModal();
+  }).catch(function(e){logErr('traduzioni: '+(e&&(e.code||e.message)||e));});
+}
+// nome mostrato nelle liste: tradotto se la traduzione è del nome attuale
+function recipeName(r){
+  var nm=String(r&&r.nome||''),x=_trIdx&&r?_trIdx[r.id]:null;
+  return x&&x[0]===nm&&x[1]?String(x[1]):nm;
+}
+function byName(a,b){return recipeName(a).localeCompare(recipeName(b),LOCALE);}
+function nameHit(r,q){return normTxt(r.nome).includes(q)||(!!_trIdx&&normTxt(recipeName(r)).includes(q));}
+function trExpected(r){var x=r&&LANG!=='it'&&_trIdx?_trIdx[r.id]:null;return!!(x&&x[0]===String(r.nome||''));}
+function trFresh(r){var tr=_trCache[r.id];return tr&&tr.src===trHash(r)?tr:null;}
+function trPending(r){return!_trShowOriginal&&trExpected(r)&&_trCache[r.id]===undefined&&!_trSlow[r.id];}
+// la ricetta da mostrare: copia con i testi tradotti (quantità, unità e dati restano quelli della ricetta)
+function trView(r){
+  if(!r||LANG==='it'||_trShowOriginal)return r;
+  var tr=trFresh(r);if(!tr)return r;
+  var d=Object.assign({},r,{_tr:true,nome:tr.nome||r.nome}),ti=tr.ing||[];
+  ['tempo','porzioni','note','procedimento'].forEach(function(k){if(tr[k]&&r[k]!=null)d[k]=tr[k];});
+  d.ingredienti=(r.ingredienti||[]).map(function(i,j){
+    var x=ti[j]||{};
+    if(typeof i==='string')return x.n||i;
+    return Object.assign({},i,{name:x.n||i.name,sezione:i.sezione&&x.s?x.s:i.sezione});
+  });
+  return d;
+}
+function fetchTr(r){
+  if(!trExpected(r)||_trCache[r.id]!==undefined)return Promise.resolve();
+  var lang=LANG,id=r.id;
+  if(!_trPending[id])_trPending[id]=db.ref('recipeTr/'+lang+'/'+id).once('value')
+    .then(function(s){if(lang===LANG)_trCache[id]=s.val();},function(e){if(lang===LANG)_trCache[id]=null;logErr('traduzione '+id+': '+(e&&(e.code||e.message)||e));})
+    .then(function(){delete _trPending[id];});
+  return _trPending[id];
+}
+// cb subito se la traduzione non serve o c'è già, se no appena arriva (al più dopo 4 s, con l'originale)
+function withTr(r,cb){
+  if(!trExpected(r)||_trCache[r.id]!==undefined){cb();return;}
+  var done=false,go=function(){if(!done){done=true;cb();}};
+  fetchTr(r).then(go);setTimeout(go,4000);
+}
+window.toggleTrOriginal=function(){
+  _trShowOriginal=!_trShowOriginal;
+  var r=recipes.find(function(x){return x.id===currentRecipeId;});if(r)renderRecipeModal(r,currentPortions);
+};
+function trSwitchHTML(r,d,pending){
+  if(LANG==='it'||pending)return'';
+  var b=function(k){return'<button onclick="toggleTrOriginal()" style="background:none;border:none;padding:0;font:inherit;color:var(--terracotta);text-decoration:underline;cursor:pointer">'+t(k)+'</button>';};
+  var h=d._tr?'&#127760; '+t('tr.translatedFrom')+' &middot; '+b('tr.showOriginal'):_trShowOriginal&&trFresh(r)?'&#127760; '+b('tr.showTranslation'):'&#127470;&#127481; '+t('tr.onlyItalian');
+  return'<div style="font-size:12.5px;color:var(--charcoal-light);margin:-4px 0 12px">'+h+'</div>';
+}
+// nome di ricetta salvato in italiano (es. la provenienza nella spesa) -> nome tradotto, se c'è
+function trNameIt(nm){
+  if(!_trIdx)return nm;
+  if(!_trNameMap){_trNameMap=Object.create(null);recipes.forEach(function(r){var x=recipeName(r);if(x!==r.nome)_trNameMap[r.nome]=x;});}
+  return _trNameMap[nm]||nm;
+}
 function capFirst(s){s=String(s||'');return s.charAt(0).toUpperCase()+s.slice(1);}
 // Nomi di mesi e giorni nella lingua scelta (gli array sono quelli che usano planner e spesa)
 function buildDateNames(){
@@ -945,6 +1023,7 @@ window.setLang=function(l){
   refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();
   renderCatSelect(document.getElementById('r-categoria').value);
   if(!currentUser)return;
+  loadTrIdx();
   document.getElementById('user-modal-name').textContent=currentUser.displayName||t('user.default');
   renderFamilySection();renderReportsEntry();
   renderRecipes();renderPlanner();renderShopWeekNav();renderShopping();renderFreezer();
@@ -960,7 +1039,7 @@ function mealDisplay(entry,meal){
   var v=entry[meal];
   if(v==='__fuori_casa'||v==='__dal_freezer'||v==='__ingredienti')return v;
   var r=mealRecipe(entry,meal);
-  return r?r.nome:v;
+  return r?recipeName(r):v;
 }
 // Più piatti nello stesso pasto: slot pranzo, pranzo2 … pranzo6 (idem cena), ognuno coi propri campi slot_*
 var MAX_DISHES=6;
@@ -1301,7 +1380,7 @@ auth.onAuthStateChanged(function(user){
     if(_shopListener){_shopListener.off();_shopListener=null;}
     if(_privRecipesRef){_privRecipesRef.off();_privRecipesRef=null;}
     if(_pubRecipesRef){_pubRecipesRef.off();_pubRecipesRef=null;}
-    recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};
+    recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};loadTrIdx();
     // anche planner, spesa, freezer e preferiti: chi entra dopo non deve vedere quelli di prima
     planner={};shopping=[];freezer=[];userFavorites={};familyCode=null;userCatOrder=CATS.map(function(_,i){return i;});bugReports=[];
     renderPlanner();renderShopping();renderFreezer();renderRecipes();renderReportsEntry();
@@ -1319,6 +1398,7 @@ function initRecipes(){
   recipesState.priv='loading';
   _privRecipesRef=db.ref('users/'+currentUser.uid+'/recipes');
   listenRecipes(_privRecipesRef,true);
+  loadTrIdx();
 }
 var _pubRecipesRef=null;
 // Listener incrementali: il nodo (800+ ricette) viene scaricato una sola volta,
@@ -1335,7 +1415,7 @@ function listenRecipes(ref,priv){
   // once('value') riusa i dati del listener: niente download in più, dice solo quando il primo carico è finito
   ref.once('value',function(){recipesState[st]='ok';scheduleRecipeRender();},onErr);
 }
-function onRecipesChanged(){_nutriCache={};scheduleRecipeRender();}
+function onRecipesChanged(){_nutriCache={};_trNameMap=null;scheduleRecipeRender();}
 var _recipeRenderTimer=null;
 function scheduleRecipeRender(){clearTimeout(_recipeRenderTimer);_recipeRenderTimer=setTimeout(function(){renderRecipes();if(document.getElementById('recipe-cat-page').style.display==='flex')filterRecipeCatModal();if(currentUser)renderPlanner();},80);}
 
@@ -1438,12 +1518,12 @@ function _recipeRowHTML(r){
   if(r._priv)parts.unshift('&#128274;');
   return'<div class="recipe-list-item" onclick="openRecipe(\''+safeId(r.id)+'\')">'+
     '<span class="recipe-li-emoji">'+emoji+'</span>'+
-    '<div class="recipe-li-main"><span class="recipe-li-name">'+(esc(r.nome)||'<em>'+t('recipe.noName')+'</em>')+'</span>'+
+    '<div class="recipe-li-main"><span class="recipe-li-name">'+(esc(recipeName(r))||'<em>'+t('recipe.noName')+'</em>')+'</span>'+
     (parts.length?'<span class="recipe-li-meta">'+parts.join(' \xb7 ')+'</span>':'')+'</div>'+
     '<span class="recipe-li-chev">&#8250;</span></div>';
 }
 function _alphaOf(r){
-  var c=normTxt(r.nome||'').charAt(0).toUpperCase();
+  var c=normTxt(recipeName(r)).charAt(0).toUpperCase();
   return(c>='A'&&c<='Z')?c:'#';
 }
 // Rendering a blocchi: con 800+ ricette un innerHTML unico blocca il telefono.
@@ -1498,9 +1578,9 @@ window.filterRecipeCatModal=function(){
     if(_recipeCatCurrent==='__preferiti')return!!userFavorites[r.id];
     if(_recipeCatCurrent!=='__all'&&recipeCat(r)!==_recipeCatCurrent)return false;
     if(_recipeCatTagFilters.length&&!_recipeCatTagFilters.every(function(t){return(r.tags||[]).includes(t);}))return false;
-    if(q&&!normTxt(r.nome).includes(q))return false;
+    if(q&&!nameHit(r,q))return false;
     return true;
-  }).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
+  }).sort(byName);
   document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list,'cat');
   document.getElementById('recipe-cat-count').textContent=tn('recipes.count',list.length);
 };
@@ -1519,10 +1599,10 @@ function renderRecipeHome(){
   var warn=recipesState.pub==='error'?'<div class="empty-state" style="padding:10px 12px 16px">'+loadErr+'</div>':'';
   if(q){
     var results=recipes.filter(function(r){
-      return normTxt(r.nome).includes(q)||
+      return nameHit(r,q)||
         normTxt(r.categoria||'').includes(q)||normTxt(catName(r.categoria)).includes(q)||
-        (r.ingredienti||[]).some(function(i){return normTxt(i.name||'').includes(q);});
-    }).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
+        (r.ingredienti||[]).some(function(i){return normTxt(i.name||'').includes(q)||normTxt(ingLabel(i.name||'')).includes(q);});
+    }).sort(byName);
     el.innerHTML=warn+'<div style="font-size:12px;color:var(--charcoal-light);margin-bottom:8px">'+tn('recipes.found',results.length)+'</div>'+renderRecipeItems(results,'home');
     return;
   }
@@ -1557,14 +1637,22 @@ window.openRecipe=function(id){
   currentRecipeId=id;currentPortions=parseInt(r.porzioni)||4;
   renderRecipeModal(r,currentPortions);
   document.getElementById('recipe-modal').style.display='flex';
+  // traduzione non ancora scaricata: la scheda dice "carico" e si ridisegna appena arriva (dopo 4 s intanto l'originale)
+  if(trExpected(r)&&_trCache[id]===undefined){
+    var again=function(){var x=recipes.find(function(y){return y.id===id;});if(x&&currentRecipeId===id&&document.getElementById('recipe-modal').style.display==='flex')renderRecipeModal(x,currentPortions);};
+    fetchTr(r).then(again);
+    setTimeout(function(){if(_trCache[id]===undefined){_trSlow[id]=true;again();}},4000);
+  }
 };
 window.changePortions=function(d){currentPortions=Math.max(1,currentPortions+d);var r=recipes.find(function(x){return x.id===currentRecipeId;});if(r)renderRecipeModal(r,currentPortions);};
 function renderRecipeModal(r,portions){
+  // testi dalla traduzione (d) se c'è; quantità, unità e dati dalla ricetta (r)
+  var d=trView(r),pending=trPending(r);
   var base=parseInt(r.porzioni)||4;
   var scale=portions/base;
   // Ingredienti: quantità in colonna evidenziata, nome accanto
   var ings='';var _lastSez=null;
-  (r.ingredienti||[]).forEach(function(i){
+  (d.ingredienti||[]).forEach(function(i){
     if(i.sezione&&i.sezione!==_lastSez){_lastSez=i.sezione;ings+='<li class="recipe-ing-section">'+esc(i.sezione)+'</li>';}
     if(typeof i==='string'){ings+='<li><span class="ing-q"></span><span>'+esc(i)+'</span></li>';return;}
     var q='';
@@ -1573,12 +1661,12 @@ function renderRecipeModal(r,portions){
     ings+='<li><span class="ing-q">'+esc(q)+'</span><span>'+esc(i.name||'')+'</span></li>';
   });
   // Procedimento: passi numerati invece del muro di testo
-  var steps=(r.procedimento||'').split(/\n+/).map(function(s){return s.replace(/^\d+[\.\)]\s*/,'').trim();}).filter(Boolean);
+  var steps=(d.procedimento||'').split(/\n+/).map(function(s){return s.replace(/^\d+[\.\)]\s*/,'').trim();}).filter(Boolean);
   var stepsHtml=steps.length?'<ol class="steps-list">'+steps.map(function(s){return'<li>'+esc(s)+'</li>';}).join('')+'</ol>':'<p class="recipe-detail-body" style="color:var(--charcoal-light)">'+t('recipe.noSteps')+'</p>';
   // Meta compatta su una riga + chips essenziali
   var diffMap={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'};
   var meta=[];
-  if(r.tempo)meta.push('&#x23F1; '+esc(r.tempo));
+  if(d.tempo)meta.push('&#x23F1; '+esc(d.tempo));
   if(r.difficolta)meta.push((diffMap[r.difficolta]||'')+' '+esc(diffLabel(r.difficolta)));
   if(r.addedBy)meta.push(t('recipe.by',{name:esc(r.addedBy)}));
   var modalTags=(r.tags||[]).filter(function(t){return t!=='da-foto';}).slice(0,4);
@@ -1590,18 +1678,20 @@ function renderRecipeModal(r,portions){
   var photoHtml=fotoUrl?'<img src="'+esc(fotoUrl)+'" style="width:calc(100% + 40px);height:200px;object-fit:cover;margin:-20px -20px 16px -20px;display:block;border-radius:22px 22px 0 0" onerror="this.style.display=\'none\'">':'';
   var linkUrl=safeUrl(r.link);
   var nutri=(function(){var n=calcNutrition(r,portions);return n.coverage>=0.5&&n.kcal>0?'<div class="nutri-bar"><span class="nutri-kcal">&#x1F525; ~'+n.kcal+' kcal</span><span>'+n.p+'g '+t('nutri.prot')+'</span><span>'+n.c+'g '+t('nutri.carb')+'</span><span>'+n.f+'g '+t('nutri.fat')+'</span></div>':'';})();
-  var rid=safeId(r.id),fi=fonteInfo(r);
+  var rid=safeId(r.id),fi=fonteInfo(r),trRow=trSwitchHTML(r,d,pending);
   document.getElementById('modal-body').innerHTML=
     photoHtml+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;padding-right:40px"><h2 style="flex:1;margin:0">'+esc(r.nome)+'</h2><button id="fav-heart-btn" class="fav-heart" aria-pressed="'+(userFavorites[r.id]?'true':'false')+'" aria-label="'+esc(t('aria.toggleFav'))+'" onclick="toggleFavorite(\''+rid+'\',event)">'+(userFavorites[r.id]?'❤️':'♡')+'</button><span class="tag tag-'+fi.cls+'" style="margin-top:4px">'+fi.long+'</span></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;padding-right:40px"><h2 style="flex:1;margin:0">'+esc(d.nome)+'</h2><button id="fav-heart-btn" class="fav-heart" aria-pressed="'+(userFavorites[r.id]?'true':'false')+'" aria-label="'+esc(t('aria.toggleFav'))+'" onclick="toggleFavorite(\''+rid+'\',event)">'+(userFavorites[r.id]?'❤️':'♡')+'</button><span class="tag tag-'+fi.cls+'" style="margin-top:4px">'+fi.long+'</span></div>'+
     (meta.length?'<div class="recipe-meta" style="margin-bottom:8px">'+meta.map(function(m){return'<span>'+m+'</span>';}).join('')+'</div>':'')+
     (chips.length?'<div class="recipe-tags" style="margin-bottom:14px">'+chips.join('')+'</div>':'')+
+    trRow+
     '<div class="portions-bar" style="margin-bottom:10px"><span class="portions-label">&#x1F465; '+t('w.servings')+'</span><div class="portions-controls"><button class="portions-btn" aria-label="'+esc(t('aria.lessServings'))+'" onclick="changePortions(-1)">&minus;</button><span class="portions-num">'+portions+'</span><button class="portions-btn" aria-label="'+esc(t('aria.moreServings'))+'" onclick="changePortions(+1)">+</button></div></div>'+
     '<div class="modal-actions"><button class="btn btn-primary" onclick="openCookMode(\''+rid+'\')">&#x1F468;&#x200D;&#x1F373; '+t('recipe.cook')+'</button><button class="btn btn-outline" onclick="openShopAddModal(\''+rid+'\')">&#128722; '+t('recipe.shop')+'</button><button class="btn btn-outline" onclick="openExportModal(\''+rid+'\')">&#x1F4E4; '+t('recipe.send')+'</button></div>'+
     nutri+
+    (pending?'<div class="empty-state"><div class="spinner" style="margin:0 auto 10px"></div><p>'+t('tr.loading')+'</p></div>':
     '<h3 class="modal-section-title">'+t('w.ingredients')+' <span class="modal-section-sub">'+tn('recipe.forServings',portions)+'</span></h3><ul class="ingredients-list">'+ings+'</ul>'+
     '<h3 class="modal-section-title">'+t('lbl.method')+'</h3>'+stepsHtml+
-    (r.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+esc(r.note)+'</div>':'')+
+    (d.note?'<div style="margin-top:16px;padding:12px;background:var(--terracotta-pale);border-radius:var(--radius-sm);font-size:13px;color:var(--charcoal-mid)">&#x1F4DD; '+esc(d.note)+'</div>':''))+
     '<div style="margin-top:22px;padding-top:14px;border-top:0.5px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
     (linkUrl?'<a href="'+esc(linkUrl)+'" target="_blank" rel="noopener" class="btn btn-outline btn-sm" style="text-decoration:none">&#x1F517; '+t('lbl.source')+'</a>':'')+
     (canEdit(r)?'<button class="btn btn-outline btn-sm" onclick="openEditRecipe(\''+rid+'\')">&#9998; '+t('btn.edit')+'</button>':'')+
@@ -1644,13 +1734,13 @@ window.closeRecipeModal=function(){document.getElementById('recipe-modal').style
 var cookSteps=[],cookIdx=0,cookRecipe=null,cookWakeLock=null,cookTimerInt=null,cookTimerEnd=null;
 window.openCookMode=function(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
-  cookRecipe=r;
-  cookSteps=(r.procedimento||'').split(/\n+/).map(function(s){return s.replace(/^\d+[\.\)]\s*/,'').trim();}).filter(Boolean);
+  cookRecipe=r;var d=trView(r);
+  cookSteps=(d.procedimento||'').split(/\n+/).map(function(s){return s.replace(/^\d+[\.\)]\s*/,'').trim();}).filter(Boolean);
   if(!cookSteps.length)cookSteps=[t('cook.noSteps')];
   cookIdx=0;
-  document.getElementById('cook-title').textContent=r.nome;
+  document.getElementById('cook-title').textContent=d.nome;
   var scale=(id===currentRecipeId?currentPortions:parseInt(r.porzioni)||4)/(parseInt(r.porzioni)||4);
-  document.getElementById('cook-ings-list').innerHTML=(r.ingredienti||[]).map(function(i){return'<li>'+esc(fmtIng(i,scale))+'</li>';}).join('')||'<li>'+t('cook.noIngs')+'</li>';
+  document.getElementById('cook-ings-list').innerHTML=(d.ingredienti||[]).map(function(i){return'<li>'+esc(fmtIng(i,scale))+'</li>';}).join('')||'<li>'+t('cook.noIngs')+'</li>';
   renderCookStep();
   closeRecipeModal();
   document.getElementById('cook-mode').classList.add('open');
@@ -1724,28 +1814,30 @@ function stopCookTimer(ring){
 // ── EXPORT BIMBY/COOKIDOO/CONDIVISIONE ───────────────────────
 var exportRecipeId=null;
 function recipePlainText(r,portions){
+  // il testo segue la scheda: tradotto (titoli e unità nella lingua dell'app) oppure originale
+  var d=trView(r),L=d._tr?t:function(k){return I18N.it[k];};
   var base=parseInt(r.porzioni)||4;var p=portions||base;var scale=p/base;
-  var lines=[r.nome,''];
-  if(r.tempo)lines.push('Tempo: '+r.tempo);
-  lines.push('Porzioni: '+p,'','INGREDIENTI');
+  var lines=[d.nome,''];
+  if(d.tempo)lines.push(L('export.tTime')+': '+d.tempo);
+  lines.push(L('export.tServings')+': '+p,'',L('export.tIngredients'));
   var lastSez=null;
-  (r.ingredienti||[]).forEach(function(i){
+  (d.ingredienti||[]).forEach(function(i){
     if(i.sezione&&i.sezione!==lastSez){lastSez=i.sezione;lines.push('');lines.push(i.sezione.toUpperCase());}
-    lines.push('- '+fmtIng(i,scale,true));
+    lines.push('- '+fmtIng(i,scale,!d._tr));
   });
-  lines.push('','PREPARAZIONE');
+  lines.push('',L('export.tMethod'));
   var n=1;
-  (r.procedimento||'').split(/\n+/).forEach(function(s){
+  (d.procedimento||'').split(/\n+/).forEach(function(s){
     s=s.replace(/^\d+[\.\)]\s*/,'').trim();
     if(s){lines.push(n+'. '+s);n++;}
   });
-  if(r.note)lines.push('','Note: '+r.note);
+  if(d.note)lines.push('',L('export.tNotes')+': '+d.note);
   return lines.join('\n');
 }
 window.openExportModal=function(id){
   exportRecipeId=id;
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
-  document.getElementById('export-title').textContent=r.nome;
+  document.getElementById('export-title').textContent=trView(r).nome;
   document.getElementById('export-modal').style.display='flex';
 };
 window.exportCopy=function(){
@@ -1756,7 +1848,7 @@ window.exportCopy=function(){
 window.exportShare=function(){
   var r=recipes.find(function(x){return x.id===exportRecipeId;});if(!r)return;
   var text=recipePlainText(r,(exportRecipeId===currentRecipeId?currentPortions:null));
-  if(navigator.share){navigator.share({title:r.nome,text:text}).catch(function(){});}
+  if(navigator.share){navigator.share({title:trView(r).nome,text:text}).catch(function(){});}
   else{navigator.clipboard.writeText(text).then(function(){showToast(t('toast.copied'));}).catch(function(){alert(text);});}
 };
 window.deleteRecipe=function(id){
@@ -1765,16 +1857,20 @@ window.deleteRecipe=function(id){
   recipeRef(r).remove().catch(dbErr);closeRecipeModal();
 };
 // Riga ricetta nelle liste di scelta (planner, spesa)
-function pickCardHTML(r,fn){var fi=fonteInfo(r);return'<div class="recipe-card" style="margin-bottom:8px" onclick="'+fn+'(\''+safeId(r.id)+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+(r._priv?'&#128274; ':'')+esc(r.nome)+'</span><span class="tag tag-'+fi.cls+'">'+fi.short+'</span></div></div>';}
+function pickCardHTML(r,fn){var fi=fonteInfo(r);return'<div class="recipe-card" style="margin-bottom:8px" onclick="'+fn+'(\''+safeId(r.id)+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+(r._priv?'&#128274; ':'')+esc(recipeName(r))+'</span><span class="tag tag-'+fi.cls+'">'+fi.short+'</span></div></div>';}
 function showShopIngChecklist(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
   shopAddRecipeId=id;
   shopAddPortions=(id===currentRecipeId?currentPortions:parseInt(r.porzioni)||4);
-  document.getElementById('shop-add-title').textContent=r.nome;
-  renderShopAddChecklist();
-  document.getElementById('shop-add-step1').style.display='none';
-  document.getElementById('shop-add-step2').style.display='block';
-  document.getElementById('shop-add-modal').style.display='flex';
+  // dalla spesa la traduzione può non essere ancora scaricata (dalla scheda sì)
+  withTr(r,function(){
+    if(shopAddRecipeId!==id)return;
+    document.getElementById('shop-add-title').textContent=trView(r).nome;
+    renderShopAddChecklist();
+    document.getElementById('shop-add-step1').style.display='none';
+    document.getElementById('shop-add-step2').style.display='block';
+    document.getElementById('shop-add-modal').style.display='flex';
+  });
 }
 function renderShopAddChecklist(){
   var r=recipes.find(function(x){return x.id===shopAddRecipeId;});if(!r)return;
@@ -1784,8 +1880,8 @@ function renderShopAddChecklist(){
   document.getElementById('shop-add-portions-num').textContent=shopAddPortions;
   var checkedSet={};
   document.querySelectorAll('#shop-add-checks input[type=checkbox]').forEach(function(cb){if(cb.checked)checkedSet[cb.getAttribute('data-ing')]=true;});
-  var _sSez=null;
-  document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i){var out='';if(i.sezione&&i.sezione!==_sSez){_sSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+esc(i.sezione)+'</div>';}var label=fmtIng(i,scale);var q=(i.qty!=null?i.qty*scale:null);var isChecked=!!checkedSet[i.name];out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" '+(isChecked?'checked':'')+' data-ing="'+esc(i.name)+'" data-text="'+esc(shopTxt(i,scale))+'" data-unit="'+esc(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+esc(label)+'</span></label>';return out;}).join('');
+  var _sSez=null,dIng=trView(r).ingredienti||[];
+  document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i,j){var out='';if(i.sezione&&i.sezione!==_sSez){_sSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+esc((dIng[j]||i).sezione)+'</div>';}var label=fmtIng(dIng[j]||i,scale);var q=(i.qty!=null?i.qty*scale:null);var isChecked=!!checkedSet[i.name];out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" '+(isChecked?'checked':'')+' data-ing="'+esc(i.name)+'" data-text="'+esc(shopTxt(i,scale))+'" data-unit="'+esc(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+esc(label)+'</span></label>';return out;}).join('');
 }
 window.changeShopAddPortions=function(d){shopAddPortions=Math.max(1,shopAddPortions+d);renderShopAddChecklist();};
 window.openShopAddModal=function(id){
@@ -1799,7 +1895,7 @@ window.openShopAddModal=function(id){
 window.closeShopAddModal=function(){document.getElementById('shop-add-modal').style.display='none';};
 window.renderShopPickList=function(q){
   var nq=normTxt(q||'');
-  var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
+  var f=recipes.filter(function(r){return nameHit(r,nq);}).sort(byName);
   var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">'+t('pick.more',{n:f.length-80})+'</p>':'';
   document.getElementById('shop-add-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">'+t('pick.noRecipes')+'</p>':f.slice(0,80).map(function(r){return pickCardHTML(r,'showShopIngChecklist');}).join('')+extra;
 };
@@ -2130,13 +2226,13 @@ function renderPlannerWeek(){
 window.renderPickList=function(q){
   var nq=normTxt(q||'');
   if(!nq){
-    var favs=recipes.filter(function(r){return!!userFavorites[r.id];}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
+    var favs=recipes.filter(function(r){return!!userFavorites[r.id];}).sort(byName);
     var hint=favs.length?'':'<p style="font-size:13px;color:var(--charcoal-light);text-align:center;padding:12px 0">'+t('pick.noFavs')+'</p>';
     var head=favs.length?'<p style="font-size:11px;font-weight:600;color:var(--charcoal-mid);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">⭐ '+t('recipes.favourites')+'</p>':'';
     document.getElementById('pick-list').innerHTML=hint+head+favs.map(function(r){return pickCardHTML(r,'selectMeal');}).join('');
     return;
   }
-  var f=recipes.filter(function(r){return normTxt(r.nome).includes(nq);}).sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'it');});
+  var f=recipes.filter(function(r){return nameHit(r,nq);}).sort(byName);
   var extra=f.length>80?'<p style="text-align:center;color:var(--charcoal-light);font-size:12px;padding:8px 0">'+t('pick.more',{n:f.length-80})+'</p>':'';
   document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">'+t('pick.noRecipes')+'</p>':f.slice(0,80).map(function(r){return pickCardHTML(r,'selectMeal');}).join('')+extra;
 };
@@ -2164,11 +2260,16 @@ window.selectMeal=function(id){
   pickTarget.selectedId=id;
   // Show step 2 if recipe has ingredients
   if(ings.length){
-    document.getElementById('pick-step2-title').textContent=recipe.nome;
-    var existing=(planner[pickTarget.key]||{})[pickTarget.meal+'_skip']||[];
-    var _pSez=null;document.getElementById('pick-ing-checks').innerHTML=ings.map(function(i){var out='';if(i.sezione&&i.sezione!==_pSez){_pSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+esc(i.sezione)+'</div>';}var label=fmtIng(i,1);var checked=existing.indexOf(i.name)>=0;out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-name="'+esc(i.name)+'" '+(checked?'checked':'')+' style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+esc(label)+'</span></label>';return out;}).join('');
-    document.getElementById('pick-step1').style.display='none';
-    document.getElementById('pick-step2').style.display='block';
+    // la traduzione può non essere ancora scaricata: la lista compare appena c'è
+    withTr(recipe,function(){
+      if(!pickTarget||pickTarget.selectedId!==id)return;
+      var dIng=trView(recipe).ingredienti||[];
+      document.getElementById('pick-step2-title').textContent=trView(recipe).nome;
+      var existing=(planner[pickTarget.key]||{})[pickTarget.meal+'_skip']||[];
+      var _pSez=null;document.getElementById('pick-ing-checks').innerHTML=ings.map(function(i,j){var out='';if(i.sezione&&i.sezione!==_pSez){_pSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+esc((dIng[j]||i).sezione)+'</div>';}var label=fmtIng(dIng[j]||i,1);var checked=existing.indexOf(i.name)>=0;out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" data-name="'+esc(i.name)+'" '+(checked?'checked':'')+' style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+esc(label)+'</span></label>';return out;}).join('');
+      document.getElementById('pick-step1').style.display='none';
+      document.getElementById('pick-step2').style.display='block';
+    });
   }else{
     confirmMeal();
   }
@@ -2592,7 +2693,7 @@ function sourceLabel(s){
   if(s==='catalogo')return t('shop.srcCatalog');
   if(s==='Ingredienti (planner)')return t('shop.srcPlannerIngs');
   var m=/^(.*) \(\xd7(\d+) porz\.\)$/.exec(s);
-  return m?m[1]+' (\xd7'+m[2]+' '+t('w.servingsShort')+')':s;
+  return m?trNameIt(m[1])+' (\xd7'+m[2]+' '+t('w.servingsShort')+')':trNameIt(s);
 }
 function shopGroupHTML(g){
   var ids=g.ids.join(',');

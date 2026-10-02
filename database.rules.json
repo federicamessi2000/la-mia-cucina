@@ -23,6 +23,24 @@
       }
     },
 
+    "recipeTr": {
+      ".read": "auth != null",
+      "$lang": {
+        "$recipeId": {
+          ".write": "auth != null && auth.token.email === 'federicamessi2000@gmail.com'",
+          ".validate": "($lang === 'en' || $lang === 'de') && $recipeId.matches(/^[A-Za-z0-9_-]+$/) && $recipeId.length <= 40 && newData.child('src').isString() && newData.child('nome').isString() && newData.child('nome').val().length <= 300 && (!newData.child('procedimento').exists() || (newData.child('procedimento').isString() && newData.child('procedimento').val().length <= 30000)) && (!newData.child('note').exists() || (newData.child('note').isString() && newData.child('note').val().length <= 8000))"
+        }
+      }
+    },
+
+    "recipeTrIdx": {
+      ".read": "auth != null",
+      "$lang": {
+        ".write": "auth != null && auth.token.email === 'federicamessi2000@gmail.com'",
+        ".validate": "$lang === 'en' || $lang === 'de'"
+      }
+    },
+
     "bugReports": {
       ".read": "auth != null && auth.token.email === 'federicamessi2000@gmail.com'",
       "$reportId": {
