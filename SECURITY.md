@@ -35,6 +35,19 @@ opzionale. Per attivarlo:
    - `BACKUP_REPO_TOKEN`: un fine-grained PAT con permesso *Contents: read/write* sul repo di backup
 4. Il backup parte da solo ogni notte alle 03:00 (oppure lancialo a mano da Actions → Backup)
 
+## 2b. Traduzioni automatiche delle ricette
+
+Il workflow `.github/workflows/translate.yml` gira il 1° di ogni mese (o a mano da Actions) e
+traduce con Gemini le ricette condivise nuove o modificate (`.github/scripts/translate_recipes.py`).
+
+- Usa due secret del repo: `FIREBASE_SERVICE_ACCOUNT` (lo stesso JSON del backup) e
+  `GEMINI_API_KEY` (Google AI Studio → API key). Senza i secret il workflow salta senza errore.
+- Il database applica le regole come utente `translator-bot`: legge le ricette condivise
+  (non quelle "Solo per me") e può scrivere **solo** `recipeTr` e `recipeTrIdx`.
+- Testi delle ricette inviati a Gemini: sul piano gratuito Google può usarli per migliorare i suoi prodotti.
+- GitHub sospende i workflow programmati di un repo pubblico dopo 60 giorni senza commit
+  (manda un'email): si riattivano da Actions → il workflow → *Enable workflow*.
+
 ## 3. Dati personali nel repo
 
 - `firebase_import.py` conteneva un token di sessione Firebase di Federica (scaduto — durano
