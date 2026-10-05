@@ -1,4 +1,4 @@
-# La Mia Cucina
+# Al Dente
 
 App di ricette di famiglia, mobile-first — ricette condivise, planner dei pasti, lista della spesa intelligente, congelatore e modalità cucina passo-passo.
 

@@ -1,11 +1,11 @@
 {
-  "name": "La Mia Cucina",
-  "short_name": "Cucina",
+  "name": "Al Dente",
+  "short_name": "Al Dente",
   "description": "Ricette, planner pasti e lista della spesa",
   "start_url": "/la-mia-cucina/",
   "display": "standalone",
-  "background_color": "#FAF5EC",
-  "theme_color": "#FAF5EC",
+  "background_color": "#E8F1FA",
+  "theme_color": "#E8F1FA",
   "orientation": "portrait",
   "icons": [
     {
