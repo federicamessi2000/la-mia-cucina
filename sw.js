@@ -1,4 +1,4 @@
-var CACHE = 'cucina-v29';
+var CACHE = 'cucina-v30';
 var PRECACHE = ['./index.html', './i18n.js', './manifest.json', './icon-192.png', './icon-512.png'];
 // Librerie Firebase (versionate) e font Google: prese dalla cache se ci sono, così l'app si apre anche offline
 var CDN = /^https:\/\/(www\.gstatic\.com\/firebasejs\/|fonts\.googleapis\.com\/|fonts\.gstatic\.com\/)/;
