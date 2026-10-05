@@ -274,6 +274,12 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .extra-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
 .extra-chip{background:var(--sage-pale);color:var(--sage);font-size:11px;padding:3px 7px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;font-weight:600;}
 .extra-chip button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--sage);padding:0;line-height:1;opacity:0.7;}
+.cw-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px;}
+.cw-chips .extra-chip{font-size:12.5px;padding:5px 10px;}
+.cw-chips .extra-chip.cw-basic{background:var(--terracotta-pale);color:var(--terracotta);}
+.cw-chips .extra-chip.cw-basic button{color:var(--terracotta);}
+.cw-label{font-size:11px;font-weight:700;color:var(--charcoal-mid);text-transform:uppercase;letter-spacing:0.5px;margin:14px 0 4px;}
+.cw-link{background:none;border:none;padding:0 2px;font:inherit;font-size:12px;color:var(--terracotta);text-decoration:underline;cursor:pointer;}
 .extra-add-btn{background:none;border:1px dashed var(--border-mid);border-radius:var(--radius-sm);font-size:11px;color:var(--charcoal-light);font-family:var(--font-body);font-weight:600;padding:5px 9px;cursor:pointer;width:100%;text-align:left;transition:all .2s;}
 .extra-add-btn:active{border-color:var(--terracotta);color:var(--terracotta);}
 .ing-ac-inline{background:var(--warm-white);border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);margin-bottom:6px;overflow:hidden;}
@@ -699,6 +705,29 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   <div id="recipe-cat-items" style="flex:1;overflow-y:auto;padding:0 16px 24px"></div>
 </div>
 
+<!-- COSA CUCINO? -->
+<div id="cook-what-page" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:200;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 10px;background:var(--cream);border-bottom:0.5px solid var(--border);flex-shrink:0">
+    <button onclick="closeCookWhat()" aria-label="Indietro" data-i18n-aria="cook.prev" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--charcoal);padding:0 6px 0 0;line-height:1">&#8592;</button>
+    <span style="font-size:22px">&#127859;</span>
+    <h2 style="margin:0;font-size:17px;flex:1;font-weight:600" data-i18n="cw.title">Cosa cucino?</h2>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:12px 16px 24px">
+    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:6px;line-height:1.5" data-i18n="cw.help">Scrivi cosa hai in casa: in cima trovi le ricette a cui manca meno.</p>
+    <div class="cw-label" data-i18n="cw.have">Cosa ho in casa</div>
+    <div class="cw-chips" id="cw-items"></div>
+    <div style="display:flex;gap:8px">
+      <input class="pick-search" style="margin:0;flex:1" id="cw-input" type="text" list="cw-catalog" autocomplete="off" placeholder="Aggiungi un ingrediente&hellip;" data-i18n-ph="ph.cwAdd" onkeydown="if(event.key==='Enter'){event.preventDefault();addPantryItem();}">
+      <button class="btn btn-primary" onclick="addPantryItem()" aria-label="Aggiungi" data-i18n-aria="aria.add">+</button>
+    </div>
+    <datalist id="cw-catalog"></datalist>
+    <label style="display:flex;align-items:center;gap:8px;margin:12px 0 2px;font-size:13.5px;cursor:pointer"><input type="checkbox" id="cw-freezer" style="width:18px;height:18px;accent-color:var(--terracotta)" onchange="toggleCwFreezer(this.checked)"><span data-i18n="cw.useFreezer">Conta anche il freezer</span> <span id="cw-freezer-n" style="color:var(--charcoal-light);font-size:12px"></span></label>
+    <div class="cw-label" data-i18n="cw.basics">Sempre in casa</div>
+    <div class="cw-chips" id="cw-basics"></div>
+    <div id="cw-results"></div>
+  </div>
+</div>
+
 <!-- MODAL DETTAGLIO CATEGORIA -->
 <div class="modal-overlay" id="cat-detail-modal" style="display:none" onclick="if(event.target.id==='cat-detail-modal')document.getElementById('cat-detail-modal').style.display='none'">
   <div class="modal" role="dialog" aria-modal="true" style="max-height:82vh">
@@ -1057,6 +1086,7 @@ window.setLang=function(l){
   renderFamilySection();renderReportsEntry();
   renderRecipes();renderPlanner();renderShopWeekNav();renderShopping();renderFreezer();
   renderCatalog(document.getElementById('cat-search').value||'');
+  if(cwOpen())renderCookWhat();
 };
 function mealRecipe(entry,meal){
   var id=entry[meal+'_id'];
@@ -1411,7 +1441,7 @@ auth.onAuthStateChanged(function(user){
     if(_pubRecipesRef){_pubRecipesRef.off();_pubRecipesRef=null;}
     recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};loadTrIdx();
     // anche planner, spesa, freezer e preferiti: chi entra dopo non deve vedere quelli di prima
-    planner={};shopping=[];freezer=[];userFavorites={};familyCode=null;userCatOrder=CATS.map(function(_,i){return i;});bugReports=[];
+    planner={};shopping=[];freezer=[];userFavorites={};pantry=cwDefaultPantry();familyCode=null;userCatOrder=CATS.map(function(_,i){return i;});bugReports=[];
     renderPlanner();renderShopping();renderFreezer();renderRecipes();renderReportsEntry();
     document.getElementById('app-screen').style.display='none';
     document.getElementById('login-screen').style.display='flex';
@@ -1472,7 +1502,8 @@ function initPrivate(){
   db.ref('users/'+uid+'/shopPlanner').remove(); // pulizia vecchio sistema a due ref
   track('familyCode').on('value',function(snap){familyCode=snap.val()||null;setupShopListener();renderFamilySection();});
   track('favorites').on('value',function(snap){userFavorites=snap.exists()?snap.val():{};renderRecipes();});
-  track('freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();});
+  track('freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();if(cwOpen())renderCookWhat();});
+  track('pantry').on('value',function(snap){var v=snap.val()||{};pantry={items:v.items||[],basics:v.basics||CW_BASICS.slice(),freezer:v.freezer!==false};if(cwOpen())renderCookWhat();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){
     if(snap.exists()){
       var saved=snap.val();
@@ -1637,6 +1668,7 @@ function renderRecipeHome(){
   }
   var html=warn+'<div class="cat-grid">';
   var nFav=recipes.filter(function(r){return!!userFavorites[r.id];}).length;
+  html+='<div class="cat-card" onclick="openCookWhat()"><div class="cat-card-emoji">🍳</div><div class="cat-card-name">'+t('cw.title')+'</div><div class="cat-card-count">'+t('cw.cardSub')+'</div></div>';
   if(nFav)html+='<div class="cat-card" onclick="openRecipeCat(\'__preferiti\')"><div class="cat-card-emoji">❤️</div><div class="cat-card-name">'+t('recipes.favourites')+'</div><div class="cat-card-count">'+tn('recipes.count',nFav)+'</div></div>';
   html+='<div class="cat-card" onclick="openRecipeCat(\'__all\')"><div class="cat-card-emoji">📚</div><div class="cat-card-name">'+t('recipes.all')+'</div><div class="cat-card-count">'+tn('recipes.count',recipes.length)+'</div></div>';
   Object.keys(RECIPE_CAT_EMOJI).forEach(function(cat){
@@ -1751,6 +1783,7 @@ document.addEventListener('keydown',function(e){
     if(cm&&cm.classList.contains('open')){closeCookMode();return;}
     var ov=Array.prototype.filter.call(document.querySelectorAll('.modal-overlay'),function(o){return o.style.display==='flex';});
     if(ov.length){ov[ov.length-1].style.display='none';return;}
+    if(cwOpen()){closeCookWhat();return;}
     var cp=document.getElementById('recipe-cat-page');
     if(cp&&cp.style.display==='flex')cp.style.display='none';
     return;
@@ -1909,11 +1942,13 @@ function renderShopAddChecklist(){
   document.getElementById('shop-add-portions-num').textContent=shopAddPortions;
   var checkedSet={};
   document.querySelectorAll('#shop-add-checks input[type=checkbox]').forEach(function(cb){if(cb.checked)checkedSet[cb.getAttribute('data-ing')]=true;});
-  var _sSez=null,dIng=trView(r).ingredienti||[];
-  document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i,j){var out='';if(i.sezione&&i.sezione!==_sSez){_sSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+esc((dIng[j]||i).sezione)+'</div>';}var label=fmtIng(dIng[j]||i,scale);var q=(i.qty!=null?i.qty*scale:null);var isChecked=!!checkedSet[i.name];out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" '+(isChecked?'checked':'')+' data-ing="'+esc(i.name)+'" data-text="'+esc(shopTxt(i,scale))+'" data-unit="'+esc(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+esc(label)+'</span></label>';return out;}).join('');
+  var _sSez=null,dIng=trView(r).ingredienti||[],pre=_shopAddPrecheck;_shopAddPrecheck=null;
+  document.getElementById('shop-add-checks').innerHTML=(r.ingredienti||[]).map(function(i,j){var out='';if(i.sezione&&i.sezione!==_sSez){_sSez=i.sezione;out+='<div style="font-size:11px;font-weight:700;color:var(--terracotta);text-transform:uppercase;letter-spacing:0.5px;padding:8px 0 2px;border-bottom:1px solid var(--terracotta);margin-top:6px">'+esc((dIng[j]||i).sezione)+'</div>';}var label=fmtIng(dIng[j]||i,scale);var q=(i.qty!=null?i.qty*scale:null);var isChecked=!!checkedSet[i.name]||!!(pre&&pre[i.name]);out+='<label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);cursor:pointer"><input type="checkbox" '+(isChecked?'checked':'')+' data-ing="'+esc(i.name)+'" data-text="'+esc(shopTxt(i,scale))+'" data-unit="'+esc(i.unit||'')+'" data-qty="'+(q!=null?q:'')+'" style="width:18px;height:18px;accent-color:var(--terracotta);flex-shrink:0"><span style="font-size:14px">'+esc(label)+'</span></label>';return out;}).join('');
 }
 window.changeShopAddPortions=function(d){shopAddPortions=Math.max(1,shopAddPortions+d);renderShopAddChecklist();};
-window.openShopAddModal=function(id){
+var _shopAddPrecheck=null;
+window.openShopAddModal=function(id,pre){
+  _shopAddPrecheck=pre||null;
   document.getElementById('shop-add-step1').style.display='block';
   document.getElementById('shop-add-step2').style.display='none';
   document.getElementById('shop-add-search').value='';
@@ -3165,6 +3200,99 @@ window.deleteFreezerItem=function(){
   db.ref('users/'+currentUser.uid+'/freezer/'+freezerEditId).remove().catch(dbErr);
   closeFreezerModal();
 };
+// ── COSA CUCINO? ──────────────────────────────────────────────
+// "Cosa ho in casa" (più il freezer e le cose che ci sono sempre) -> le ricette a cui manca meno, in cima.
+// La dispensa sta nell'account (users/<uid>/pantry), privata come planner e spesa.
+var CW_BASICS=['sale','pepe','acqua','olio','aceto','zucchero','farina'];
+var CW_BASIC_WORDS={sale:['salt','salz'],pepe:['pepper','pfeffer'],acqua:['water','wasser'],olio:['oil','öl','olivenöl'],aceto:['vinegar','essig'],zucchero:['sugar','zucker'],farina:['flour','mehl']};
+function cwDefaultPantry(){return{items:[],basics:CW_BASICS.slice(),freezer:true};}
+var pantry=cwDefaultPantry(),_cwLast=[],_cwListLang=null;
+var _CW_STOP={di:1,del:1,della:1,dello:1,dei:1,degli:1,delle:1,e:1,ed:1,con:1,per:1,a:1,al:1,alla:1,allo:1,ai:1,il:1,lo:1,la:1,le:1,i:1,gli:1,un:1,una:1,uno:1,da:1,in:1,q:1,b:1,qb:1,
+  and:1,of:1,the:1,with:1,und:1,mit:1,der:1,die:1,das:1,von:1};
+// parole "radice": minuscole, senza accenti, senza l'ultima vocale (pomodoro/pomodori, uovo/uova)
+function cwStems(s){return normTxt(s).replace(/[^a-z0-9ß ]+/g,' ').split(/\s+/).filter(function(w){return w&&!_CW_STOP[w];}).map(function(w){return w.length>3?w.replace(/[aeio]$/,''):w;});}
+function cwSub(a,b){return a.length>0&&a.every(function(w){return b.indexOf(w)>=0;});}
+function cwHas(stems,list){return list.some(function(p){return cwSub(p,stems)||cwSub(stems,p);});}
+// una voce della dispensa vale anche col nome inglese o tedesco del catalogo (ricette scritte in quelle lingue)
+function cwPhrases(name){
+  var out=[cwStems(name)],k=String(name).toLowerCase().trim(),x=null;
+  Object.keys(CATALOG_I18N).some(function(c){if(c.toLowerCase()===k){x=CATALOG_I18N[c];return true;}return false;});
+  if(x){out.push(cwStems(x.en));out.push(cwStems(x.de));}
+  (CW_BASIC_WORDS[k]||[]).forEach(function(w){out.push(cwStems(w));});
+  return out.filter(function(p){return p.length;});
+}
+function cwOpen(){var p=document.getElementById('cook-what-page');return!!p&&p.style.display==='flex';}
+window.openCookWhat=function(){document.getElementById('cook-what-page').style.display='flex';renderCookWhat();};
+window.closeCookWhat=function(){document.getElementById('cook-what-page').style.display='none';};
+function savePantry(){if(currentUser)db.ref('users/'+currentUser.uid+'/pantry').set({items:pantry.items,basics:pantry.basics,freezer:pantry.freezer}).catch(dbErr);}
+// dal catalogo si salva il nome italiano (come nella spesa); il resto come è scritto
+window.addPantryItem=function(){
+  var inp=document.getElementById('cw-input'),v=(inp.value||'').trim();if(!v)return;
+  var c=CATALOG_SEED.find(function(x){return normTxt(x[0])===normTxt(v)||normTxt(ingLabel(x[0]))===normTxt(v);});
+  var name=c?c[0]:v;
+  if(!pantry.items.some(function(n){return normTxt(n)===normTxt(name);}))pantry.items.push(name);
+  inp.value='';savePantry();renderCookWhat();
+};
+window.removePantryItem=function(i){pantry.items.splice(i,1);savePantry();renderCookWhat();};
+window.clearPantry=function(){pantry.items=[];savePantry();renderCookWhat();};
+window.removeBasic=function(i){pantry.basics.splice(i,1);savePantry();renderCookWhat();};
+window.resetBasics=function(){pantry.basics=CW_BASICS.slice();savePantry();renderCookWhat();};
+window.toggleCwFreezer=function(on){pantry.freezer=!!on;savePantry();renderCookWhat();};
+function cwRank(){
+  var have=[],basic=[];
+  pantry.items.forEach(function(n){have=have.concat(cwPhrases(n));});
+  if(pantry.freezer)freezer.forEach(function(f){if(f.name)have=have.concat(cwPhrases(f.name));});
+  if(!have.length)return null;
+  pantry.basics.forEach(function(n){basic=basic.concat(cwPhrases(n));});
+  var res=[];
+  recipes.forEach(function(r){
+    var used=0,owned=[],missing=[];
+    (r.ingredienti||[]).forEach(function(i){
+      var n=typeof i==='string'?i:(i&&i.name)||'',st=cwStems(n);
+      if(!st.length)return;
+      if(cwHas(st,have)){used++;owned.push(n);}
+      else if(cwHas(st,basic))owned.push(n);
+      else missing.push(n);
+    });
+    if(used)res.push({r:r,owned:owned,missing:missing});
+  });
+  res.sort(function(a,b){return a.missing.length-b.missing.length||b.owned.length-a.owned.length||byName(a.r,b.r);});
+  return res.slice(0,60);
+}
+function cwRowHTML(x){
+  var r=x.r,rid=safeId(r.id),emoji=RECIPE_CAT_EMOJI[r.categoria]||'\u{1F37D}️',n=x.missing.length;
+  var meta=n?t('cw.haveN',{n:x.owned.length,total:x.owned.length+n})+' \xb7 '+t('cw.missing',{list:esc(x.missing.slice(0,4).map(ingLabel).join(', '))+(n>4?'…':'')}):t('cw.all');
+  return'<div class="recipe-list-item" onclick="openRecipe(\''+rid+'\')"><span class="recipe-li-emoji">'+emoji+'</span>'+
+    '<div class="recipe-li-main"><span class="recipe-li-name">'+(r._priv?'&#128274; ':'')+esc(recipeName(r))+'</span><span class="recipe-li-meta">'+meta+'</span></div>'+
+    (n?'<button class="btn btn-outline btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();cwToShop(\''+rid+'\')">+ '+t('recipe.shop')+'</button>':'')+'</div>';
+}
+// + Spesa: la solita finestra "aggiungi alla spesa", con già spuntato quello che hai
+window.cwToShop=function(id){
+  var x=_cwLast.find(function(y){return y.r.id===id;}),pre={};
+  if(x)x.owned.forEach(function(n){pre[n]=true;});
+  openShopAddModal(id,pre);
+};
+function renderCookWhat(){
+  if(!document.getElementById('cook-what-page'))return;
+  if(_cwListLang!==LANG){
+    _cwListLang=LANG;
+    document.getElementById('cw-catalog').innerHTML=CATALOG_SEED.map(function(c){return'<option value="'+esc(ingLabel(c[0]))+'">';}).join('');
+  }
+  document.getElementById('cw-items').innerHTML=pantry.items.map(function(n,i){
+    return'<span class="extra-chip">'+esc(ingLabel(n))+'<button aria-label="'+esc(t('aria.cwRemove',{name:ingLabel(n)}))+'" onclick="removePantryItem('+i+')">×</button></span>';
+  }).join('')+(pantry.items.length?'<button class="cw-link" onclick="clearPantry()">'+t('cw.clear')+'</button>':'');
+  var std=pantry.basics.length===CW_BASICS.length&&CW_BASICS.every(function(b,i){return pantry.basics[i]===b;});
+  document.getElementById('cw-basics').innerHTML=pantry.basics.map(function(n,i){
+    return'<span class="extra-chip cw-basic">'+esc(ingLabel(n))+'<button aria-label="'+esc(t('aria.cwRemove',{name:ingLabel(n)}))+'" onclick="removeBasic('+i+')">×</button></span>';
+  }).join('')+(std?'':'<button class="cw-link" onclick="resetBasics()">'+t('cw.reset')+'</button>');
+  document.getElementById('cw-freezer').checked=!!pantry.freezer;
+  document.getElementById('cw-freezer-n').textContent=freezer.length?'('+tn('frz.count',freezer.length)+')':'';
+  var res=cwRank(),el=document.getElementById('cw-results');
+  _cwLast=res||[];
+  if(res===null)el.innerHTML='<div class="empty-state" style="padding:24px 0"><p>'+t('cw.empty')+'</p></div>';
+  else if(!res.length)el.innerHTML='<div class="empty-state" style="padding:24px 0"><p>'+t('cw.none')+'</p></div>';
+  else el.innerHTML='<div class="cw-label">'+tn('recipes.count',res.length)+'</div>'+res.map(cwRowHTML).join('');
+}
 // lingua all'avvio: nomi di date e testi fissi della pagina
 buildDateNames();applyI18n(document);renderLangSwitch();refreshFormTitles();renderPlannerViewBtn();
 </script>
