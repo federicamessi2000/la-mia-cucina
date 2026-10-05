@@ -1,4 +1,6 @@
-"""Traduce in inglese e tedesco (svizzero) le ricette condivise nuove o modificate, con Gemini.
+"""Traduce con Gemini le ricette condivise nuove o modificate nelle altre due lingue dell'app:
+una ricetta italiana in inglese e tedesco (svizzero), una tedesca in italiano e inglese, una inglese
+in italiano e tedesco. La lingua della ricetta la riconosce Gemini.
 
 Gira una volta al mese su GitHub (.github/workflows/translate.yml) e si può lanciare a mano.
 Scrive solo recipeTr/<lingua>/<id> e recipeTrIdx/<lingua>: le ricette non vengono mai toccate.
@@ -20,7 +22,7 @@ import urllib.request
 
 DB_URL = 'https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app'
 GEMINI = 'https://generativelanguage.googleapis.com/v1beta'
-LANGS = ('en', 'de')
+LANGS = ('it', 'en', 'de')
 BATCH_CHARS = 7000  # testo italiano per richiesta
 BATCH_MAX = 6  # ricette per richiesta
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -118,14 +120,14 @@ def _lines(s):
     return [x for x in str(s).split('\n') if x.strip()]
 
 
-def check(it, tr):
-    """Errori di una traduzione (lista vuota = va bene)."""
+def check(orig, tr, source='it'):
+    """Errori di una traduzione (lista vuota = va bene). orig è il testo originale, nella lingua source."""
     if not isinstance(tr, dict):
         return ['missing']
     errs = []
-    if set(tr) != set(it):
-        errs.append('keys %s, expected %s' % (sorted(tr), sorted(it)))
-    for k, v in it.items():
+    if set(tr) != set(orig):
+        errs.append('keys %s, expected %s' % (sorted(tr), sorted(orig)))
+    for k, v in orig.items():
         t = tr.get(k)
         if k == 'ing':
             if not isinstance(t, list) or len(t) != len(v):
@@ -142,8 +144,11 @@ def check(it, tr):
             continue
         if k == 'procedimento' and len(_lines(v)) != len(_lines(t)):
             errs.append('procedimento must keep %d lines (one per step)' % len(_lines(v)))
-        if k in ('procedimento', 'note') and len(IT_WORDS.findall(t)) >= 3:
-            errs.append('%s still looks Italian' % k)
+        if k in ('procedimento', 'note'):
+            if source == 'it' and len(IT_WORDS.findall(t)) >= 3:
+                errs.append('%s still looks Italian' % k)
+            elif source != 'it' and len(v) > 40 and t.strip() == v.strip():
+                errs.append('%s is not translated' % k)
     return errs
 
 
@@ -166,22 +171,26 @@ def load_catalog(path):
 
 def glossary_for(items, catalog):
     text = ' '.join(x.get('n', '') for it in items for x in it.get('ing', [])).lower()
-    lines = ['%s → %s | %s' % (k, en, de) for k, (en, de) in sorted(catalog.items()) if k.lower() in text]
+    lines = ['%s | %s | %s' % (k, en, de) for k, (en, de) in sorted(catalog.items())
+             if k.lower() in text or en.lower() in text or de.lower() in text]
     return '\n'.join(lines[:80])
 
 
-PROMPT = """Translate these Italian family recipes for a recipe app into British English ("en") and Swiss Standard German ("de").
-Return only JSON: an object with the same keys as the input (the recipe ids); each value is {"en": {...}, "de": {...}}.
-"en" and "de" have exactly the same keys as the Italian object. "ing" keeps the same number of entries in the same order, each with the same keys ("n", plus "s" only where the Italian has "s").
+PROMPT = """These are family recipes from a recipe app. Each recipe is written in Italian, English or German.
+For each recipe, recognise its language and translate it into the other two of: Italian ("it"), British English ("en"), Swiss Standard German ("de").
+Return only JSON: an object with the same keys as the input (the recipe ids); each value is {"lang": "<language of the recipe: it, en or de>", "<other language>": {...}, "<other language>": {...}}.
+For example an Italian recipe gives {"lang": "it", "en": {...}, "de": {...}}, a German one {"lang": "de", "it": {...}, "en": {...}}.
+Each translation has exactly the same keys as the recipe object. "ing" keeps the same number of entries in the same order, each with the same keys ("n", plus "s" only where the original has "s").
 
 Rules:
 - Translate everything: the name, every step, the notes (completely, never summarised), every ingredient name and section heading, and time/servings texts.
-- "procedimento": exactly the same lines, one translated line per Italian line, with the same numbering ("1.", "2." ...) if there is one. Never merge or split lines.
+- "procedimento": exactly the same lines, one translated line per original line, with the same numbering ("1.", "2." ...) if there is one. Never merge or split lines.
 - Keep every number, quantity, temperature, time and unit as written (no conversions). Keep emojis, brand names and people's names.
+- Italian: natural Italian as in Italian cookbooks; steps in the infinitive ("Mescolare la farina con lo zucchero.").
 - English: British spelling and words (aubergine, courgette, coriander, plain flour, caster sugar, icing sugar, double cream, bicarbonate of soda, hob, tin, grill, frying pan). Steps in the imperative.
 - German: Swiss Standard German as in Swiss cookbooks (Betty Bossi). Always "ss", never "ß". Swiss words: Rahm, Halbrahm, Poulet, Peperoni (bell peppers), Zucchetti, Glace, Teigwaren, Backofen, Backpapier, Springform, Paniermehl, Kartoffelstock. Steps in the infinitive style ("Mehl und Zucker mischen.").
 - Keep well-known Italian dish names (Tiramisù, Risotto, Lasagne, Gnocchi, Focaccia, Panna cotta, Carbonara, Pesto, Ossobuco ...) and translate the descriptive parts ("Risotto ai funghi" → "Mushroom risotto" / "Pilzrisotto"). Keep names short.
-- Never add anything that is not in the Italian.
+- Never add anything that is not in the original.
 {glossary}
 Recipes:
 {recipes}
@@ -190,7 +199,7 @@ Recipes:
 
 def build_prompt(batch, catalog, errors=None):
     g = glossary_for([x['it'] for x in batch], catalog)
-    g = '\nUse these translations for matching ingredients (Italian → English | German):\n' + g + '\n' if g else ''
+    g = '\nUse these words for matching ingredients (Italian | English | German):\n' + g + '\n' if g else ''
     text = PROMPT.replace('{glossary}', g).replace(
         '{recipes}', json.dumps({x['id']: x['it'] for x in batch}, ensure_ascii=False, indent=1)
     )
@@ -324,7 +333,8 @@ def run(store, ask, catalog, max_requests, log=print):
         if not isinstance(r, dict) or not r.get('nome') or ingredients(r) is None:
             continue
         h = tr_hash(r)
-        if all((done[lang].get(rid) or {}).get('src') == h for lang in LANGS):
+        # una ricetta ha bisogno di due traduzioni (le lingue diverse dalla sua): se ci sono e sono valide, è fatta
+        if sum((done[lang].get(rid) or {}).get('src') == h for lang in LANGS) >= 2:
             continue
         todo.append({'id': rid, 'src': h, 'it': to_translate(r), 'at': r.get('addedAt') or 0})
     todo.sort(key=lambda x: -(x['at'] if isinstance(x['at'], (int, float)) else 0))  # prima le più nuove
@@ -344,9 +354,14 @@ def run(store, ask, catalog, max_requests, log=print):
         for x in batch:
             got = (res or {}).get(x['id']) if isinstance(res, dict) else None
             got = got if isinstance(got, dict) else {}
+            source = got.get('lang') if got.get('lang') in LANGS else None
+            targets = [lang for lang in LANGS if lang != source]
             if isinstance(got.get('de'), dict):
                 got['de'] = fix_de(got['de'])
-            errs = [lang + ': ' + e for lang in LANGS for e in check(x['it'], got.get(lang))]
+            if source:
+                errs = [lang + ': ' + e for lang in targets for e in check(x['it'], got.get(lang), source)]
+            else:
+                errs = ['"lang" must be it, en or de']
             if errs:
                 failed[x['id']] = errs
                 if x['id'] not in retried:  # un secondo tentativo, da sola e con gli errori da correggere
@@ -354,8 +369,11 @@ def run(store, ask, catalog, max_requests, log=print):
                     queue.append([x])
                 continue
             failed.pop(x['id'], None)
-            for lang in LANGS:
-                writes[lang][x['id']] = dict(got[lang], src=x['src'])
+            for lang in targets:
+                writes[lang][x['id']] = dict(got[lang], src=x['src'], **{'from': source})
+            # una traduzione vecchia nella lingua della ricetta stessa non serve più
+            if (done[source].get(x['id']) or {}).get('src') not in (None, x['src']):
+                writes[source][x['id']] = None
             ok += 1
         for lang in LANGS:
             if writes[lang]:

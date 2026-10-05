@@ -908,10 +908,26 @@ function catName(c){return c?tData('rcat.',c):'';}
 function shopCatName(c){return tData('scat.',c);}
 function frzCatName(c){return tData('fcat.',c);}
 function diffLabel(d){return tData('diff.',d);}
-function unitLabel(u){if(!u||LANG==='it')return u;var d=I18N[LANG]||{},s=d['unit.'+u];if(s==null)s=d['unit.'+String(u).toLowerCase()];return s!=null?s:u;}
+var _unitForeign=null;
+function unitLabel(u){
+  if(!u)return u;
+  if(!_unitForeign){
+    // etichette inglesi e tedesche delle unità -> chiave (es. "el" -> unit.cucchiaio)
+    _unitForeign={};
+    // prima le unità dei bottoni dell'app (al singolare: cucchiaio, bustina...), poi le altre
+    var pref=UNITS_LIST.concat(UNIT_CHIPS,FRZ_UNIT_CHIPS).map(function(u){return'unit.'+u;});
+    var keys=Object.keys(I18N.it).filter(function(k){return k.indexOf('unit.')===0;}).sort(function(a,b){var ia=pref.indexOf(a),ib=pref.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+    ['en','de'].forEach(function(l){keys.forEach(function(k){var v=String(I18N[l][k]).toLowerCase();if(v!==String(I18N.it[k]).toLowerCase()&&!_unitForeign[v])_unitForeign[v]=k;});});
+  }
+  var d=I18N[LANG]||{},lo=String(u).toLowerCase();
+  if(LANG==='it'){var fk=_unitForeign[lo];return fk?I18N.it[fk]:u;}
+  var s=d['unit.'+u];if(s==null)s=d['unit.'+lo];if(s==null&&_unitForeign[lo])s=d[_unitForeign[lo]];
+  return s!=null?s:u;
+}
 var _ingLabelMap=null;
 function ingLabel(name){
-  if(!name||LANG==='it')return name;
+  if(!name)return name;
+  if(LANG==='it'){var ki=String(name).toLowerCase().trim();return _trIng[ki]||name;}
   if(!_ingLabelMap){_ingLabelMap={};Object.keys(CATALOG_I18N).forEach(function(k){_ingLabelMap[k.toLowerCase()]=CATALOG_I18N[k];});}
   var k=String(name).toLowerCase().trim(),x=_ingLabelMap[k];
   return x&&x[LANG]?x[LANG]:(_trIng[k]||name);
@@ -932,7 +948,7 @@ function trSrc(r){
 function trHash(r){var s=trSrc(r),h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36);}
 function loadTrIdx(){
   _trIdx=null;_trIng={};_trCache={};_trPending={};_trSlow={};_trNameMap=null;
-  if(LANG==='it'||!currentUser)return;
+  if(!currentUser)return;
   var lang=LANG;
   db.ref('recipeTrIdx/'+lang).once('value').then(function(s){
     if(lang!==LANG||!currentUser)return;
@@ -950,14 +966,14 @@ function recipeName(r){
 }
 function byName(a,b){return recipeName(a).localeCompare(recipeName(b),LOCALE);}
 function nameHit(r,q){return normTxt(r.nome).includes(q)||(!!_trIdx&&normTxt(recipeName(r)).includes(q));}
-function trExpected(r){var x=r&&LANG!=='it'&&_trIdx?_trIdx[r.id]:null;return!!(x&&x[0]===String(r.nome||''));}
+function trExpected(r){var x=r&&_trIdx?_trIdx[r.id]:null;return!!(x&&x[0]===String(r.nome||''));}
 function trFresh(r){var tr=_trCache[r.id];return tr&&tr.src===trHash(r)?tr:null;}
 function trPending(r){return!_trShowOriginal&&trExpected(r)&&_trCache[r.id]===undefined&&!_trSlow[r.id];}
 // la ricetta da mostrare: copia con i testi tradotti (quantità, unità e dati restano quelli della ricetta)
 function trView(r){
-  if(!r||LANG==='it'||_trShowOriginal)return r;
+  if(!r||_trShowOriginal)return r;
   var tr=trFresh(r);if(!tr)return r;
-  var d=Object.assign({},r,{_tr:true,nome:tr.nome||r.nome}),ti=tr.ing||[];
+  var d=Object.assign({},r,{_tr:true,_from:tr.from||'it',nome:tr.nome||r.nome}),ti=tr.ing||[];
   ['tempo','porzioni','note','procedimento'].forEach(function(k){if(tr[k]&&r[k]!=null)d[k]=tr[k];});
   d.ingredienti=(r.ingredienti||[]).map(function(i,j){
     var x=ti[j]||{};
@@ -984,10 +1000,23 @@ window.toggleTrOriginal=function(){
   _trShowOriginal=!_trShowOriginal;
   var r=recipes.find(function(x){return x.id===currentRecipeId;});if(r)renderRecipeModal(r,currentPortions);
 };
+// lingua in cui è scritta una ricetta, stimata dalle parole più comuni (nel dubbio italiano)
+var _LANG_WORDS={
+  it:/\b(e|di|il|la|le|lo|gli|con|per|del|della|dei|un|una|che|al|alla|nel|poi|fino|mescolare|aggiungere|cuocere)\b/g,
+  en:/\b(and|the|with|of|to|for|until|into|then|add|mix|bake|cook|minutes)\b/g,
+  de:/\b(und|der|die|das|mit|für|den|ein|eine|zu|auf|im|dann|bis|minuten|beigeben|mischen|backen)\b/g
+};
+function detectLang(r){
+  var s=' '+[r.nome,r.procedimento,r.note].concat((r.ingredienti||[]).map(function(i){return typeof i==='string'?i:(i&&i.name)||'';})).join(' ').toLowerCase()+' ';
+  var best='it',n=0;
+  ['it','en','de'].forEach(function(l){var m=s.match(_LANG_WORDS[l]),c=m?m.length:0;if(c>n){n=c;best=l;}});
+  return best;
+}
 function trSwitchHTML(r,d,pending){
-  if(LANG==='it'||pending)return'';
+  if(pending)return'';
   var b=function(k){return'<button onclick="toggleTrOriginal()" style="background:none;border:none;padding:0;font:inherit;color:var(--terracotta);text-decoration:underline;cursor:pointer">'+t(k)+'</button>';};
-  var h=d._tr?'&#127760; '+t('tr.translatedFrom')+' &middot; '+b('tr.showOriginal'):_trShowOriginal&&trFresh(r)?'&#127760; '+b('tr.showTranslation'):t('tr.notYet');
+  var h=d._tr?'&#127760; '+t('tr.from.'+d._from)+' &middot; '+b('tr.showOriginal'):_trShowOriginal&&trFresh(r)?'&#127760; '+b('tr.showTranslation'):detectLang(r)!==LANG?t('tr.notYet'):'';
+  if(!h)return'';
   return'<div style="font-size:12.5px;color:var(--charcoal-light);margin:-4px 0 12px">'+h+'</div>';
 }
 // nome di ricetta salvato in italiano (es. la provenienza nella spesa) -> nome tradotto, se c'è
@@ -1815,7 +1844,7 @@ function stopCookTimer(ring){
 var exportRecipeId=null;
 function recipePlainText(r,portions){
   // il testo segue la scheda: tradotto (titoli e unità nella lingua dell'app) oppure originale
-  var d=trView(r),L=d._tr?t:function(k){return I18N.it[k];};
+  var d=trView(r),src=d._tr?null:I18N[detectLang(r)]||I18N.it,L=d._tr?t:function(k){return src[k];};
   var base=parseInt(r.porzioni)||4;var p=portions||base;var scale=p/base;
   var lines=[d.nome,''];
   if(d.tempo)lines.push(L('export.tTime')+': '+d.tempo);

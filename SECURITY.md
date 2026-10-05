@@ -38,7 +38,8 @@ opzionale. Per attivarlo:
 ## 2b. Traduzioni automatiche delle ricette
 
 Il workflow `.github/workflows/translate.yml` gira il 1° di ogni mese (o a mano da Actions) e
-traduce con Gemini le ricette condivise nuove o modificate (`.github/scripts/translate_recipes.py`).
+traduce con Gemini le ricette condivise nuove o modificate nelle altre due lingue: una ricetta
+italiana in inglese e tedesco, una tedesca o inglese anche in italiano (`.github/scripts/translate_recipes.py`).
 
 - Usa due secret del repo: `FIREBASE_SERVICE_ACCOUNT` (lo stesso JSON del backup) e
   `GEMINI_API_KEY` (Google AI Studio → API key). Senza i secret il workflow salta senza errore.
