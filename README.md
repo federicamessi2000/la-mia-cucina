@@ -13,6 +13,7 @@ App di ricette di famiglia, mobile-first — ricette condivise, planner dei past
 - **Planner** — pianificazione pranzo/cena per settimana o mese, privata per account, fino a 6 piatti per pasto (ognuno con le sue porzioni), extra e "fuori casa"
 - **Spesa** — si popola dal planner (ricordando ciò che hai già spuntato), da ricette o a mano; somma automaticamente le quantità (500 g + 1 kg → 1.5 kg); categorie ordinabili nell'ordine del tuo supermercato; condivisibile con il partner in tempo reale (codice famiglia)
 - **Congelatore** — inventario di cosa c'è in freezer, per categorie e date
+- **Cosa cucino?** — scrivi cosa hai in casa: con quello che c'è nel congelatore e le basi (sale, olio, farina…) l'app propone le ricette che puoi fare, prima quelle a cui manca meno; "+ Spesa" mette in lista ciò che manca
 - **Modalità cucina** — un passo alla volta a schermo intero, schermo sempre acceso, timer avviabili direttamente dai tempi scritti nei passi
 - **Bimby / Cookidoo** — esporta qualsiasi ricetta come testo pronto da incollare nelle *Ricette create* di Cookidoo, o condividila su WhatsApp
 - **Lingue** — app in italiano, inglese o tedesco (svizzero): segue la lingua del telefono e si cambia dal profilo; anche le ricette (scritte in una qualsiasi delle tre lingue) e il catalogo della spesa sono tradotti, con l'originale a un tocco
