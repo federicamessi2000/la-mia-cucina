@@ -47,7 +47,8 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{scroll-behavior:smooth;}
-body{font-family:var(--font-body);background-color:var(--cream);background-image:radial-gradient(circle,var(--dots) 1.6px,transparent 1.7px);background-size:28px 28px;color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;font-size:14.5px;line-height:1.45;}
+/* overflow-x:clip dove c'è (iOS 16+): con hidden, nell'app su iPhone la barra in alto scorre via invece di restare ferma */
+body{font-family:var(--font-body);background-color:var(--cream);background-image:radial-gradient(circle,var(--dots) 1.6px,transparent 1.7px);background-size:28px 28px;color:var(--charcoal);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;overflow-x:clip;font-size:14.5px;line-height:1.45;}
 #app-screen,#login-screen,#loading-screen{position:relative;z-index:1;}
 h1,h2,h3{font-family:var(--font-display);font-weight:600;letter-spacing:0;}
 #loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:18px;}
@@ -708,8 +709,8 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
 
 <!-- PAGINA LISTA RICETTE PER CATEGORIA -->
 <div id="recipe-cat-page" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:200;display:none;flex-direction:column">
-  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 10px;background:var(--cream);border-bottom:0.5px solid var(--border);flex-shrink:0">
-    <button onclick="document.getElementById('recipe-cat-page').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--charcoal);padding:0 6px 0 0;line-height:1">&#8592;</button>
+  <div style="display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 16px 10px;background:var(--cream);border-bottom:0.5px solid var(--border);flex-shrink:0">
+    <button class="back-btn" aria-label="Indietro" data-i18n-aria="cook.prev" onclick="document.getElementById('recipe-cat-page').style.display='none'">&#8592;</button>
     <span id="recipe-cat-emoji" style="font-size:22px"></span>
     <h2 style="margin:0;font-size:17px;flex:1;font-weight:600" id="recipe-cat-title"></h2>
     <span id="recipe-cat-count" style="font-size:13px;color:var(--charcoal-light)"></span>
@@ -723,8 +724,8 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
 
 <!-- COSA CUCINO? -->
 <div id="cook-what-page" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:200;flex-direction:column">
-  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px 10px;background:var(--cream);border-bottom:0.5px solid var(--border);flex-shrink:0">
-    <button onclick="closeCookWhat()" aria-label="Indietro" data-i18n-aria="cook.prev" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--charcoal);padding:0 6px 0 0;line-height:1">&#8592;</button>
+  <div style="display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 16px 10px;background:var(--cream);border-bottom:0.5px solid var(--border);flex-shrink:0">
+    <button class="back-btn" onclick="closeCookWhat()" aria-label="Indietro" data-i18n-aria="cook.prev">&#8592;</button>
     <span style="font-size:22px">&#127859;</span>
     <h2 style="margin:0;font-size:17px;flex:1;font-weight:600" data-i18n="cw.title">Cosa cucino?</h2>
   </div>
