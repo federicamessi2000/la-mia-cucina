@@ -694,6 +694,75 @@ test('offline: signing out removes the saved data from the phone', () => {
   authCb({ uid: 'friendUid', email: 'amica@gmail.com', displayName: 'Amica Test' });
 });
 
+test('family: with a family code the planner and the freezer are the family ones', () => {
+  fire('users/friendUid/familyCode', 'value', null, 'FAM234');
+  assert.strictEqual(run('refPath(plannerRef())'), 'families/FAM234/planner');
+  assert.strictEqual(run('refPath(freezerRef())'), 'families/FAM234/freezer');
+  assert(listeners.some(l => l.path === 'families/FAM234/planner' && l.ev === 'value'), 'listening to the family planner');
+  assert(listeners.some(l => l.path === 'families/FAM234/freezer' && l.ev === 'value'), 'listening to the family freezer');
+  fire('families/FAM234/planner', 'value', null, { '2026-10-14': { cena: 'Pizza', cena2: 'Insalata' } });
+  assert.strictEqual(run("planner['2026-10-14'].cena"), 'Pizza', 'the family menu is shown');
+  writes.length = 0;
+  run("quickClearMeal('2026-10-14','cena2')");
+  assert(writes.length && writes.every(w => w.path.startsWith('families/FAM234/planner/2026-10-14')), JSON.stringify(writes));
+  fire('families/FAM234/freezer', 'value', null, { fz1: { name: 'Ragù', qty: 2 } });
+  assert.strictEqual(run('freezer[0].name'), 'Ragù', 'the family freezer is shown');
+});
+
+test('family: joining fills only the empty family meals; same-name freezer items are not doubled', () => {
+  fire('users/friendUid/familyCode', 'value', null, null);  // back to personal
+  run("planner={'2026-10-12':{pranzo:'__dal_freezer',pranzo_freezer_id:'p1',pranzo_freezer_name:'Ragù',pranzo_porzioni:2},'2026-10-13':{cena:'Minestrone'},'2026-10-15':{extras:[{name:'pane'}]}}");
+  run("freezer=[{id:'p1',name:'Ragù',qty:2},{id:'p2',name:'Pesto',qty:1}]");
+  const up = run("familyMerge({'2026-10-13':{cena:'Pizza'}},{x9:{name:'ragu',qty:3}})");
+  assert.strictEqual(up['planner/2026-10-12'].pranzo, '__dal_freezer', 'my dish fills an empty day');
+  assert.strictEqual(up['planner/2026-10-12'].pranzo_freezer_id, 'x9', 'and points to the family Ragù');
+  assert.strictEqual(up['planner/2026-10-12'].pranzo_porzioni, 2);
+  assert(!('planner/2026-10-13' in up), "the family's dinner is not overwritten");
+  assert.strictEqual(JSON.stringify(up['planner/2026-10-15'].extras), '[{"name":"pane"}]', 'extras of an empty day come along');
+  assert.strictEqual(JSON.stringify(up['freezer/p2']), '{"name":"Pesto","qty":1}', 'a new item joins the family freezer');
+  assert(!('freezer/p1' in up), 'Ragù is already in the family freezer');
+});
+
+test('family: joining writes membership, then the merge, then the code; creating brings my planner and freezer', async () => {
+  run("planner={'2026-10-16':{cena:'Gnocchi'}}");
+  run("freezer=[{id:'p3',name:'Brodo',qty:1}]");
+  writes.length = 0;
+  el('family-join-input').value = 'joi345';
+  run('joinFamily()');
+  listeners.filter(l => l.path === 'families/JOI345/members' && l.ev === 'once:value').forEach(l => l.cb({ exists: () => true, val: () => ({ otherUid: {} }) }));
+  await new Promise(r => setTimeout(r, 20));
+  const iM = writes.findIndex(w => w.path === 'families/JOI345/members/friendUid');
+  const iU = writes.findIndex(w => w.op === 'update' && w.path === 'families/JOI345');
+  const iC = writes.findIndex(w => w.path === 'users/friendUid/familyCode' && w.v === 'JOI345');
+  assert(iM >= 0 && iU > iM && iC > iU, JSON.stringify(writes));
+  assert.strictEqual(writes[iU].v['planner/2026-10-16'].cena, 'Gnocchi');
+  assert.strictEqual(writes[iU].v['merged/friendUid'], true, 'the new member counts as merged');
+  assert.strictEqual(JSON.stringify(writes[iU].v['freezer/p3']), '{"name":"Brodo","qty":1}');
+
+  writes.length = 0;
+  run('createFamily()');
+  await new Promise(r => setTimeout(r, 20));
+  const seed = writes.find(w => w.op === 'update' && /^families\/[A-HJ-NP-Z2-9]{6}$/.test(w.path));
+  assert(seed && seed.v.planner['2026-10-16'].cena === 'Gnocchi' && seed.v.freezer.p3.name === 'Brodo', JSON.stringify(writes));
+  assert.strictEqual(seed.v['merged/friendUid'], true, 'the creator counts as merged');
+
+  fire('users/friendUid/familyCode', 'value', null, null);  // leaving: back to the personal ones
+  assert.strictEqual(run('refPath(plannerRef())'), 'users/friendUid/planner');
+  assert.strictEqual(run('refPath(freezerRef())'), 'users/friendUid/freezer');
+});
+
+test('family: an existing family member is merged once, at the first open of the new version', async () => {
+  const up = run("familyMerge({},{},{planner:{'2026-10-20':{pranzo:'Risotto'}},freezer:[{id:'q1',name:'Sugo',qty:1}]})");
+  assert.strictEqual(up['planner/2026-10-20'].pranzo, 'Risotto', "someone else's personal planner can be merged too");
+  assert.strictEqual(up['freezer/q1'].name, 'Sugo');
+  writes.length = 0;
+  fire('users/friendUid/familyCode', 'value', null, 'OLD567');
+  await new Promise(r => setTimeout(r, 20));
+  const u = writes.find(w => w.op === 'update' && w.path === 'families/OLD567');
+  assert(u && u.v['merged/friendUid'] === true, 'merged, and marked: ' + JSON.stringify(writes));
+  fire('users/friendUid/familyCode', 'value', null, null);
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);
