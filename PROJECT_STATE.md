@@ -1,7 +1,7 @@
 # Project State — Al Dente (ex La Mia Cucina)
 
 **Last updated:** 2026-10-07
-**Branch:** main · **Versione app:** 2026-10-07.7 (cache del service worker `cucina-v38`)
+**Branch:** main · **Versione app:** 2026-10-07.9 (cache del service worker `cucina-v40`)
 **Repo:** https://github.com/federicamessi2000/la-mia-cucina · **Live:** https://federicamessi2000.github.io/la-mia-cucina/
 **Regole Firebase:** https://console.firebase.google.com/project/la-mia-cucina-48a48/database/la-mia-cucina-48a48-default-rtdb/rules
 
@@ -15,6 +15,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 ### Funzioni
 - Ricette con tre visibilità: "Condivisa con tutti" (`recipes`), "Famiglia" (`families/<codice>/recipes`, c'è solo con un codice famiglia) e "Solo per me" (`users/<uid>/recipes`). Categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL. Modifica/elimina solo l'autore o gli amministratori (gli account di famiglia di Federica); le ricette "Famiglia" chiunque abbia quel codice famiglia, che ne può anche cambiare la visibilità
 - **Voti**: da 1 a 5 stelle a testa nella scheda della ricetta (la stessa stella di nuovo toglie il voto); media e numero di voti li vedono tutti, e negli elenchi c'è "★ 4,5". Dati in `ratings/<ricetta>/<uid>`
+- **Liste di ricette** (categorie, "Tutte", "Preferiti"): si ordinano per A–Z, tempo, numero di ingredienti, voto o data di aggiunta, nei due versi; chi non ha il dato va in fondo; l'ordine resta sul telefono (`lmc_recipe_sort`). Filtri: Veloce = tag o al massimo 30 minuti dal tempo scritto (`recipeMinutes()` legge "1 ora e 30", "1h30", "20-30'", "1 Std. 15 Min."…); Vegetariano e Vegano = tag oppure ingredienti e nome, con prudenza (brodo, dado e ragù senza "vegetale" contano come carne; nel dubbio la ricetta non compare: basta aggiungerle il tag); Senza glutine solo col tag; ⭐ 4+ stelle; 👤 Mie (private o aggiunte da me)
 - Aggiungi/modifica ricette (con categoria), parser "importa da testo"; due libri importati (fonte "Libro")
 - Planner mensile/settimanale, personale o di famiglia (fino a 6 piatti per pranzo/cena + extra), kcal stimate. Un tocco su un piatto apre la ricetta alle porzioni pianificate, con la riga "Nel planner: <giorno> · <pasto>" e "Cambia piatto"; ⇄ accanto alla ✕ cambia il piatto (settimana: ogni piatto; mese: il primo), ✕ lo toglie; "Oggi" torna alla settimana o al mese corrente. Fuori casa, freezer e liste di ingredienti al tocco aprono "cambia piatto"
 - **Cosa cucino?** (prima card in Ricette): ingredienti in casa + freezer + basi sempre presenti (sale, pepe, acqua, olio, aceto, zucchero, farina) → ricette ordinate per meno ingredienti mancanti; "+ Spesa" aggiunge quelli che mancano. Dispensa in `users/<uid>/pantry`
@@ -24,6 +25,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
   merge automatico unità (g/kg, ml/L); categorie ordinabili "a giro supermercato"; condivisione via testo.
   In famiglia due liste: "Famiglia" (condivisa) e "Solo mia" (privata, `users/<uid>/shopping`); ogni azione vale per la lista sullo schermo
 - Congelatore per categorie (di famiglia con un codice famiglia)
+- **Promemoria del congelatore**: la sera prima, alle 19 di Zurigo, una notifica con i piatti "dal freezer" di pranzo e cena del giorno dopo (planner personale o di famiglia), nella lingua dell'app. Si attiva a testa dal profilo, dall'app sulla schermata Home (iPhone con iOS 16.4+); l'iscrizione del telefono sta in `users/<uid>/push/<id>`. La manda il workflow "Promemoria congelatore" (`.github/workflows/freezer-reminder.yml` → `.github/scripts/freezer_reminder.py`, alle 17:03 e 18:03 UTC): una volta per sera (`reminderLog/<data>`), solo tra le 19 e le 22; le iscrizioni scadute si tolgono da sole; "Run workflow" con "force" manda subito, per provare (a tutti quelli che l'hanno attivato e hanno piatti dal freezer domani). Chi esce dall'account smette di riceverli su quel telefono. Segreti: `FIREBASE_SERVICE_ACCOUNT`, `VAPID_PRIVATE_KEY` (la chiave pubblica è in `index.html`)
 - **Famiglia** (codice nel profilo): condivide sempre spesa, planner e congelatore, più le ricette messe su "Famiglia". Chi entra porta i suoi piatti nei pasti ancora vuoti del planner di casa e il suo congelatore in quello di casa (lo stesso nome non raddoppia); le famiglie nate prima lo hanno fatto una volta, alla prima apertura (`families/<codice>/merged/<uid>`). Chi esce ritrova spesa, planner e congelatore personali, più una copia privata delle ricette di famiglia che ha aggiunto
 - **Senza rete**: l'app mostra gli ultimi dati salvati sul telefono (spesa, planner, congelatore, preferiti, dispensa) e tiene le modifiche fatte offline, che rimanda all'apertura successiva; uscendo dall'account il telefono li cancella
 - **Modalità cucina**: passo-passo full screen, wake lock, timer auto-rilevati
@@ -33,7 +35,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - **Design "Al Dente"**: parete chiara a puntini, contorni blu notte e ombre piene, blu/azzurro/giallo; Unbounded (titoli) + Montserrat (testi); emoji delle categorie su "prese" da arrampicata; dark mode automatica (parete blu notte); icona astratta (192, 512 e maskable)
 
 ### Test e pubblicazione
-- `tests/app.test.js` (55 test) e `tests/sw.test.js` (3): caricano `index.html` e `sw.js` in Node con un DOM e un Firebase finti; ogni scrittura viene solo registrata, niente arriva al database vero. In locale: `node tests/app.test.js`
+- `tests/app.test.js` (58 test) e `tests/sw.test.js` (5): caricano `index.html` e `sw.js` in Node con un DOM e un Firebase finti; ogni scrittura viene solo registrata, niente arriva al database vero. In locale: `node tests/app.test.js`
 - Workflow "Test e pubblicazione" (`.github/workflows/deploy.yml`): a ogni push su `main` gira i test e pubblica su GitHub Pages solo se passano (Pages con build_type "workflow")
 
 ### Traduzioni delle ricette
@@ -63,7 +65,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - iPhone, app dalla schermata Home: `body{overflow-x:clip}` (non solo `hidden`) perché la topbar sticky resti ferma; le pagine a schermo intero (lista di una categoria, "Cosa cucino?") lasciano lo spazio della barra di stato con `env(safe-area-inset-top)`
 
 ### Da tenere d'occhio / da fare
-- **Da fare: promemoria del congelatore.** Notifica la sera prima alle 19:00 (Zurigo) per i piatti "dal freezer" di pranzo e cena del giorno dopo; si attiva a testa dal profilo (app sulla schermata Home, iOS 16.4+); la manda un workflow GitHub giornaliero (cron alle 17 e alle 18 UTC, lo script controlla che a Zurigo siano le 19). La chiave privata VAPID va direttamente in un segreto GitHub, senza passare dalla chat
+- Nel profilo il testo "Il tuo planner è privato." non vale più per chi è in una famiglia (da correggere)
 - Chi esce da una famiglia e poi rientra nella stessa vede due volte le ricette che si era portato via (la copia privata e quella di famiglia)
-- GitHub spegne i workflow programmati di un repo pubblico dopo 60 giorni senza attività: il "Backup database" su GitHub è spento così (`disabled_inactivity`), e la traduzione mensile farebbe la stessa fine. Si riattivano da Actions → workflow → "Enable workflow"
+- GitHub spegne i workflow programmati di un repo pubblico dopo 60 giorni senza attività: il "Backup database" su GitHub è spento così (`disabled_inactivity`), e la traduzione mensile e il promemoria del congelatore farebbero la stessa fine. Si riattivano da Actions → workflow → "Enable workflow"
 - In futuro: import da link Instagram/TikTok (caption + AI tramite piccolo Worker)
