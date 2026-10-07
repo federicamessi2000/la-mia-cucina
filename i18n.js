@@ -460,7 +460,7 @@ var TEXTS={
  "unit.tazzine":["tazzine","espresso cups","Espressotassen"],
  "user.default":["Utente","User","Benutzer"],
  "user.language":["Lingua","Language","Sprache"],
- "user.note":["Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti o restare solo tua.<br>Il tuo planner è privato.","Every recipe you add can be shared with everyone or stay just yours.<br>Your planner is private.","Jedes Rezept, das du hinzufügst, kann mit allen geteilt werden oder nur dir gehören.<br>Dein Planer ist privat."],
+ "user.note":["Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti, con la tua famiglia o restare solo tua.<br>Planner, spesa e congelatore sono solo tuoi, o di tutta la famiglia se hai un codice famiglia.","Every recipe you add can be shared with everyone, with your family, or stay just yours.<br>Your planner, shopping list and freezer are yours alone, or shared with your whole family if you have a family code.","Jedes Rezept, das du hinzufügst, kann mit allen oder mit deiner Familie geteilt werden oder nur dir gehören.<br>Planer, Einkaufsliste und Gefrierfach gehören nur dir oder, mit einem Familiencode, der ganzen Familie."],
  "user.signOut":["Esci dall'account","Sign out","Abmelden"],
  "user.version":["Versione {v}","Version {v}","Version {v}"],
  "vis.fam":["Famiglia","Family","Familie"],

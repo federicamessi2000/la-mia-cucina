@@ -786,7 +786,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
       <div id="user-modal-avatar"></div>
       <div><div class="user-info-name" id="user-modal-name"></div><div class="user-info-email" id="user-modal-email"></div></div>
     </div>
-    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;" data-i18n-html="user.note">Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti o restare solo tua.<br>Il tuo planner è privato.</p>
+    <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;" data-i18n-html="user.note">Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti, con la tua famiglia o restare solo tua.<br>Planner, spesa e congelatore sono solo tuoi, o di tutta la famiglia se hai un codice famiglia.</p>
     <div id="family-section"></div>
     <div id="reminder-section"></div>
     <div id="reports-entry"></div>
@@ -1052,6 +1052,8 @@ function recipeScope(r){return r._fam?'fam':r._priv?'priv':'pub';}
 function recipePath(sc,id){return sc==='fam'?'families/'+familyCode+'/recipes/'+id:sc==='priv'?'users/'+currentUser.uid+'/recipes/'+id:'recipes/'+id;}
 function recipeRef(r){return db.ref(recipePath(recipeScope(r),r.id));}
 function recipeData(r){var d=Object.assign({},r);delete d.id;delete d._priv;delete d._fam;return d;}
+// JSON con le chiavi in ordine: per confrontare due ricette lette in momenti diversi
+function stableJSON(v){if(Array.isArray(v))return'['+v.map(stableJSON).join(',')+']';if(v&&typeof v==='object')return'{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+stableJSON(v[k]);}).join(',')+'}';return JSON.stringify(v);}
 // ── LINGUA ────────────────────────────────────────────────────
 // I testi sono in i18n.js. I dati salvati (categorie, unità, nomi del catalogo) restano in italiano:
 // qui si traducono solo per mostrarli, così chi usa lingue diverse condivide ricette, planner e spesa.
@@ -1546,8 +1548,16 @@ window.joinFamily=function(){
   db.ref('families/'+code+'/members').once('value',function(snap){
     if(!snap.exists()){alert(t('family.notFound'));return;}
     db.ref('families/'+code+'/members/'+uid).set({name:currentUser.displayName||currentUser.email||'',email:currentUser.email||''})
-      .then(function(){return Promise.all([db.ref('families/'+code+'/planner').once('value'),db.ref('families/'+code+'/freezer').once('value')]);})
-      .then(function(s){var up=familyMerge(s[0].val()||{},s[1].val()||{});up['merged/'+uid]=true;return db.ref('families/'+code).update(up);})
+      .then(function(){return Promise.all([db.ref('families/'+code+'/planner').once('value'),db.ref('families/'+code+'/freezer').once('value'),db.ref('families/'+code+'/recipes').once('value')]);})
+      .then(function(s){
+        var up=familyMerge(s[0].val()||{},s[1].val()||{});up['merged/'+uid]=true;
+        // rientro nella stessa famiglia: le copie private prese uscendo, se uguali alla ricetta di famiglia, non servono più
+        // (se nel frattempo le hai cambiate restano tutte e due: niente si perde)
+        var fam=s[2].val()||{},drop={};
+        recipes.forEach(function(r){if(r._priv&&fam[r.id]&&stableJSON(recipeData(r))===stableJSON(fam[r.id]))drop[r.id]=null;});
+        if(Object.keys(drop).length)db.ref('users/'+uid+'/recipes').update(drop).catch(dbErr);
+        return db.ref('families/'+code).update(up);
+      })
       .then(function(){return db.ref('users/'+uid+'/familyCode').set(code);}).catch(dbErr);
   },function(e){logErr('famiglia: '+(e&&(e.code||e.message)||e));alert(t('family.checkFailed'));});
 };

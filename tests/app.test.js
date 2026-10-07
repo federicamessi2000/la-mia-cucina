@@ -970,6 +970,32 @@ test('recipe lists: sort both ways with missing values last; quick, 4+ stars and
   run("setRecipeSort('name')");
 });
 
+test('family: rejoining the same family removes my private copies identical to the family recipe; edited ones stay', async () => {
+  fire('users/friendUid/familyCode', 'value', null, null);
+  fire('users/friendUid/recipes', 'child_added', 'rjSame', { nome: 'Pane di casa', ownerUid: 'friendUid', ingredienti: [{ qty: 500, unit: 'g', name: 'farina' }] });
+  fire('users/friendUid/recipes', 'child_added', 'rjEdited', { nome: 'Torta (la mia versione)', ownerUid: 'friendUid' });
+  fire('users/friendUid/recipes', 'child_added', 'rjOther', { nome: 'Solo mia', ownerUid: 'friendUid' });
+  const fam = { rjSame: { ingredienti: [{ name: 'farina', qty: 500, unit: 'g' }], ownerUid: 'friendUid', nome: 'Pane di casa' }, rjEdited: { nome: 'Torta', ownerUid: 'friendUid' } };
+  run(`(function(){var o=db.ref;db.ref=function(p){var r=o(p);if(p==='families/REJ234/recipes')r.once=function(){return Promise.resolve({exists:function(){return true;},val:function(){return ${JSON.stringify(fam)};}});};return r;};window._restoreRef=function(){db.ref=o;};})()`);
+  writes.length = 0;
+  el('family-join-input').value = 'rej234';
+  run('joinFamily()');
+  listeners.filter(l => l.path === 'families/REJ234/members' && l.ev === 'once:value').forEach(l => l.cb({ exists: () => true, val: () => ({ otherUid: {} }) }));
+  await flush(); await flush();
+  run('_restoreRef()');
+  const d = writes.find(w => w.op === 'update' && w.path === 'users/friendUid/recipes');
+  assert(d && d.v.rjSame === null, 'the identical copy goes (same content, keys in another order): ' + JSON.stringify(writes));
+  assert(!('rjEdited' in d.v) && !('rjOther' in d.v), 'an edited copy and my own recipes stay');
+  assert(writes.some(w => w.path === 'users/friendUid/familyCode' && w.v === 'REJ234'), 'and the join completes');
+  fire('users/friendUid/familyCode', 'value', null, null);
+});
+
+test('profile: the note is right with or without a family', () => {
+  const note = run("t('user.note')");
+  assert(note.includes('famiglia') && !note.includes('planner è privato'), note);
+  run("setLang('en')"); assert(run("t('user.note')").includes('family')); run("setLang('it')");
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);
