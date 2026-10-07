@@ -1,7 +1,7 @@
 # Project State — Al Dente (ex La Mia Cucina)
 
 **Last updated:** 2026-10-07
-**Branch:** main · **Versione app:** 2026-10-07.9 (cache del service worker `cucina-v40`)
+**Branch:** main · **Versione app:** 2026-10-07.10 (cache del service worker `cucina-v41`)
 **Repo:** https://github.com/federicamessi2000/la-mia-cucina · **Live:** https://federicamessi2000.github.io/la-mia-cucina/
 **Regole Firebase:** https://console.firebase.google.com/project/la-mia-cucina-48a48/database/la-mia-cucina-48a48-default-rtdb/rules
 
@@ -26,7 +26,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
   In famiglia due liste: "Famiglia" (condivisa) e "Solo mia" (privata, `users/<uid>/shopping`); ogni azione vale per la lista sullo schermo
 - Congelatore per categorie (di famiglia con un codice famiglia)
 - **Promemoria del congelatore**: la sera prima, alle 19 di Zurigo, una notifica con i piatti "dal freezer" di pranzo e cena del giorno dopo (planner personale o di famiglia), nella lingua dell'app. Si attiva a testa dal profilo, dall'app sulla schermata Home (iPhone con iOS 16.4+); l'iscrizione del telefono sta in `users/<uid>/push/<id>`. La manda il workflow "Promemoria congelatore" (`.github/workflows/freezer-reminder.yml` → `.github/scripts/freezer_reminder.py`, alle 17:03 e 18:03 UTC): una volta per sera (`reminderLog/<data>`), solo tra le 19 e le 22; le iscrizioni scadute si tolgono da sole; "Run workflow" con "force" manda subito, per provare (a tutti quelli che l'hanno attivato e hanno piatti dal freezer domani). Chi esce dall'account smette di riceverli su quel telefono. Segreti: `FIREBASE_SERVICE_ACCOUNT`, `VAPID_PRIVATE_KEY` (la chiave pubblica è in `index.html`)
-- **Famiglia** (codice nel profilo): condivide sempre spesa, planner e congelatore, più le ricette messe su "Famiglia". Chi entra porta i suoi piatti nei pasti ancora vuoti del planner di casa e il suo congelatore in quello di casa (lo stesso nome non raddoppia); le famiglie nate prima lo hanno fatto una volta, alla prima apertura (`families/<codice>/merged/<uid>`). Chi esce ritrova spesa, planner e congelatore personali, più una copia privata delle ricette di famiglia che ha aggiunto
+- **Famiglia** (codice nel profilo): condivide sempre spesa, planner e congelatore, più le ricette messe su "Famiglia". Chi entra porta i suoi piatti nei pasti ancora vuoti del planner di casa e il suo congelatore in quello di casa (lo stesso nome non raddoppia); le famiglie nate prima lo hanno fatto una volta, alla prima apertura (`families/<codice>/merged/<uid>`). Chi esce ritrova spesa, planner e congelatore personali, più una copia privata delle ricette di famiglia che ha aggiunto; se rientra nella stessa famiglia, le copie rimaste uguali a quelle di famiglia spariscono (quelle cambiate nel frattempo restano)
 - **Senza rete**: l'app mostra gli ultimi dati salvati sul telefono (spesa, planner, congelatore, preferiti, dispensa) e tiene le modifiche fatte offline, che rimanda all'apertura successiva; uscendo dall'account il telefono li cancella
 - **Modalità cucina**: passo-passo full screen, wake lock, timer auto-rilevati
 - **Export Bimby/Cookidoo**: testo formattato + guida per Ricette create
@@ -35,7 +35,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - **Design "Al Dente"**: parete chiara a puntini, contorni blu notte e ombre piene, blu/azzurro/giallo; Unbounded (titoli) + Montserrat (testi); emoji delle categorie su "prese" da arrampicata; dark mode automatica (parete blu notte); icona astratta (192, 512 e maskable)
 
 ### Test e pubblicazione
-- `tests/app.test.js` (58 test) e `tests/sw.test.js` (5): caricano `index.html` e `sw.js` in Node con un DOM e un Firebase finti; ogni scrittura viene solo registrata, niente arriva al database vero. In locale: `node tests/app.test.js`
+- `tests/app.test.js` (60 test) e `tests/sw.test.js` (5): caricano `index.html` e `sw.js` in Node con un DOM e un Firebase finti; ogni scrittura viene solo registrata, niente arriva al database vero. In locale: `node tests/app.test.js`
 - Workflow "Test e pubblicazione" (`.github/workflows/deploy.yml`): a ogni push su `main` gira i test e pubblica su GitHub Pages solo se passano (Pages con build_type "workflow")
 
 ### Traduzioni delle ricette
@@ -65,7 +65,6 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - iPhone, app dalla schermata Home: `body{overflow-x:clip}` (non solo `hidden`) perché la topbar sticky resti ferma; le pagine a schermo intero (lista di una categoria, "Cosa cucino?") lasciano lo spazio della barra di stato con `env(safe-area-inset-top)`
 
 ### Da tenere d'occhio / da fare
-- Nel profilo il testo "Il tuo planner è privato." non vale più per chi è in una famiglia (da correggere)
-- Chi esce da una famiglia e poi rientra nella stessa vede due volte le ricette che si era portato via (la copia privata e quella di famiglia)
-- GitHub spegne i workflow programmati di un repo pubblico dopo 60 giorni senza attività: il "Backup database" su GitHub è spento così (`disabled_inactivity`), e la traduzione mensile e il promemoria del congelatore farebbero la stessa fine. Si riattivano da Actions → workflow → "Enable workflow"
-- In futuro: import da link Instagram/TikTok (caption + AI tramite piccolo Worker)
+- **Workflow programmati e 60 giorni**: in un repo pubblico GitHub spegne i workflow programmati ("Promemoria congelatore", "Traduci le ricette nuove") se per 60 giorni nessuno fa un push; prima manda un'email di avviso. Per evitarlo basta un push qualsiasi. Se si sono già spenti: GitHub → Actions → il workflow → "Enable workflow", oppure da terminale `gh workflow enable "Promemoria congelatore"` e `gh workflow enable "Traduci le ricette nuove"`. Scelta del 2026-10-07: niente "keepalive" automatico, perché GitHub ha chiuso per violazione dei termini il repo dello strumento più usato per farlo
+- Il "Backup database" su GitHub resta spento di proposito (`disabled_inactivity`): non è configurato (manca il segreto `BACKUP_REPO_TOKEN`) e il backup notturno lo fa già il server di Daniele
+- In futuro, non indispensabile: import da link Instagram/TikTok (caption + AI tramite piccolo Worker)
