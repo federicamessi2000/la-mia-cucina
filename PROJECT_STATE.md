@@ -1,8 +1,9 @@
 # Project State — Al Dente (ex La Mia Cucina)
 
 **Last updated:** 2026-10-07
-**Branch:** main · **Versione app:** 2026-10-07.2 (cache del service worker `cucina-v33`)
+**Branch:** main · **Versione app:** 2026-10-07.7 (cache del service worker `cucina-v38`)
 **Repo:** https://github.com/federicamessi2000/la-mia-cucina · **Live:** https://federicamessi2000.github.io/la-mia-cucina/
+**Regole Firebase:** https://console.firebase.google.com/project/la-mia-cucina-48a48/database/la-mia-cucina-48a48-default-rtdb/rules
 
 ---
 
@@ -12,20 +13,28 @@ PWA vanilla JS (`index.html` + `i18n.js`) con Firebase RTDB e Google Auth, ~980 
 Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e dati sono rimasti gli stessi.
 
 ### Funzioni
-- Ricette condivise o private ("Solo per me", in `users/<uid>/recipes`): categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL; modifica/elimina solo l'autore o la famiglia
+- Ricette con tre visibilità: "Condivisa con tutti" (`recipes`), "Famiglia" (`families/<codice>/recipes`, c'è solo con un codice famiglia) e "Solo per me" (`users/<uid>/recipes`). Categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL. Modifica/elimina solo l'autore o gli amministratori (gli account di famiglia di Federica); le ricette "Famiglia" chiunque abbia quel codice famiglia, che ne può anche cambiare la visibilità
+- **Voti**: da 1 a 5 stelle a testa nella scheda della ricetta (la stessa stella di nuovo toglie il voto); media e numero di voti li vedono tutti, e negli elenchi c'è "★ 4,5". Dati in `ratings/<ricetta>/<uid>`
 - Aggiungi/modifica ricette (con categoria), parser "importa da testo"; due libri importati (fonte "Libro")
-- Planner mensile/settimanale privato (fino a 6 piatti per pranzo/cena + extra), kcal stimate. Un tocco su un piatto apre la ricetta alle porzioni pianificate, con la riga "Nel planner: <giorno> · <pasto>" e "Cambia piatto"; ⇄ accanto alla ✕ cambia il piatto (settimana: ogni piatto; mese: il primo), ✕ lo toglie; "Oggi" torna alla settimana o al mese corrente. Fuori casa, freezer e liste di ingredienti al tocco aprono "cambia piatto"
+- Planner mensile/settimanale, personale o di famiglia (fino a 6 piatti per pranzo/cena + extra), kcal stimate. Un tocco su un piatto apre la ricetta alle porzioni pianificate, con la riga "Nel planner: <giorno> · <pasto>" e "Cambia piatto"; ⇄ accanto alla ✕ cambia il piatto (settimana: ogni piatto; mese: il primo), ✕ lo toglie; "Oggi" torna alla settimana o al mese corrente. Fuori casa, freezer e liste di ingredienti al tocco aprono "cambia piatto"
 - **Cosa cucino?** (prima card in Ricette): ingredienti in casa + freezer + basi sempre presenti (sale, pepe, acqua, olio, aceto, zucchero, farina) → ricette ordinate per meno ingredienti mancanti; "+ Spesa" aggiunge quelli che mancano. Dispensa in `users/<uid>/pantry`
 - "Segnala un problema": salvata in `bugReports` con dettagli tecnici ed errori recenti; Federica le legge in "Segnalazioni" (badge sull'avatar)
 - Lista spesa per settimana: da planner (sync che preserva gli spuntati), da ricetta,
-  manuale, catalogo con 400+ ingredienti; merge automatico unità (g/kg, ml/L);
-  categorie ordinabili "a giro supermercato"; condivisione via testo; spesa condivisa (codice famiglia)
-- Congelatore per categorie
+  manuale, catalogo con 400+ ingredienti (la ricerca trova anche singolare e plurale: "lasagna" → Lasagne, "pomodoro" → Pomodori);
+  merge automatico unità (g/kg, ml/L); categorie ordinabili "a giro supermercato"; condivisione via testo.
+  In famiglia due liste: "Famiglia" (condivisa) e "Solo mia" (privata, `users/<uid>/shopping`); ogni azione vale per la lista sullo schermo
+- Congelatore per categorie (di famiglia con un codice famiglia)
+- **Famiglia** (codice nel profilo): condivide sempre spesa, planner e congelatore, più le ricette messe su "Famiglia". Chi entra porta i suoi piatti nei pasti ancora vuoti del planner di casa e il suo congelatore in quello di casa (lo stesso nome non raddoppia); le famiglie nate prima lo hanno fatto una volta, alla prima apertura (`families/<codice>/merged/<uid>`). Chi esce ritrova spesa, planner e congelatore personali, più una copia privata delle ricette di famiglia che ha aggiunto
+- **Senza rete**: l'app mostra gli ultimi dati salvati sul telefono (spesa, planner, congelatore, preferiti, dispensa) e tiene le modifiche fatte offline, che rimanda all'apertura successiva; uscendo dall'account il telefono li cancella
 - **Modalità cucina**: passo-passo full screen, wake lock, timer auto-rilevati
 - **Export Bimby/Cookidoo**: testo formattato + guida per Ricette create
 - **Lingue**: italiano, inglese, tedesco svizzero ("ss", mai "ß"); segue la lingua del telefono, si cambia dal profilo (`localStorage` `lmc_lang`). I dati restano in italiano canonico (categorie, catalogo, unità): si traduce solo ciò che si vede
 - **Ricette tradotte**: ogni ricetta in it/en/de, con "Originale" a un tocco; vale anche per le ricette scritte in tedesco o in inglese
 - **Design "Al Dente"**: parete chiara a puntini, contorni blu notte e ombre piene, blu/azzurro/giallo; Unbounded (titoli) + Montserrat (testi); emoji delle categorie su "prese" da arrampicata; dark mode automatica (parete blu notte); icona astratta (192, 512 e maskable)
+
+### Test e pubblicazione
+- `tests/app.test.js` (55 test) e `tests/sw.test.js` (3): caricano `index.html` e `sw.js` in Node con un DOM e un Firebase finti; ogni scrittura viene solo registrata, niente arriva al database vero. In locale: `node tests/app.test.js`
+- Workflow "Test e pubblicazione" (`.github/workflows/deploy.yml`): a ogni push su `main` gira i test e pubblica su GitHub Pages solo se passano (Pages con build_type "workflow")
 
 ### Traduzioni delle ricette
 - Dati: `recipeTr/<it|en|de>/<id>` = `{src, from?, nome, tempo?, porzioni?, note?, procedimento?, ing:[{n,s?}]}`; indice leggero `recipeTrIdx/<lang>` = `{n:{id:[nome it, nome tradotto]}, ing:[[it, tradotto]], at}`. `src` è l'impronta (FNV-1a) del testo originale: se la ricetta cambia, la traduzione va rifatta. Stessa funzione in JS e in Python
@@ -33,7 +42,8 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - Strumenti per traduzioni in blocco: in locale in `traduzioni/` (nel `.gitignore`, non su GitHub)
 
 ### Sicurezza
-- `database.rules.json`: lettura per ogni account Google, scrittura per autore (`ownerUid`) o famiglia; spesa condivisa ai soli membri; `recipeTr` e `recipeTrIdx` scrivibili solo dal bot di traduzione o dall'account di Federica, con controlli su lingua e lunghezze
+- `database.rules.json`: lettura per ogni account Google, scrittura per autore (`ownerUid`) o amministratori; spesa, planner, congelatore e ricette di famiglia solo ai membri (le ricette di famiglia con gli stessi controlli delle altre); voti: ognuno scrive solo il suo, un intero da 1 a 5; `recipeTr` e `recipeTrIdx` scrivibili solo dal bot di traduzione o dall'account di Federica, con controlli su lingua e lunghezze
+- Le regole vanno incollate e pubblicate a mano nella console Firebase (link in cima): il file nel repo da solo non cambia niente. Ultima pubblicazione: 2026-10-07 (ricette di famiglia + voti)
 - Backup notturno sul server di Daniele (+ workflow GitHub opzionale, vedi SECURITY.md)
 - I PDF dei libri (`libri ricette/`) e i testi delle traduzioni restano fuori dal repo pubblico (`.gitignore`)
 - Strumenti di import una tantum rimossi dal repo (restano nella storia git)
@@ -41,6 +51,9 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 ### Note tecniche
 - Listener Firebase incrementali (child_added/changed/removed) — niente re-download completo
 - Planner referenzia le ricette per ID (retrocompatibile col vecchio formato per nome)
+- Ricette: ogni elemento di `recipes` sa da dove arriva (`_priv`, `_fam`; `recipeScope()` → `pub` | `fam` | `priv`). Cambiare visibilità sposta la ricetta con la stessa chiave in un solo update, così planner, preferiti e voti restano validi
+- Senza rete: in `localStorage` `lmc_cache_<uid>` (ultimi dati, per parte) e `lmc_outbox` (scritture non ancora confermate). Le scritture passano da un aggancio a `set/update/remove/push` del Reference di Firebase, che le annota finché il database non risponde
+- Planner, congelatore e spesa passano da `plannerRef()`, `freezerRef()`, `shopRef()`: con un codice famiglia puntano a `families/<codice>/...`
 - Escape HTML centralizzato (`esc()`), URL sanificati (`safeUrl()`), errori di scrittura con toast
 - Liste lunghe renderizzate a blocchi da 120
 - Testi dell'interfaccia in `i18n.js` (`t()`, `tn()` per i plurali, attributi `data-i18n*`); date con `Intl` (it-IT, en-GB, de-CH)
@@ -50,5 +63,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - iPhone, app dalla schermata Home: `body{overflow-x:clip}` (non solo `hidden`) perché la topbar sticky resti ferma; le pagine a schermo intero (lista di una categoria, "Cosa cucino?") lasciano lo spazio della barra di stato con `env(safe-area-inset-top)`
 
 ### Da tenere d'occhio / da fare
+- **Da fare: promemoria del congelatore.** Notifica la sera prima alle 19:00 (Zurigo) per i piatti "dal freezer" di pranzo e cena del giorno dopo; si attiva a testa dal profilo (app sulla schermata Home, iOS 16.4+); la manda un workflow GitHub giornaliero (cron alle 17 e alle 18 UTC, lo script controlla che a Zurigo siano le 19). La chiave privata VAPID va direttamente in un segreto GitHub, senza passare dalla chat
+- Chi esce da una famiglia e poi rientra nella stessa vede due volte le ricette che si era portato via (la copia privata e quella di famiglia)
 - GitHub spegne i workflow programmati di un repo pubblico dopo 60 giorni senza attività: il "Backup database" su GitHub è spento così (`disabled_inactivity`), e la traduzione mensile farebbe la stessa fine. Si riattivano da Actions → workflow → "Enable workflow"
 - In futuro: import da link Instagram/TikTok (caption + AI tramite piccolo Worker)
