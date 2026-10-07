@@ -263,6 +263,10 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .alpha-header:first-child{margin-top:4px;}
 .recipe-cat-tag-row{display:flex;gap:6px;overflow-x:auto;padding:6px 0 10px;scrollbar-width:none;}
 .recipe-cat-tag-row::-webkit-scrollbar{display:none;}
+.recipe-sort-row{display:flex;align-items:center;gap:8px;margin:-4px 0 0;}
+.recipe-sort-row label{font-size:12px;font-weight:700;color:var(--charcoal-mid);}
+.recipe-sort-row select{font-size:16px;padding:4px 8px;border:2px solid var(--line);border-radius:12px;background:var(--warm-white);color:var(--charcoal);font-family:var(--font-body);font-weight:700;max-width:46%;}
+.recipe-sort-dir{font-size:12px;padding:6px 11px;border-radius:20px;border:2px solid var(--line);background:var(--warm-white);color:var(--charcoal);font-family:var(--font-body);font-weight:700;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .edit-mode-bar{background:var(--sun);border:2px solid var(--line);border-radius:var(--radius-sm);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:13px;color:#071F33;font-weight:700;}
 .week-day-card{background:var(--warm-white);border-radius:var(--radius);border:2.5px solid var(--line);padding:12px 14px;margin-bottom:12px;box-shadow:var(--shadow-sm);animation:rise .45s var(--ease-out) backwards;}
 .week-day-card:nth-child(1){animation-delay:.02s}.week-day-card:nth-child(2){animation-delay:.06s}.week-day-card:nth-child(3){animation-delay:.1s}.week-day-card:nth-child(4){animation-delay:.14s}.week-day-card:nth-child(5){animation-delay:.18s}.week-day-card:nth-child(6){animation-delay:.22s}.week-day-card:nth-child(7){animation-delay:.26s}
@@ -731,6 +735,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   </div>
   <div style="padding:10px 16px 4px;flex-shrink:0">
     <input class="pick-search" id="recipe-cat-search" type="text" placeholder="Cerca in questa categoria&hellip;" data-i18n-ph="ph.searchInCat" oninput="filterRecipeCatModal()">
+    <div class="recipe-sort-row"><label for="recipe-cat-sort" data-i18n="sort.label">Ordina</label><select id="recipe-cat-sort" onchange="setRecipeSort(this.value)"></select><button type="button" class="recipe-sort-dir" id="recipe-cat-dir" onclick="flipRecipeSort()" aria-label="Inverti l’ordine" data-i18n-aria="sort.flip"></button></div>
     <div class="recipe-cat-tag-row" id="recipe-cat-tags"></div>
   </div>
   <div id="recipe-cat-items" style="flex:1;overflow-y:auto;padding:0 16px 24px"></div>
@@ -1207,7 +1212,7 @@ window.setLang=function(l){
   try{localStorage.setItem('lmc_lang',l);}catch(e){}
   buildDateNames();applyI18n(document);renderLangSwitch();
   var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});
-  refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();renderShopScope();renderReminderSection();
+  refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();renderShopScope();renderReminderSection();renderRecipeSort();
   renderCatSelect(document.getElementById('r-categoria').value);
   if(!currentUser)return;
   if(_pushOn)syncPush(true);
@@ -1840,8 +1845,82 @@ function initTagChips(){
 var RECIPE_CAT_EMOJI={'Antipasti':'🥗','Biscotti':'🍪','Bevande':'🥤','Colazione':'☕','Conserve':'🫙','Contorni':'🥦','Dolci':'🍰','Lievitati':'🫓','Pane e Pizza':'🍕','Primi':'🍝','Salse e Creme':'🫕','Secondi':'🥩','Torte':'🎂','Altro':'🍽️'};
 // Categoria per la griglia: quelle mancanti o sconosciute (es. ricette aggiunte dal form) finiscono in "Altro"
 function recipeCat(r){return(r.categoria&&RECIPE_CAT_EMOJI[r.categoria])?r.categoria:'Altro';}
-var RECIPE_CAT_FILTER_TAGS=[{key:'facile',icon:'&#128994;'},{key:'veloce',icon:'&#9889;'},{key:'vegetariano',icon:'&#127807;'},{key:'vegano',icon:'&#127807;'},{key:'al-forno',icon:'&#128293;'},{key:'dolce',icon:'&#127856;'},{key:'lievitato',icon:'&#127838;'},{key:'senza-glutine',icon:'&#127807;'}];
+var RECIPE_CAT_FILTER_TAGS=[{key:'facile',icon:'&#128994;'},{key:'veloce',icon:'&#9889;'},{key:'vegetariano',icon:'&#127807;'},{key:'vegano',icon:'&#127807;'},{key:'al-forno',icon:'&#128293;'},{key:'dolce',icon:'&#127856;'},{key:'lievitato',icon:'&#127838;'},{key:'senza-glutine',icon:'&#127807;'},{key:'__top',icon:'&#11088;',label:'filter.top'},{key:'__mine',icon:'&#128100;',label:'filter.mine'}];
 var _recipeCatCurrent=null;var _recipeCatTagFilters=[];
+// Ordine delle liste di ricette: A-Z, tempo, n. di ingredienti, voto, data di aggiunta; ognuno nei due versi.
+// Chi non ha il dato (niente tempo, nessun voto…) va sempre in fondo. La scelta resta su questo telefono.
+var RECIPE_SORTS={name:1,time:1,ings:1,rating:-1,'new':-1}; // verso di partenza di ciascuno
+var _recipeSort=lsGet('lmc_recipe_sort',null);
+if(!_recipeSort||!RECIPE_SORTS[_recipeSort.k]||(_recipeSort.d!==1&&_recipeSort.d!==-1))_recipeSort={k:'name',d:1};
+// Minuti scritti nel tempo di una ricetta ("1 ora e 30", "45 min + 2 ore di riposo", "20-30'", "1 Std. 15 Min."); null se non si capisce
+var _TIME_UNITS=[[/^(giorn[oi]|gg|days?|tag|tage|tagen)$/,1440],[/^(nott[ei]|nights?|nacht|nachte)$/,480],[/^(or[ae]|h|hrs?|hours?|std|stunden?)$/,60],[/^(min|minut[oi]|mins?|minutes?|minuten?|m|')$/,1]];
+function recipeMinutes(r){
+  var s=normTxt(r.tempo||'').replace(/[’`]/g,"'").replace(/(\d+):(\d{2})/g,'$1 h $2 min').replace(/\bun'?\s*ora\b/g,'1 ora')
+    .replace(/mezz'?\s*ora/g,'30 min').replace(/\be\s+mezz[ao]\b/g,' 30 min').replace(/(\d)\s*,\s*(\d)/g,'$1.$2');
+  var re=/(\d+(?:\.\d+)?)(?:\s*(?:-|–|\/|a|to|bis)\s*(\d+(?:\.\d+)?))?\s*(°|'|[a-z]+)?/g,m,tot=0,hit=false;
+  while((m=re.exec(s))){
+    var u=m[3]||'',k=u?0:1; // un numero senza unità sono minuti (il "30" di "1h30")
+    if(u==='°')continue;
+    for(var i=0;u&&i<_TIME_UNITS.length;i++)if(_TIME_UNITS[i][0].test(u)){k=_TIME_UNITS[i][1];break;}
+    if(k){tot+=parseFloat(m[2]||m[1])*k;hit=true;}
+  }
+  return hit?Math.round(tot):null;
+}
+// Vegetariano e vegano anche senza tag, da ingredienti e nome. Nel dubbio no: brodo, dado e ragù senza "vegetale"
+// contano come carne. Senza glutine resta solo col tag: lì un errore pesa troppo.
+var _NOT_VEG=/\b(carn[ei]|manzo|vitell[oai]|maial[ei]|suin[oi]|poll[oi]|pollame|tacchino|agnell[oi]|capretto|conigli[oi]|anatra|oca|cinghiale|selvaggina|salsicci[ae]|salsicce|salam[ei]|prosciutt[oi]|pancetta|guanciale|speck|mortadella|bresaola|lardo|strutto|cotechino|zampone|w[u]?rstel|hamburger|macinato|ragu|brodo|dado|fegat[oi]|trippa|tortellini|pesce|pesci|tonno|salmone|merluzz[oi]|baccala|stoccafisso|acciugh[ei]|alici|sarde|sardine|sgombr[oi]|orata|branzino|spigola|trota|gamber[ei]|gamberett[oi]|mazzancolle|scampi|calamar[ei]|seppi[ae]|polp[oi]|totani|cozze|vongole|frutti di mare|cap+esante|aragosta|granchio|surimi|bottarga|colatura|gelatina|colla di pesce|chicken|beef|pork|ham|bacon|sausages?|lamb|turkey|fish|tuna|salmon|shrimps?|prawns?|anchov\w*|gelatin|huhn|hahnchen|poulet|rind\w*|schwein\w*|schinken|wurst|lamm|fisch|thunfisch|lachs|garnelen|sardellen|gelatine)\b/;
+var _NOT_VEGAN=/\b(latte|burro|burrata|panna|formagg\w*|parmigiano|grana|pecorino|cacio|caciocavallo|mozzarell\w*|ricotta|mascarpone|stracchino|crescenza|gorgonzola|fontina|scamorza|provola|provolone|emmental|groviera|asiago|taleggio|feta|philadelphia|robiola|yogurt|yoghurt|kefir|besciamella|ghee|latticello|uov[aoi]|tuorl[oi]|album[ei]|miele|gelato|savoiardi|pan di spagna|pasta frolla|pasta sfoglia|brioche|maionese|pesto|gnocchi|ravioli|milk|butter|cream|cheese|eggs?|yolks?|honey|milch|rahm|sahne|kase|quark|joghurt|eier?|eigelb|eiweiss|honig)\b|(milch|kase|rahm|sahne|quark)\b/;
+function recipeFoodText(r){
+  var ings=r.ingredienti||[];if(!ings.length)return null;
+  return normTxt(r.nome+' | '+ings.map(function(i){return typeof i==='string'?i:(i&&i.name)||'';}).join(' | '))
+    .replace(/\b(brodo|dado|ragu)\s+(di\s+)?(verdur\w*|vegetal\w*|lenticchie|soia|funghi)\b/g,' ')
+    .replace(/\b(latte|burro|panna|yogurt|yoghurt|formaggi?o?|gelato|milk|butter|cream|cheese)\s+(di\s+|d'|of\s+)?(soia|soya|soy|avena|oat|mandorl\w*|almond|riso|rice|cocco|coconut|anacardi|cashew|nocciol\w*|arachidi|peanut|cacao|cocoa|vegetal\w*|vegan\w*|plant\w*)\b/g,' ')
+    .replace(/\b(peanut|cocoa|almond|cashew|coconut|soy|oat|rice)\s+(butter|milk|cream)\b/g,' ')
+    .replace(/(kokos|hafer|soja|mandel|reis|cashew|erdnuss)(milch|rahm|butter|sahne|joghurt)/g,' ')
+    .replace(/\bgelatina\s+(di\s+)?(frutta|agar\w*)\b|\bagar[- ]?agar\b/g,' ');
+}
+function hasTag(r,k){return(r.tags||[]).indexOf(k)>=0;}
+function isVegetarian(r){
+  if(hasTag(r,'vegetariano')||hasTag(r,'vegano'))return true;
+  if(hasTag(r,'carne')||hasTag(r,'pesce'))return false;
+  var s=recipeFoodText(r);return s!==null&&!_NOT_VEG.test(s);
+}
+function isVegan(r){
+  if(hasTag(r,'vegano'))return true;
+  if(!isVegetarian(r))return false;
+  var s=recipeFoodText(r);return s!==null&&!_NOT_VEGAN.test(s);
+}
+// Filtri della lista: per gli altri tag basta il tag
+var RECIPE_FILTER_TEST={
+  veloce:function(r){var m=recipeMinutes(r);return hasTag(r,'veloce')||(m!=null&&m<=30);},
+  vegetariano:isVegetarian,vegano:isVegan,
+  __top:function(r){var ri=ratingInfo(r.id);return ri.n>0&&ri.avg>=4;},
+  __mine:function(r){return!!(r._priv||(currentUser&&r.ownerUid===currentUser.uid));}
+};
+function recipeFilterOk(r,k){var f=RECIPE_FILTER_TEST[k];return f?f(r):hasTag(r,k);}
+function recipeSortVal(r,k){
+  if(k==='time')return recipeMinutes(r);
+  if(k==='ings'){var n=(r.ingredienti||[]).length;return n||null;}
+  if(k==='rating'){var ri=ratingInfo(r.id);return ri.n?ri.avg:null;}
+  if(k==='new')return r.addedAt||null;
+  return null;
+}
+function sortRecipes(list){
+  var k=_recipeSort.k,d=_recipeSort.d;
+  if(k==='name'){list.sort(byName);return d<0?list.reverse():list;}
+  return list.map(function(r){return{r:r,v:recipeSortVal(r,k)};}).sort(function(a,b){
+    if(a.v==null||b.v==null)return a.v==null&&b.v==null?byName(a.r,b.r):a.v==null?1:-1;
+    return a.v===b.v?byName(a.r,b.r):(a.v-b.v)*d;
+  }).map(function(x){return x.r;});
+}
+function renderRecipeSort(){
+  var sel=document.getElementById('recipe-cat-sort'),dir=document.getElementById('recipe-cat-dir');if(!sel||!dir)return;
+  sel.innerHTML=Object.keys(RECIPE_SORTS).map(function(k){return'<option value="'+k+'"'+(k===_recipeSort.k?' selected':'')+'>'+t('sort.'+k)+'</option>';}).join('');
+  sel.value=_recipeSort.k;
+  dir.textContent=t('sort.'+_recipeSort.k+(_recipeSort.d>0?'.asc':'.desc'));
+}
+window.setRecipeSort=function(k){if(!RECIPE_SORTS[k])return;_recipeSort={k:k,d:RECIPE_SORTS[k]};lsSet('lmc_recipe_sort',_recipeSort);renderRecipeSort();filterRecipeCatModal();};
+window.flipRecipeSort=function(){_recipeSort={k:_recipeSort.k,d:-_recipeSort.d};lsSet('lmc_recipe_sort',_recipeSort);renderRecipeSort();filterRecipeCatModal();};
 
 function _recipeRowHTML(r){
   var diffDot={'Facile':'&#128994;','Media':'&#128993;','Difficile':'&#128308;'};
@@ -1866,16 +1945,16 @@ function _alphaOf(r){
 // Rendering a blocchi: con 800+ ricette un innerHTML unico blocca il telefono.
 // Sopra le 40 voci compaiono i separatori alfabetici per orientarsi.
 var RI_CHUNK=120,_riPending={};
-function _riChunkHTML(list,start,key,prevLetter){
+function _riChunkHTML(list,start,key,prevLetter,noAlpha){
   var end=Math.min(start+RI_CHUNK,list.length);
-  var useAlpha=list.length>40;
+  var useAlpha=!noAlpha&&list.length>40;
   var html='',prev=prevLetter||null;
   list.slice(start,end).forEach(function(r){
     if(useAlpha){var L=_alphaOf(r);if(L!==prev){prev=L;html+='<div class="alpha-header">'+L+'</div>';}}
     html+=_recipeRowHTML(r);
   });
   if(end<list.length){
-    _riPending[key]={list:list,next:end,prev:prev};
+    _riPending[key]={list:list,next:end,prev:prev,noAlpha:noAlpha};
     html+='<div id="ri-more-'+key+'"><button class="btn btn-outline btn-full" style="margin:10px 0" onclick="riMore(\''+key+'\')">'+t('recipes.showMore',{n:list.length-end})+'</button></div>';
   }else{delete _riPending[key];}
   return html;
@@ -1883,11 +1962,11 @@ function _riChunkHTML(list,start,key,prevLetter){
 window.riMore=function(key){
   var p=_riPending[key];if(!p)return;
   var holder=document.getElementById('ri-more-'+key);if(!holder)return;
-  holder.outerHTML=_riChunkHTML(p.list,p.next,key,p.prev);
+  holder.outerHTML=_riChunkHTML(p.list,p.next,key,p.prev,p.noAlpha);
 };
-function renderRecipeItems(list,key){
+function renderRecipeItems(list,key,noAlpha){
   if(!list.length)return'<div class="empty-state"><p>'+t('recipes.none')+'</p></div>';
-  return _riChunkHTML(list,0,key||'k');
+  return _riChunkHTML(list,0,key||'k',null,noAlpha);
 }
 
 window.openRecipeCat=function(cat){
@@ -1898,8 +1977,9 @@ window.openRecipeCat=function(cat){
   document.getElementById('recipe-cat-title').textContent=title;
   document.getElementById('recipe-cat-search').value='';
   document.getElementById('recipe-cat-tags').innerHTML=RECIPE_CAT_FILTER_TAGS.map(function(g){
-    return'<button class="tag-filter-btn" data-tag="'+g.key+'" onclick="setRecipeCatTag(\''+g.key+'\')">'+tagText(g)+'</button>';
+    return'<button class="tag-filter-btn" data-tag="'+g.key+'" onclick="setRecipeCatTag(\''+g.key+'\')">'+(g.label?g.icon+' '+t(g.label):tagText(g))+'</button>';
   }).join('');
+  renderRecipeSort();
   filterRecipeCatModal();
   document.getElementById('recipe-cat-page').style.display='flex';
 };
@@ -1914,11 +1994,12 @@ window.filterRecipeCatModal=function(){
   var list=recipes.filter(function(r){
     if(_recipeCatCurrent==='__preferiti')return!!userFavorites[r.id];
     if(_recipeCatCurrent!=='__all'&&recipeCat(r)!==_recipeCatCurrent)return false;
-    if(_recipeCatTagFilters.length&&!_recipeCatTagFilters.every(function(t){return(r.tags||[]).includes(t);}))return false;
+    if(_recipeCatTagFilters.length&&!_recipeCatTagFilters.every(function(k){return recipeFilterOk(r,k);}))return false;
     if(q&&!nameHit(r,q))return false;
     return true;
-  }).sort(byName);
-  document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list,'cat');
+  });
+  list=sortRecipes(list);
+  document.getElementById('recipe-cat-items').innerHTML=renderRecipeItems(list,'cat',_recipeSort.k!=='name');
   document.getElementById('recipe-cat-count').textContent=tn('recipes.count',list.length);
 };
 

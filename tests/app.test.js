@@ -915,6 +915,61 @@ test('freezer reminder: on asks permission, subscribes this phone and saves it w
   assert(el('reminder-section').innerHTML.includes('Attiva'));
 });
 
+test('recipe lists: time read from the text; vegetarian/vegan also from ingredients; gluten-free only from tags', () => {
+  const min = s => run(`recipeMinutes({tempo:${JSON.stringify(s)}})`);
+  assert.strictEqual(min('30 min'), 30); assert.strictEqual(min('1 ora e 30'), 90); assert.strictEqual(min('1h30'), 90);
+  assert.strictEqual(min("mezz'ora"), 30); assert.strictEqual(min('20-30 minuti'), 30); assert.strictEqual(min('45 min + 2 ore di riposo'), 165);
+  assert.strictEqual(min('40 min a 180°'), 40); assert.strictEqual(min('1 Std. 15 Min.'), 75); assert.strictEqual(min('1:15'), 75);
+  assert.strictEqual(min('1 ora e mezza'), 90); assert.strictEqual(min("un'ora"), 60); assert.strictEqual(min('45\''), 45);
+  assert.strictEqual(min(''), null); assert.strictEqual(min('q.b.'), null); assert.strictEqual(min('per 4 persone'), null);
+  const R = (nome, ings, tags) => JSON.stringify({ nome, ingredienti: ings.map(n => ({ name: n })), tags: tags || [] });
+  const veg = x => run(`isVegetarian(${x})`), vegan = x => run(`isVegan(${x})`);
+  const risotto = R('Risotto ai funghi', ['riso carnaroli', 'funghi porcini', 'brodo vegetale', 'burro', 'parmigiano']);
+  assert(veg(risotto) && !vegan(risotto), 'risotto: vegetarian, not vegan');
+  const aglio = R('Spaghetti aglio e olio', ['spaghetti', 'aglio', 'olio EVO', 'peperoncino']);
+  assert(veg(aglio) && vegan(aglio));
+  const carbonara = R('Carbonara', ['spaghetti', 'guanciale', 'uova', 'pecorino']);
+  assert(!veg(carbonara) && !vegan(carbonara));
+  assert(!veg(R('Pasta e ceci', ['pasta', 'ceci', 'brodo'])), 'plain broth: in doubt, no');
+  assert(veg(R('Cacio e pepe', ['tonnarelli', 'pecorino', 'pepe'])) && !vegan(R('Cacio e pepe', ['tonnarelli', 'pecorino', 'pepe'])), 'tonnarelli are not tuna');
+  assert(vegan(R('Curry di ceci', ['ceci', 'latte di cocco', 'curry'])), 'coconut milk is vegan');
+  assert(veg(R('Sugo semplice', ['polpa di pomodoro', 'basilico'])), 'polpa is not polpo');
+  assert(!veg(R('Polpette', ['macinato', 'pane'])));
+  assert(!vegan(R('Tiramisù', ['savoiardi', 'caffè', 'cacao'])), 'savoiardi have eggs');
+  assert(veg(R('Torta', [], ['vegetariano'])) && vegan(R('Torta', [], ['vegano'])), 'a tag is enough');
+  assert(!veg(R('Senza ingredienti', [])), 'no ingredients and no tag: unknown, so no');
+  assert(!veg(R('Bistecca', ['patate'], ['carne'])), 'tagged meat');
+  assert(!run(`recipeFilterOk(${R('Pane', ['farina di riso', 'acqua'])},'senza-glutine')`), 'gluten-free only with the tag');
+  assert(run(`recipeFilterOk(${R('Pane', ['farina di riso'], ['senza-glutine'])},'senza-glutine')`));
+});
+
+test('recipe lists: sort both ways with missing values last; quick, 4+ stars and mine filters; the choice is remembered', () => {
+  fire('recipes', 'child_added', 'srtA', { nome: 'Alfa', categoria: 'Conserve', tempo: '1 ora', ingredienti: [{ name: 'a' }, { name: 'b' }, { name: 'c' }], addedAt: 1000, ownerUid: 'friendUid' });
+  fire('recipes', 'child_added', 'srtB', { nome: 'Beta', categoria: 'Conserve', tempo: '20 min', ingredienti: [{ name: 'a' }], addedAt: 3000 });
+  fire('recipes', 'child_added', 'srtC', { nome: 'Gamma', categoria: 'Conserve', ingredienti: [{ name: 'a' }, { name: 'b' }], addedAt: 2000 });
+  fire('ratings', 'child_added', 'srtA', { x: 5, y: 4 });
+  fire('ratings', 'child_added', 'srtB', { x: 3 });
+  run("openRecipeCat('Conserve')");
+  const order = () => [...el('recipe-cat-items').innerHTML.matchAll(/recipe-li-name">([^<]+)</g)].map(m => m[1]).join(' ');
+  run("setRecipeSort('name')"); assert.strictEqual(order(), 'Alfa Beta Gamma');
+  run('flipRecipeSort()'); assert.strictEqual(order(), 'Gamma Beta Alfa', 'Z → A');
+  run("setRecipeSort('time')"); assert.strictEqual(order(), 'Beta Alfa Gamma', 'quickest first, no time last');
+  run('flipRecipeSort()'); assert.strictEqual(order(), 'Alfa Beta Gamma', 'longest first, no time still last');
+  run("setRecipeSort('ings')"); assert.strictEqual(order(), 'Beta Gamma Alfa', 'fewest ingredients first');
+  run("setRecipeSort('rating')"); assert.strictEqual(order(), 'Alfa Beta Gamma', 'best first, unrated last');
+  run("setRecipeSort('new')"); assert.strictEqual(order(), 'Beta Gamma Alfa', 'newest first');
+  assert.deepStrictEqual(JSON.parse(store['lmc_recipe_sort']), { k: 'new', d: -1 }, 'remembered on the phone');
+  assert.strictEqual(el('recipe-cat-dir').textContent, 'più recenti prima');
+  assert(el('recipe-cat-sort').innerHTML.includes('Data di aggiunta'));
+  assert(el('recipe-cat-tags').innerHTML.includes('4+ stelle') && el('recipe-cat-tags').innerHTML.includes('Mie'));
+  run("setRecipeCatTag('veloce')"); assert.strictEqual(order(), 'Beta', 'quick: 30 minutes or less');
+  run("setRecipeCatTag('veloce')"); run("setRecipeCatTag('__top')"); assert.strictEqual(order(), 'Alfa', '4 stars or more');
+  run("setRecipeCatTag('__top')"); run("setRecipeCatTag('__mine')"); assert.strictEqual(order(), 'Alfa', 'added by me');
+  run("setRecipeCatTag('__mine')");
+  run("setLang('en')"); assert.strictEqual(el('recipe-cat-dir').textContent, 'newest first'); run("setLang('it')");
+  run("setRecipeSort('name')");
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);
