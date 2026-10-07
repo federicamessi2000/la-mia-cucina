@@ -1,7 +1,7 @@
 # Project State — Al Dente (ex La Mia Cucina)
 
-**Last updated:** 2026-10-05
-**Branch:** main · **Versione app:** 2026-10-05.3 (cache del service worker `cucina-v30`)
+**Last updated:** 2026-10-07
+**Branch:** main · **Versione app:** 2026-10-07.2 (cache del service worker `cucina-v33`)
 **Repo:** https://github.com/federicamessi2000/la-mia-cucina · **Live:** https://federicamessi2000.github.io/la-mia-cucina/
 
 ---
@@ -14,7 +14,7 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 ### Funzioni
 - Ricette condivise o private ("Solo per me", in `users/<uid>/recipes`): categorie, tag, preferiti, ricerca (anche senza accenti), foto via URL; modifica/elimina solo l'autore o la famiglia
 - Aggiungi/modifica ricette (con categoria), parser "importa da testo"; due libri importati (fonte "Libro")
-- Planner mensile/settimanale privato (fino a 6 piatti per pranzo/cena + extra), kcal stimate
+- Planner mensile/settimanale privato (fino a 6 piatti per pranzo/cena + extra), kcal stimate. Un tocco su un piatto apre la ricetta alle porzioni pianificate, con la riga "Nel planner: <giorno> · <pasto>" e "Cambia piatto"; ⇄ accanto alla ✕ cambia il piatto (settimana: ogni piatto; mese: il primo), ✕ lo toglie; "Oggi" torna alla settimana o al mese corrente. Fuori casa, freezer e liste di ingredienti al tocco aprono "cambia piatto"
 - **Cosa cucino?** (prima card in Ricette): ingredienti in casa + freezer + basi sempre presenti (sale, pepe, acqua, olio, aceto, zucchero, farina) → ricette ordinate per meno ingredienti mancanti; "+ Spesa" aggiunge quelli che mancano. Dispensa in `users/<uid>/pantry`
 - "Segnala un problema": salvata in `bugReports` con dettagli tecnici ed errori recenti; Federica le legge in "Segnalazioni" (badge sull'avatar)
 - Lista spesa per settimana: da planner (sync che preserva gli spuntati), da ricetta,
@@ -46,6 +46,8 @@ Dal 2026-10-05 si chiama **Al Dente** (prima "La Mia Cucina"): indirizzo, repo e
 - Testi dell'interfaccia in `i18n.js` (`t()`, `tn()` per i plurali, attributi `data-i18n*`); date con `Intl` (it-IT, en-GB, de-CH)
 - Stile: un solo blocco `<style>` in `index.html` con variabili CSS. I nomi sono storici (`--terracotta` = blu principale, `--sage` = azzurro) perché li usano anche gli script
 - A ogni rilascio si alzano `APP_VERSION` in `index.html` e `CACHE` in `sw.js`, così i telefoni scaricano la versione nuova. Nome e icona nuovi si vedono dopo aver rimesso l'app nella schermata Home
+- Service worker: i file dell'app arrivano dalla rete con `cache: 'no-cache'`, saltando la cache HTTP del browser (GitHub Pages la tiene 10 minuti); così dopo un rilascio `index.html` e `i18n.js` sono sempre della stessa versione (prima si vedevano le chiavi tipo "planner.changeDish"). Le richieste verso altri siti (foto) restano invariate
+- iPhone, app dalla schermata Home: `body{overflow-x:clip}` (non solo `hidden`) perché la topbar sticky resti ferma; le pagine a schermo intero (lista di una categoria, "Cosa cucino?") lasciano lo spazio della barra di stato con `env(safe-area-inset-top)`
 
 ### Da tenere d'occhio / da fare
 - GitHub spegne i workflow programmati di un repo pubblico dopo 60 giorni senza attività: il "Backup database" su GitHub è spento così (`disabled_inactivity`), e la traduzione mensile farebbe la stessa fine. Si riattivano da Actions → workflow → "Enable workflow"
