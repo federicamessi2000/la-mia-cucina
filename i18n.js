@@ -588,6 +588,7 @@ var CATALOG_I18N={
  "Tagliatelle":{en:"Tagliatelle",de:"Tagliatelle"},
  "Lasagne":{en:"Lasagne",de:"Lasagne"},
  "Tortellini":{en:"Tortellini",de:"Tortellini"},
+ "Ravioli":{en:"Ravioli",de:"Ravioli"},
  "Gnocchi":{en:"Gnocchi",de:"Gnocchi"},
  "Pasta integrale":{en:"Wholewheat pasta",de:"Vollkornpasta"},
  "Pasta senza glutine":{en:"Gluten-free pasta",de:"Glutenfreie Pasta"},

@@ -788,6 +788,18 @@ test('shopping: in a family there is also a private list; every action works on 
   assert.strictEqual(run('refPath(shopRef())'), 'users/friendUid/shopping');
 });
 
+test('catalogue: Ravioli is there; the ingredient search finds singular and plural', () => {
+  const names = q => run(`CATALOG_SEED.filter(c=>catMatch(c,${JSON.stringify(q)})).map(c=>c[0])`);
+  assert.strictEqual(run("CATS[CATALOG_SEED.find(c=>c[0]==='Ravioli')[1]]"), 'Pasta, Riso e Cereali');
+  assert(names('ravioli').includes('Ravioli') && names('raviolo').includes('Ravioli'));
+  assert(names('lasagna').includes('Lasagne'), 'lasagna finds Lasagne');
+  assert(names('pomodoro').includes('Pomodori') && names('pomodoro pelato').includes('Pomodori pelati'));
+  assert(names('fungo').includes('Funghi porcini') && names('gnocco').includes('Gnocchi'));
+  assert(names('lasag').includes('Lasagne') && names('lievito per').includes('Lievito per dolci'), 'typing halfway still works');
+  assert(!names('pera').includes('Lievito per dolci'), '"pera" does not find every "per"');
+  assert(!names('pasta').some(n => /^Pastiglie/.test(n)), 'no unrelated words');
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);
