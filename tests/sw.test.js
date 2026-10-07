@@ -1,12 +1,17 @@
 // Runs sw.js in a VM with a fake browser and checks which request it fetches.
 const fs = require('fs'), vm = require('vm'), assert = require('assert'), path = require('path');
 
-const handlers = {}, fetched = [];
+const handlers = {}, fetched = [], shown = [], opened = [], windows = [];
+const SCOPE = 'https://federicamessi2000.github.io/la-mia-cucina/';
 const ctx = {
-  self: { location: { origin: 'https://federicamessi2000.github.io' }, addEventListener: (t, h) => { handlers[t] = h; }, skipWaiting() {}, clients: { claim() {} } },
+  self: {
+    location: { origin: 'https://federicamessi2000.github.io' }, addEventListener: (t, h) => { handlers[t] = h; }, skipWaiting() {},
+    clients: { claim() {}, matchAll: () => Promise.resolve(windows), openWindow: u => { opened.push(u); return Promise.resolve(); } },
+    registration: { scope: SCOPE, showNotification: (title, o) => { shown.push({ title, o }); return Promise.resolve(); } },
+  },
   caches: { open: () => Promise.resolve({ put() {}, addAll() {} }), match: () => Promise.resolve(undefined), keys: () => Promise.resolve([]) },
   fetch: req => { fetched.push(req); return Promise.resolve(new Response('ok', { status: 200 })); },
-  Request, Response, Promise, console,
+  Request, Response, Promise, URL, console,
 };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8'), ctx, { filename: 'sw.js' });
@@ -27,5 +32,23 @@ const fetchEvent = request => { let p; handlers.fetch({ request, respondWith: x 
   assert.strictEqual(fetched.length, before, 'POST is left to the browser');
   console.log('ok - non-GET requests are not touched');
 
-  console.log('\n3 service worker tests passed');
+  let waited;
+  handlers.push({ data: { json: () => ({ title: 'Domani dal congelatore', body: 'Cena: Ragù', tag: 'freezer-2026-10-8', url: './' }) }, waitUntil: p => { waited = p; } });
+  await waited;
+  assert.strictEqual(shown[0].title, 'Domani dal congelatore');
+  assert.strictEqual(shown[0].o.body, 'Cena: Ragù');
+  assert.strictEqual(shown[0].o.tag, 'freezer-2026-10-8', 'one notification per evening, not stacked');
+  console.log('ok - a push shows the reminder notification');
+
+  let closed = 0;
+  const tap = () => handlers.notificationclick({ notification: { close() { closed++; }, data: { url: './' } }, waitUntil: p => { waited = p; } });
+  tap(); await waited;
+  assert.deepStrictEqual(opened, [SCOPE], 'app closed: it opens');
+  let focused = 0;
+  windows.push({ url: SCOPE + '#ricette', focus() { focused++; return Promise.resolve(); } });
+  tap(); await waited;
+  assert(focused === 1 && opened.length === 1 && closed === 2, 'app open: it comes to the front');
+  console.log('ok - tapping the notification opens the app or brings it to the front');
+
+  console.log('\n5 service worker tests passed');
 })().catch(e => { console.error('FAILED:', e); process.exit(1); });

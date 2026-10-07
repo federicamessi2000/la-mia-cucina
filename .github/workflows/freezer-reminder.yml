@@ -1,0 +1,33 @@
+name: Promemoria congelatore
+
+on:
+  schedule:
+    - cron: "3 17 * * *"   # le 19 a Zurigo d'estate
+    - cron: "3 18 * * *"   # le 19 a Zurigo d'inverno (lo script manda una volta sola per sera)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Manda subito, senza aspettare le 19 (per provare)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Installa
+        run: pip -q install firebase-admin pywebpush
+      - name: Manda i promemoria
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          FORCE: ${{ inputs.force }}
+        run: python .github/scripts/freezer_reminder.py

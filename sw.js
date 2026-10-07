@@ -58,3 +58,24 @@ self.addEventListener('fetch', function(e) {
     })
   );
 });
+
+// Promemoria del congelatore (notifiche dal workflow GitHub): ogni push mostra la sua notifica;
+// il tocco porta in primo piano l'app se è aperta, se no la apre
+self.addEventListener('push', function(e) {
+  var d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Al Dente', {
+    body: d.body || '', icon: 'icon-192.png', tag: d.tag || 'al-dente', data: { url: d.url || './' }
+  }));
+});
+
+self.addEventListener('notificationclick', function(e) {
+  e.notification.close();
+  var url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].url.indexOf(self.registration.scope) === 0 && 'focus' in list[i]) { return list[i].focus(); }
+    }
+    return self.clients.openWindow(url);
+  }));
+});

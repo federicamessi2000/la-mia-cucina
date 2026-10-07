@@ -879,6 +879,42 @@ test('ratings: a star sets your vote, the same star removes it; average and coun
   assert(!row().includes('&#9733;'), 'no votes, no star');
 });
 
+test('freezer reminder: on asks permission, subscribes this phone and saves it with the language; off removes it', async () => {
+  run('openUserModal()');
+  assert(el('reminder-section').innerHTML.includes('schermata Home'), 'no push here: how to get it');
+  let sub = null; const calls = [];
+  const fakeSub = {
+    endpoint: 'https://web.push.apple.com/abc',
+    toJSON() { return { endpoint: this.endpoint, keys: { p256dh: 'P', auth: 'A' } }; },
+    unsubscribe() { calls.push('unsubscribe'); sub = null; return Promise.resolve(true); },
+  };
+  sandbox.atob = atob; sandbox.PushManager = function () {};
+  sandbox.Notification = { permission: 'default', requestPermission() { calls.push('permission'); this.permission = 'granted'; return Promise.resolve('granted'); } };
+  sandbox.navigator.serviceWorker = { ready: Promise.resolve({ pushManager: {
+    getSubscription: () => Promise.resolve(sub),
+    subscribe(o) { calls.push(o); sub = fakeSub; return Promise.resolve(fakeSub); },
+  } }) };
+  run('renderReminderSection()');
+  assert(el('reminder-section').innerHTML.includes('toggleReminder()'), 'a button to turn it on');
+  writes.length = 0;
+  run('toggleReminder()');
+  await flush();
+  assert.strictEqual(calls[0], 'permission', 'permission first, inside the tap');
+  assert(calls[1].userVisibleOnly === true && calls[1].applicationServerKey.length === 65, 'subscribed with the app key');
+  const w = writes.find(x => x.op === 'set' && /^users\/friendUid\/push\/p[0-9a-z]+$/.test(x.path));
+  assert(w && w.v.endpoint === fakeSub.endpoint && w.v.keys.p256dh === 'P' && w.v.keys.auth === 'A' && w.v.lang === 'it', JSON.stringify(writes));
+  assert(el('reminder-section').innerHTML.includes('Disattiva'), 'now it can be turned off');
+  writes.length = 0;
+  run("setLang('de')"); await flush();
+  assert(writes.some(x => x.op === 'set' && x.path === w.path && x.v.lang === 'de'), 'the language follows');
+  run("setLang('it')"); await flush();
+  writes.length = 0;
+  run('toggleReminder()');
+  await flush();
+  assert(writes.some(x => x.op === 'remove' && x.path === w.path) && calls.includes('unsubscribe'), 'off: removed and unsubscribed');
+  assert(el('reminder-section').innerHTML.includes('Attiva'));
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);

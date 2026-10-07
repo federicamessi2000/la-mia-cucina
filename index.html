@@ -783,6 +783,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
     </div>
     <p style="font-size:13px;color:var(--charcoal-mid);margin-bottom:16px;line-height:1.6;" data-i18n-html="user.note">Ogni ricetta che aggiungi pu&ograve; essere condivisa con tutti o restare solo tua.<br>Il tuo planner è privato.</p>
     <div id="family-section"></div>
+    <div id="reminder-section"></div>
     <div id="reports-entry"></div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:14px"><span style="font-size:13px;color:var(--charcoal-mid);margin-right:4px">&#127760; <span data-i18n="user.language">Lingua</span></span><button type="button" class="tag-toggle" id="lang-it" onclick="setLang('it')">Italiano</button><button type="button" class="tag-toggle" id="lang-en" onclick="setLang('en')">English</button><button type="button" class="tag-toggle" id="lang-de" onclick="setLang('de')">Deutsch</button></div>
     <button class="btn btn-outline btn-full" onclick="openBugReport()" style="margin-bottom:10px">&#128030; <span data-i18n="bug.open">Segnala un problema</span></button>
@@ -1206,9 +1207,10 @@ window.setLang=function(l){
   try{localStorage.setItem('lmc_lang',l);}catch(e){}
   buildDateNames();applyI18n(document);renderLangSwitch();
   var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});
-  refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();renderShopScope();
+  refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();renderShopScope();renderReminderSection();
   renderCatSelect(document.getElementById('r-categoria').value);
   if(!currentUser)return;
+  if(_pushOn)syncPush(true);
   loadTrIdx();
   document.getElementById('user-modal-name').textContent=currentUser.displayName||t('user.default');
   renderFamilySection();renderReportsEntry();
@@ -1481,7 +1483,13 @@ window.signInWithGoogle=function(){
 window.signInWithGoogleRedirect=function(){auth.signInWithRedirect(provider).catch(loginError);};
 // esito di un eventuale accesso con redirect (null se non c'è stato)
 auth.getRedirectResult().catch(loginError);
-window.doSignOut=function(){auth.signOut();document.getElementById('user-modal').style.display='none';};
+window.doSignOut=function(){
+  document.getElementById('user-modal').style.display='none';
+  if(!_pushOn||!pushSupported()){auth.signOut();return;}
+  // telefono condiviso: i promemoria di chi esce smettono di arrivare qui
+  var off=pushSub().then(function(sub){if(!sub)return;db.ref('users/'+currentUser.uid+'/push/'+pushKey(sub.endpoint)).remove().catch(function(){});return sub.unsubscribe();}).catch(function(){});
+  Promise.race([off,new Promise(function(r){setTimeout(r,1500);})]).then(function(){_pushOn=false;auth.signOut();});
+};
 function renderFamilySection(){
   var el=document.getElementById('family-section');if(!el)return;
   if(!familyCode){
@@ -1547,7 +1555,54 @@ window.leaveFamily=function(){
   db.ref('families/'+familyCode+'/members/'+currentUser.uid).remove().catch(dbErr);
   db.ref('users/'+currentUser.uid+'/familyCode').remove().catch(dbErr);
 };
-window.openUserModal=function(){document.getElementById('user-modal').style.display='flex';renderFamilySection();renderReportsEntry();};
+// Promemoria del congelatore: la sera prima, alle 19, una notifica con i piatti "dal freezer" di domani
+// (la manda .github/workflows/freezer-reminder.yml). Solo dall'app sulla schermata Home (iPhone: iOS 16.4 o più).
+// L'iscrizione di questo telefono sta in users/<uid>/push/<id>, con la lingua dei testi.
+var VAPID_PUBLIC_KEY='BIcdHVDMHVoD22tvfilVcGzp2imfDh8t9QvasT2047p4dBfJm7rVZI8S7Ly7v2x1Ht4VLJf8KioX_xhS1rH7X40';
+var _pushOn=false;
+function pushSupported(){return'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;}
+function b64uBytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');var b=atob(s+'==='.slice((s.length+3)%4)),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+// chiave corta e stabile per l'indirizzo di questo telefono
+function pushKey(endpoint){var h=0x811c9dc5;for(var i=0;i<endpoint.length;i++){h^=endpoint.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return'p'+h.toString(36);}
+function pushSub(){return navigator.serviceWorker.ready.then(function(reg){return reg.pushManager.getSubscription();});}
+function savePushSub(sub){var j=sub.toJSON();return db.ref('users/'+currentUser.uid+'/push/'+pushKey(j.endpoint)).set({endpoint:j.endpoint,keys:{p256dh:j.keys.p256dh,auth:j.keys.auth},lang:LANG,at:Date.now()});}
+// all'avvio e al cambio di lingua l'iscrizione di questo telefono viene riscritta: lingua e chiavi restano giuste
+function syncPush(save){
+  if(!pushSupported()||!currentUser)return Promise.resolve();
+  return pushSub().then(function(sub){
+    _pushOn=!!sub&&Notification.permission==='granted';
+    if(_pushOn&&save)savePushSub(sub).catch(dbErr);
+    renderReminderSection();
+  }).catch(function(e){logErr('promemoria: '+(e&&e.message||e));});
+}
+function renderReminderSection(){
+  var el=document.getElementById('reminder-section');if(!el)return;
+  var ok=pushSupported();
+  el.innerHTML='<div style="border-top:0.5px solid var(--border);padding-top:16px;margin-bottom:16px">'+
+    '<p style="font-size:13px;font-weight:500;color:var(--charcoal);margin-bottom:6px">&#128276; '+t('rem.title')+'</p>'+
+    '<p style="font-size:12px;color:var(--charcoal-mid);margin-bottom:12px;line-height:1.5">'+t(!ok?'rem.unsupported':_pushOn?'rem.active':'rem.sub')+'</p>'+
+    (ok?'<button class="btn '+(_pushOn?'btn-outline':'btn-primary')+' btn-full btn-sm" onclick="toggleReminder()">'+t(_pushOn?'rem.turnOff':'rem.turnOn')+'</button>':'')+'</div>';
+}
+window.toggleReminder=function(){
+  if(!pushSupported()||!currentUser)return;
+  if(_pushOn){
+    pushSub().then(function(sub){
+      if(!sub)return;
+      db.ref('users/'+currentUser.uid+'/push/'+pushKey(sub.endpoint)).remove().catch(dbErr);
+      return sub.unsubscribe();
+    }).then(function(){_pushOn=false;renderReminderSection();showToast(t('rem.offToast'));})
+      .catch(function(e){logErr('promemoria: '+(e&&e.message||e));});
+    return;
+  }
+  // il permesso si chiede subito, dentro il tocco (su iPhone è obbligatorio)
+  Notification.requestPermission().then(function(p){
+    if(p!=='granted'){alert(t('rem.denied'));return;}
+    return navigator.serviceWorker.ready.then(function(reg){
+      return reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(VAPID_PUBLIC_KEY)});
+    }).then(savePushSub).then(function(){_pushOn=true;renderReminderSection();showToast(t('rem.onToast'));});
+  }).catch(function(e){logErr('promemoria: '+(e&&e.message||e));alert(t('rem.failed'));});
+};
+window.openUserModal=function(){document.getElementById('user-modal').style.display='flex';renderFamilySection();renderReminderSection();syncPush(false);renderReportsEntry();};
 
 auth.onAuthStateChanged(function(user){
   document.getElementById('loading-screen').style.display='none';
@@ -1567,6 +1622,7 @@ auth.onAuthStateChanged(function(user){
     document.getElementById('user-modal-email').textContent=user.email||'';
     initRecipes();
     initPrivate();
+    syncPush(true);
   }else{
     if(currentUser)lsSet('lmc_cache_'+currentUser.uid,null); // telefono condiviso: via anche gli ultimi dati salvati
     currentUser=null;_cacheRaw={};_cacheLive={};
