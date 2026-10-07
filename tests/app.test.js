@@ -851,6 +851,34 @@ test('family recipes: deleting warns the whole family; leaving keeps a private c
   assert.strictEqual(run('recipeVisNow()'), 'priv', 'a saved "Famiglia" counts as "Solo per me" outside a family');
 });
 
+test('ratings: a star sets your vote, the same star removes it; average and count for everyone; ★ in the lists', () => {
+  const rules = JSON.parse(fs.readFileSync(path.join(ROOT, 'database.rules.json'), 'utf8')).rules;
+  assert.strictEqual(rules.ratings['.read'], 'auth != null');
+  assert.strictEqual(rules.ratings.$recipeId.$uid['.write'], 'auth != null && auth.uid === $uid', 'only your own vote');
+  assert(listeners.some(l => l.path === 'ratings' && l.ev === 'child_added'), 'listening to the votes');
+  fire('recipes', 'child_added', 'rateMe', { nome: 'Tiramisù', fonte: 'mamma', tempo: '30 min' });
+  fire('ratings', 'child_added', 'rateMe', { otherUid: 5, thirdUid: 4 });
+  run("openRecipe('rateMe')");
+  const sheet = el('modal-body').innerHTML;
+  assert(sheet.includes('id="rate-box"') && sheet.includes('4,5') && sheet.includes('2 voti'), 'average and count in the sheet');
+  assert(!/rate-star on/.test(sheet), 'no vote of mine yet');
+  writes.length = 0;
+  run("rateRecipe('rateMe',3)");
+  assert.deepStrictEqual(writes.map(w => w.op + ' ' + w.path + ' ' + w.v), ['set ratings/rateMe/friendUid 3']);
+  fire('ratings', 'child_changed', 'rateMe', { otherUid: 5, thirdUid: 4, friendUid: 3 });
+  const box = el('rate-box').innerHTML;
+  assert(box.includes('4,0') && box.includes('3 voti'), 'the open sheet updates: ' + box);
+  assert.strictEqual((box.match(/rate-star on/g) || []).length, 3, 'my 3 stars lit');
+  writes.length = 0;
+  run("rateRecipe('rateMe',3)");
+  assert.deepStrictEqual(writes.map(w => w.op + ' ' + w.path), ['remove ratings/rateMe/friendUid'], 'same star again: vote removed');
+  const row = () => run("_recipeRowHTML(recipes.find(r=>r.id==='rateMe'))");
+  assert(row().includes('&#9733; 4,0'), 'star in the list');
+  run("setLang('en')"); assert(row().includes('&#9733; 4.0'), 'English decimals'); run("setLang('it')");
+  fire('ratings', 'child_removed', 'rateMe', null);
+  assert(!row().includes('&#9733;'), 'no votes, no star');
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);

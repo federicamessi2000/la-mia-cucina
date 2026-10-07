@@ -41,6 +41,16 @@
       }
     },
 
+    "ratings": {
+      ".read": "auth != null",
+      "$recipeId": {
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "$recipeId.matches(/^[A-Za-z0-9_-]+$/) && $recipeId.length <= 40 && (newData.val() === 1 || newData.val() === 2 || newData.val() === 3 || newData.val() === 4 || newData.val() === 5)"
+        }
+      }
+    },
+
     "bugReports": {
       ".read": "auth != null && auth.token.email === 'federicamessi2000@gmail.com'",
       "$reportId": {

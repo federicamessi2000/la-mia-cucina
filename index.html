@@ -374,6 +374,12 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
 .fav-heart{background:none;border:none;cursor:pointer;font-size:24px;line-height:1;padding:2px 4px;flex-shrink:0;transition:transform .25s var(--ease-spring);position:relative;}
 .fav-heart::before{content:'';position:absolute;inset:-8px;}
 .fav-heart:active{transform:scale(1.25);}
+.rate-box{display:flex;align-items:center;flex-wrap:wrap;gap:2px 10px;margin:0 0 14px;font-size:13px;color:var(--charcoal-mid);}
+.rate-stars{display:inline-flex;}
+.rate-star{background:none;border:none;cursor:pointer;font-size:26px;line-height:1;padding:4px 3px;color:var(--charcoal-mid);transition:transform .25s var(--ease-spring);}
+.rate-star.on{color:var(--sun);-webkit-text-stroke:1px var(--line);}
+.rate-star:active{transform:scale(1.25);}
+.rate-avg{font-weight:600;}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 </style>
 <script src="i18n.js"></script>
@@ -1571,6 +1577,7 @@ auth.onAuthStateChanged(function(user){
     if(_freezerListener){_freezerListener.off();_freezerListener=null;}
     if(_privRecipesRef){_privRecipesRef.off();_privRecipesRef=null;}
     if(_famRecipesRef){_famRecipesRef.off();_famRecipesRef=null;}
+    if(_ratingsRef){_ratingsRef.off();_ratingsRef=null;}ratings={};
     if(_pubRecipesRef){_pubRecipesRef.off();_pubRecipesRef=null;}
     recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};loadTrIdx();
     // anche planner, spesa, freezer e preferiti: chi entra dopo non deve vedere quelli di prima
@@ -1590,6 +1597,7 @@ function initRecipes(){
   recipesState.priv='loading';
   _privRecipesRef=db.ref('users/'+currentUser.uid+'/recipes');
   listenRecipes(_privRecipesRef,true);
+  listenRatings();
   loadTrIdx();
 }
 var _pubRecipesRef=null;
@@ -1787,6 +1795,7 @@ function _recipeRowHTML(r){
   if(r.porzioni)parts.push(esc(r.porzioni)+' '+t('w.servingsShort'));
   if(r.difficolta&&diffDot[r.difficolta])parts.push(diffDot[r.difficolta]+' '+esc(diffLabel(r.difficolta)));
   if(!parts.length&&r.categoria)parts.push(esc(catName(r.categoria)));
+  var ri=ratingInfo(r.id);if(ri.n)parts.unshift('&#9733; '+fmtAvg(ri.avg));
   if(r._priv)parts.unshift('&#128274;');else if(r._fam)parts.unshift('&#127968;');
   return'<div class="recipe-list-item" onclick="openRecipe(\''+safeId(r.id)+'\')">'+
     '<span class="recipe-li-emoji">'+emoji+'</span>'+
@@ -1903,6 +1912,40 @@ window.toggleFavorite=function(recipeId,e){
   if(btn){btn.textContent=isFav?'♡':'❤️';btn.setAttribute('aria-pressed',String(!isFav));}
   showToast(isFav?t('fav.removed'):t('fav.added'));
 };
+// Voti: ratings/<ricetta>/<uid> = 1..5. Ognuno mette e cambia il suo; media e numero di voti li vedono tutti.
+var ratings={},_ratingsRef=null;
+function listenRatings(){
+  if(_ratingsRef)_ratingsRef.off();
+  ratings={};
+  _ratingsRef=db.ref('ratings');
+  function put(c){var v=c.val();if(v)ratings[c.key]=v;else delete ratings[c.key];onRatingsChanged(c.key);}
+  function onErr(e){logErr('lettura voti: '+(e&&(e.code||e.message)||e));}
+  _ratingsRef.on('child_added',put,onErr);
+  _ratingsRef.on('child_changed',put,onErr);
+  _ratingsRef.on('child_removed',function(c){delete ratings[c.key];onRatingsChanged(c.key);},onErr);
+}
+function ratingInfo(id){
+  var m=ratings[id]||{},vals=Object.keys(m).map(function(k){return+m[k];}).filter(function(v){return v>=1&&v<=5;});
+  var n=vals.length,sum=vals.reduce(function(a,b){return a+b;},0);
+  return{n:n,avg:n?sum/n:0,mine:currentUser&&m[currentUser.uid]?+m[currentUser.uid]:0};
+}
+function fmtAvg(a){return a.toLocaleString(LOCALE,{minimumFractionDigits:1,maximumFractionDigits:1});}
+function rateBoxInner(id){
+  var ri=ratingInfo(id),stars='';
+  for(var k=1;k<=5;k++)stars+='<button class="rate-star'+(k<=ri.mine?' on':'')+'" aria-label="'+esc(tn('rate.stars',k))+'" aria-pressed="'+(k===ri.mine)+'" onclick="rateRecipe(\''+safeId(id)+'\','+k+')">'+(k<=ri.mine?'&#9733;':'&#9734;')+'</button>';
+  return'<span>'+t('rate.yours')+'</span><span class="rate-stars">'+stars+'</span><span class="rate-avg">'+(ri.n?'&#9733; '+fmtAvg(ri.avg)+' \xb7 '+tn('rate.votes',ri.n):t('rate.none'))+'</span>';
+}
+function onRatingsChanged(id){
+  scheduleRecipeRender();
+  var box=document.getElementById('rate-box');
+  if(box&&currentRecipeId===id&&document.getElementById('recipe-modal').style.display==='flex')box.innerHTML=rateBoxInner(id);
+}
+window.rateRecipe=function(id,k){
+  if(!currentUser||!id)return;
+  var ref=db.ref('ratings/'+id+'/'+currentUser.uid);
+  // la stessa stella di nuovo toglie il voto
+  if(ratingInfo(id).mine===k)ref.remove().catch(dbErr);else ref.set(k).catch(dbErr);
+};
 function renderRecipeList(list){renderRecipeHome();}
 
 window.openRecipe=function(id,plan){
@@ -1967,6 +2010,7 @@ function renderRecipeModal(r,portions){
     planBar+
     (meta.length?'<div class="recipe-meta" style="margin-bottom:8px">'+meta.map(function(m){return'<span>'+m+'</span>';}).join('')+'</div>':'')+
     (chips.length?'<div class="recipe-tags" style="margin-bottom:14px">'+chips.join('')+'</div>':'')+
+    '<div id="rate-box" class="rate-box">'+rateBoxInner(r.id)+'</div>'+
     trRow+
     '<div class="portions-bar" style="margin-bottom:10px"><span class="portions-label">&#x1F465; '+t('w.servings')+'</span><div class="portions-controls"><button class="portions-btn" aria-label="'+esc(t('aria.lessServings'))+'" onclick="changePortions(-1)">&minus;</button><span class="portions-num">'+portions+'</span><button class="portions-btn" aria-label="'+esc(t('aria.moreServings'))+'" onclick="changePortions(+1)">+</button></div></div>'+
     '<div class="modal-actions"><button class="btn btn-primary" onclick="openCookMode(\''+rid+'\')">&#x1F468;&#x200D;&#x1F373; '+t('recipe.cook')+'</button><button class="btn btn-outline" onclick="openShopAddModal(\''+rid+'\')">&#128722; '+t('recipe.shop')+'</button><button class="btn btn-outline" onclick="openExportModal(\''+rid+'\')">&#x1F4E4; '+t('recipe.send')+'</button></div>'+
