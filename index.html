@@ -502,6 +502,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
         <label data-i18n="lbl.whoSees">Chi la vede?</label>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
           <button type="button" class="tag-toggle" id="r-vis-pub" onclick="setRecipeVis('pub')">&#128101; <span data-i18n="vis.pub">Condivisa con tutti</span></button>
+          <button type="button" class="tag-toggle" id="r-vis-fam" onclick="setRecipeVis('fam')" style="display:none">&#127968; <span data-i18n="vis.fam">Famiglia</span></button>
           <button type="button" class="tag-toggle" id="r-vis-priv" onclick="setRecipeVis('priv')">&#128274; <span data-i18n="vis.priv">Solo per me</span></button>
         </div>
         <p id="r-vis-hint" style="font-size:12px;color:var(--charcoal-light);margin-top:6px;line-height:1.5"></p>
@@ -1032,10 +1033,13 @@ function safeId(id){id=String(id==null?'':id);return /^[A-Za-z0-9_-]+$/.test(id)
 function fonteInfo(r){var f=r&&r.fonte,k=(f==='mamma'||f==='libro')?f:'internet',ic={mamma:'&#x1F475;',libro:'&#x1F4D6;',internet:'&#x1F310;'}[k];return{cls:k,short:t('fonte.'+k),long:ic+' '+t('fonte.'+k)};}
 function isAdmin(){return!!(currentUser&&ADMIN_EMAILS.indexOf(currentUser.email)>=0);}
 // Le private caricate sono sempre dell'utente corrente; le condivise le modifica l'autore o la famiglia
-function canEdit(r){return!!(r&&currentUser&&(r._priv||isAdmin()||(r.ownerUid&&r.ownerUid===currentUser.uid)));}
-function recipePath(priv,id){return priv?'users/'+currentUser.uid+'/recipes/'+id:'recipes/'+id;}
-function recipeRef(r){return db.ref(recipePath(r._priv,r.id));}
-function recipeData(r){var d=Object.assign({},r);delete d.id;delete d._priv;return d;}
+// Tre posti: condivise con tutti (recipes), di famiglia (families/<codice>/recipes: ogni membro le modifica),
+// private (users/<uid>/recipes). r._fam / r._priv dicono da dove arriva la ricetta.
+function canEdit(r){return!!(r&&currentUser&&(r._priv||r._fam||isAdmin()||(r.ownerUid&&r.ownerUid===currentUser.uid)));}
+function recipeScope(r){return r._fam?'fam':r._priv?'priv':'pub';}
+function recipePath(sc,id){return sc==='fam'?'families/'+familyCode+'/recipes/'+id:sc==='priv'?'users/'+currentUser.uid+'/recipes/'+id:'recipes/'+id;}
+function recipeRef(r){return db.ref(recipePath(recipeScope(r),r.id));}
+function recipeData(r){var d=Object.assign({},r);delete d.id;delete d._priv;delete d._fam;return d;}
 // ── LINGUA ────────────────────────────────────────────────────
 // I testi sono in i18n.js. I dati salvati (categorie, unità, nomi del catalogo) restano in italiano:
 // qui si traducono solo per mostrarli, così chi usa lingue diverse condivide ricette, planner e spesa.
@@ -1356,7 +1360,7 @@ function toGrams(qty,unit,name){
 var _nutriCache={};
 function calcNutrition(recipe,portions){
   // memo per ricetta+porzioni, azzerata quando cambiano le ricette: la vista mese la chiede per ogni giorno
-  var ck=recipe.id?recipe.id+'|'+(recipe._priv?1:0)+'|'+portions:null;
+  var ck=recipe.id?recipe.id+'|'+recipeScope(recipe)+'|'+portions:null;
   if(ck&&_nutriCache[ck])return _nutriCache[ck];
   var ings=recipe.ingredienti||[];
   var base=parseInt(recipe.porzioni)||4;
@@ -1530,6 +1534,10 @@ window.joinFamily=function(){
 };
 window.leaveFamily=function(){
   if(!confirm(t('family.leaveConfirm')))return;
+  // chi esce si porta una copia privata delle ricette di famiglia che ha aggiunto (alla famiglia restano)
+  var copy={};
+  recipes.forEach(function(r){if(r._fam&&r.ownerUid===currentUser.uid)copy[r.id]=recipeData(r);});
+  if(Object.keys(copy).length)db.ref('users/'+currentUser.uid+'/recipes').update(copy).catch(dbErr);
   db.ref('families/'+familyCode+'/members/'+currentUser.uid).remove().catch(dbErr);
   db.ref('users/'+currentUser.uid+'/familyCode').remove().catch(dbErr);
 };
@@ -1562,6 +1570,7 @@ auth.onAuthStateChanged(function(user){
     if(_plannerListener){_plannerListener.off();_plannerListener=null;}
     if(_freezerListener){_freezerListener.off();_freezerListener=null;}
     if(_privRecipesRef){_privRecipesRef.off();_privRecipesRef=null;}
+    if(_famRecipesRef){_famRecipesRef.off();_famRecipesRef=null;}
     if(_pubRecipesRef){_pubRecipesRef.off();_pubRecipesRef=null;}
     recipes=[];recipesState={pub:'loading',priv:'loading'};_nutriCache={};loadTrIdx();
     // anche planner, spesa, freezer e preferiti: chi entra dopo non deve vedere quelli di prima
@@ -1587,10 +1596,11 @@ var _pubRecipesRef=null;
 // Listener incrementali: il nodo (800+ ricette) viene scaricato una sola volta,
 // poi arrivano solo i delta — con on('value') ogni modifica riscaricava tutto.
 function listenRecipes(ref,priv){
-  var st=priv?'priv':'pub';
+  // priv: true = private, false = condivise, 'fam' = di famiglia
+  var st=priv==='fam'?'fam':priv?'priv':'pub';
   // stesso id + stessa origine: mentre una ricetta cambia visibilità la chiave esiste in entrambi i posti
-  function same(c){return function(r){return r.id===c.key&&!!r._priv===priv;};}
-  function row(c){return Object.assign({},c.val(),{id:c.key,_priv:priv});}
+  function same(c){return function(r){return r.id===c.key&&recipeScope(r)===st;};}
+  function row(c){var o=Object.assign({},c.val(),{id:c.key,_priv:st==='priv'});if(st==='fam')o._fam=true;return o;}
   function onErr(e){recipesState[st]='error';logErr('lettura ricette '+st+': '+(e&&(e.code||e.message)||e));scheduleRecipeRender();}
   ref.on('child_added',function(c){recipes.push(row(c));onRecipesChanged();},onErr);
   ref.on('child_changed',function(c){var i=recipes.findIndex(same(c));if(i>=0)recipes[i]=row(c);onRecipesChanged();},onErr);
@@ -1644,6 +1654,15 @@ function setupFreezerListener(){
   _freezerListener=freezerRef();
   _freezerListener.on('value',function(snap){var v=snap.val();cachePut('freezer',v);freezer=rawList(v);renderFreezer();if(cwOpen())renderCookWhat();});
 }
+// Ricette di famiglia: arrivano e se ne vanno con il codice famiglia
+var _famRecipesRef=null;
+function setupFamRecipesListener(){
+  if(_famRecipesRef){_famRecipesRef.off();_famRecipesRef=null;}
+  if(recipes.some(function(r){return r._fam;})){recipes=recipes.filter(function(r){return!r._fam;});onRecipesChanged();}
+  if(!familyCode)return;
+  _famRecipesRef=db.ref('families/'+familyCode+'/recipes');
+  listenRecipes(_famRecipesRef,'fam');
+}
 function freezerRaw(list){var f={};list.forEach(function(it){var c=Object.assign({},it);delete c.id;f[it.id]=c;});return f;}
 // Chi crea la famiglia porta il suo planner e il suo congelatore
 function familySeed(){var up={};if(Object.keys(planner).length)up.planner=planner;if(freezer.length)up.freezer=freezerRaw(freezer);return up;}
@@ -1694,7 +1713,7 @@ function initPrivate(){
   CACHE_PARTS.forEach(function(p){if(_cacheRaw[p]!==undefined)showRaw(p);});
   obReplay();
   db.ref('users/'+uid+'/shopPlanner').remove(); // pulizia vecchio sistema a due ref
-  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;_cacheRaw.familyCode=familyCode;cacheSave();setupShopListener();setupPlannerListener();setupFreezerListener();if(familyCode)familyMigrate(familyCode);renderShopScope();renderFamilySection();});
+  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;_cacheRaw.familyCode=familyCode;cacheSave();setupShopListener();setupPlannerListener();setupFreezerListener();setupFamRecipesListener();if(familyCode)familyMigrate(familyCode);renderShopScope();renderRecipeVis();renderFamilySection();});
   track('favorites').on('value',function(snap){var v=snap.val();cachePut('favorites',v);userFavorites=v||{};renderRecipes();});
   track('pantry').on('value',function(snap){var v=snap.val();cachePut('pantry',v);pantry=pantryFrom(v);if(cwOpen())renderCookWhat();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){
@@ -1768,7 +1787,7 @@ function _recipeRowHTML(r){
   if(r.porzioni)parts.push(esc(r.porzioni)+' '+t('w.servingsShort'));
   if(r.difficolta&&diffDot[r.difficolta])parts.push(diffDot[r.difficolta]+' '+esc(diffLabel(r.difficolta)));
   if(!parts.length&&r.categoria)parts.push(esc(catName(r.categoria)));
-  if(r._priv)parts.unshift('&#128274;');
+  if(r._priv)parts.unshift('&#128274;');else if(r._fam)parts.unshift('&#127968;');
   return'<div class="recipe-list-item" onclick="openRecipe(\''+safeId(r.id)+'\')">'+
     '<span class="recipe-li-emoji">'+emoji+'</span>'+
     '<div class="recipe-li-main"><span class="recipe-li-name">'+(esc(recipeName(r))||'<em>'+t('recipe.noName')+'</em>')+'</span>'+
@@ -1929,6 +1948,7 @@ function renderRecipeModal(r,portions){
   var modalTags=(r.tags||[]).filter(function(t){return t!=='da-foto';}).slice(0,4);
   var chips=[];
   if(r._priv)chips.push('<span class="tag-chip" style="background:var(--terracotta-pale);color:var(--terracotta)">&#128274; '+t('recipe.onlyYou')+'</span>');
+  if(r._fam)chips.push('<span class="tag-chip" style="background:var(--terracotta-pale);color:var(--terracotta)">&#127968; '+t('vis.fam')+'</span>');
   if(r.categoria)chips.push('<span class="tag-chip" style="background:var(--terracotta-pale);color:var(--terracotta)">'+esc(catName(r.categoria))+'</span>');
   modalTags.forEach(function(k){var l=tagLabel(k);if(l)chips.push('<span class="tag-chip">'+l+'</span>');});
   var fotoUrl=safeUrl(r.foto);
@@ -2117,11 +2137,11 @@ window.exportShare=function(){
 };
 window.deleteRecipe=function(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r||!canEdit(r))return;
-  if(!confirm(r._priv?t('confirm.deleteRecipePriv'):t('confirm.deleteRecipePub')))return;
+  if(!confirm(t(r._priv?'confirm.deleteRecipePriv':r._fam?'confirm.deleteRecipeFam':'confirm.deleteRecipePub')))return;
   recipeRef(r).remove().catch(dbErr);closeRecipeModal();
 };
 // Riga ricetta nelle liste di scelta (planner, spesa)
-function pickCardHTML(r,fn){var fi=fonteInfo(r);return'<div class="recipe-card" style="margin-bottom:8px" onclick="'+fn+'(\''+safeId(r.id)+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+(r._priv?'&#128274; ':'')+esc(recipeName(r))+'</span><span class="tag tag-'+fi.cls+'">'+fi.short+'</span></div></div>';}
+function pickCardHTML(r,fn){var fi=fonteInfo(r);return'<div class="recipe-card" style="margin-bottom:8px" onclick="'+fn+'(\''+safeId(r.id)+'\')"><div class="recipe-card-header"><span style="font-size:14px;font-weight:500">'+(r._priv?'&#128274; ':r._fam?'&#127968; ':'')+esc(recipeName(r))+'</span><span class="tag tag-'+fi.cls+'">'+fi.short+'</span></div></div>';}
 function showShopIngChecklist(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
   shopAddRecipeId=id;
@@ -2243,7 +2263,7 @@ function resetRecipeForm(){
   document.getElementById('r-fonte').value='mamma';
   document.getElementById('ing-list').innerHTML=buildIngFormHtml([]);
   document.querySelectorAll('#r-tags-selection .tag-toggle').forEach(function(b){b.classList.remove('active');});
-  editingRecipeId=null;editingRecipePriv=false;
+  editingRecipeId=null;editingRecipeScope='priv';
   recipeVis=loadRecipeVisPref();recipeVisLock=null;renderRecipeVis();renderCatSelect('');
   document.getElementById('edit-mode-bar').style.display='none';
   refreshFormTitles();
@@ -2262,15 +2282,18 @@ function renderCatSelect(current){
   document.getElementById('r-categoria').value=current||'';
 }
 // Visibilità nel form: si ricorda l'ultima scelta su questo telefono, la prima volta "Solo per me"
-var editingRecipePriv=false,recipeVisLock=null; // recipeVisLock: {by:nome} se è la ricetta condivisa di un altro
-function loadRecipeVisPref(){try{return localStorage.getItem('lmc_recipe_vis')==='pub'?'pub':'priv';}catch(e){return'priv';}}
+var editingRecipeScope='priv',recipeVisLock=null; // recipeVisLock: {by:nome} se è la ricetta condivisa di un altro
+function loadRecipeVisPref(){try{var v=localStorage.getItem('lmc_recipe_vis');return v==='pub'||v==='fam'?v:'priv';}catch(e){return'priv';}}
+// "Famiglia" c'è solo con un codice famiglia: senza, la scelta salvata vale come "Solo per me"
+function recipeVisNow(){return recipeVis==='fam'&&!familyCode?'priv':recipeVis;}
 function renderRecipeVis(){
-  var pub=document.getElementById('r-vis-pub'),priv=document.getElementById('r-vis-priv'),lk=recipeVisLock;
-  pub.classList.toggle('active',recipeVis==='pub');priv.classList.toggle('active',recipeVis==='priv');
-  pub.disabled=priv.disabled=!!lk;
-  document.getElementById('r-vis-hint').textContent=lk?(lk.by?t('vis.lockedBy',{name:lk.by}):t('vis.locked')):(recipeVis==='pub'?t('vis.pubHint'):t('vis.privHint'));
+  var pub=document.getElementById('r-vis-pub'),priv=document.getElementById('r-vis-priv'),fam=document.getElementById('r-vis-fam'),lk=recipeVisLock,v=recipeVisNow();
+  fam.style.display=familyCode?'':'none';
+  pub.classList.toggle('active',v==='pub');priv.classList.toggle('active',v==='priv');fam.classList.toggle('active',v==='fam');
+  pub.disabled=priv.disabled=fam.disabled=!!lk;
+  document.getElementById('r-vis-hint').textContent=lk?(lk.by?t('vis.lockedBy',{name:lk.by}):t('vis.locked')):t(v==='pub'?'vis.pubHint':v==='fam'?'vis.famHint':'vis.privHint');
 }
-window.setRecipeVis=function(v){recipeVis=v==='pub'?'pub':'priv';renderRecipeVis();};
+window.setRecipeVis=function(v){recipeVis=v==='pub'||v==='fam'?v:'priv';renderRecipeVis();};
 window.toggleRecipeTag=function(btn){btn.classList.toggle('active');};
 function parseQty(s){if(!s)return null;s=s.trim();if(s.indexOf('/')>0){var p=s.split('/');return parseFloat(p[0])/parseFloat(p[1]);}if(s.indexOf('-')>0)return parseFloat(s.split('-')[0]);return parseFloat(s.replace(',','.'));}
 function parseIngLine(line){var qb=/^q\.b\.?\s*(.*)/i.exec(line);if(qb)return{qty:null,unit:'q.b.',name:(qb[1]||'').trim()||'q.b.'};var numRx=/^(\d+(?:[\/\-]\d+)?(?:[.,]\d+)?)\s*/;var nm=numRx.exec(line);if(!nm)return null;var qty=parseQty(nm[1]);var rest=line.substring(nm[0].length).trim();var um=/^(g|gr|kg|ml|l\b|lt|cl|dl|n°|pz|cucchiai[oa]?|cucchiaini?[oa]?|bicchieri?[eo]?|spicchi?[oa]?|fette?[ae]?|bustine?[ae]?|foglie?[ae]?|rametti?[oi]?|pizzichi?[oi]?|tbsp|tsp|tablespoons?|teaspoons?|cups?|pinch(?:es)?|cloves?|slices?|sprigs?|el|tl|tassen?|prisen?|zehen?|scheiben?|zweige?|stk\.?|stück|päckchen|bund)\s+(?:di\s+|of\s+)?(.+)/i.exec(rest);if(um)return{qty:qty,unit:um[1].toLowerCase(),name:um[2].trim()};if(rest)return{qty:qty,unit:'',name:rest};return null;}
@@ -2293,7 +2316,7 @@ function setSelectedTags(tags){document.querySelectorAll('#r-tags-selection .tag
 window.openEditRecipe=function(id){
   var r=recipes.find(function(x){return x.id===id;});if(!r||!canEdit(r))return;
   closeRecipeModal();
-  editingRecipeId=id;editingRecipePriv=!!r._priv;
+  editingRecipeId=id;editingRecipeScope=recipeScope(r);
   document.getElementById('r-nome').value=r.nome||'';
   document.getElementById('r-foto').value=r.foto||'';
   document.getElementById('r-fonte').value=r.fonte||'mamma';
@@ -2303,8 +2326,8 @@ window.openEditRecipe=function(id){
   document.getElementById('r-tempo').value=r.tempo||'';
   // porzioni scritte a parole ("10-15 crepes") non entrano in un campo numerico: mostro il numero, il testo resta se non lo cambi
   var pz=parseInt(r.porzioni);document.getElementById('r-porzioni').value=pz>0?pz:'';
-  recipeVis=r._priv?'priv':'pub';
-  var own=r._priv||(r.ownerUid&&r.ownerUid===currentUser.uid);
+  recipeVis=recipeScope(r);
+  var own=r._priv||r._fam||(r.ownerUid&&r.ownerUid===currentUser.uid);
   recipeVisLock=own?null:{by:r.addedBy||''};renderRecipeVis();
   document.getElementById('r-procedimento').value=r.procedimento||'';
   document.getElementById('r-note').value=r.note||'';
@@ -2320,7 +2343,7 @@ window.cancelEditRecipe=function(){resetRecipeForm();};
 window.saveRecipe=function(){
   var nome=document.getElementById('r-nome').value.trim();
   if(!nome){alert(t('form.nameMissing'));return;}
-  var orig=editingRecipeId?recipes.find(function(x){return x.id===editingRecipeId&&!!x._priv===editingRecipePriv;}):null;
+  var orig=editingRecipeId?recipes.find(function(x){return x.id===editingRecipeId&&recipeScope(x)===editingRecipeScope;}):null;
   if(editingRecipeId&&!orig){alert(t('form.gone'));resetRecipeForm();return;}
   if(orig&&!canEdit(orig)){alert(t('form.notYours'));return;}
   if(!editingRecipeId){
@@ -2335,17 +2358,17 @@ window.saveRecipe=function(){
   }
   var autore=document.getElementById('r-autore').value.trim();
   var data={nome:nome,foto:document.getElementById('r-foto').value.trim()||null,fonte:document.getElementById('r-fonte').value,categoria:document.getElementById('r-categoria').value||null,link:document.getElementById('r-link').value.trim(),tempo:document.getElementById('r-tempo').value.trim(),porzioni:porzioni,ingredienti:ingredienti,procedimento:document.getElementById('r-procedimento').value.trim(),note:document.getElementById('r-note').value.trim(),tags:getSelectedTags()};
-  var wantPriv=recipeVis==='priv';
+  var want=recipeVisNow();
   if(orig){
     if(autore)data.addedBy=autore;
-    var own=orig._priv||(orig.ownerUid&&orig.ownerUid===currentUser.uid);
-    if(own&&wantPriv!==!!orig._priv){
+    var own=orig._priv||orig._fam||(orig.ownerUid&&orig.ownerUid===currentUser.uid),from=recipeScope(orig);
+    if(own&&want!==from){
       // Cambio di visibilità: la ricetta si sposta con la stessa chiave, così planner e preferiti restano validi
       var upd={};
-      upd[recipePath(wantPriv,orig.id)]=Object.assign(recipeData(orig),data,{ownerUid:currentUser.uid});
-      upd[recipePath(!!orig._priv,orig.id)]=null;
+      upd[recipePath(want,orig.id)]=Object.assign(recipeData(orig),data,{ownerUid:currentUser.uid});
+      upd[recipePath(from,orig.id)]=null;
       db.ref().update(upd).catch(dbErr);
-      showToast(wantPriv?t('vis.nowPriv'):t('vis.nowPub'));
+      showToast(t(want==='priv'?'vis.nowPriv':want==='fam'?'vis.nowFam':'vis.nowPub'));
     }else{
       recipeRef(orig).update(data).catch(dbErr);
     }
@@ -2354,9 +2377,9 @@ window.saveRecipe=function(){
   }else{
     data.addedBy=autore||(currentUser.displayName||currentUser.email);data.addedAt=Date.now();data.ownerUid=currentUser.uid;
     try{localStorage.setItem('lmc_recipe_vis',recipeVis);}catch(e){}
-    db.ref(wantPriv?'users/'+currentUser.uid+'/recipes':'recipes').push(data).catch(dbErr);
+    db.ref(want==='fam'?'families/'+familyCode+'/recipes':want==='priv'?'users/'+currentUser.uid+'/recipes':'recipes').push(data).catch(dbErr);
     resetRecipeForm();
-    alert(wantPriv?t('form.savedPriv'):t('form.savedPub'));
+    alert(t(want==='priv'?'form.savedPriv':want==='fam'?'form.savedFam':'form.savedPub'));
     showPage('ricette',document.querySelectorAll('.nav-item')[2]);
   }
 };
@@ -3249,14 +3272,14 @@ window.openBugReport=function(){
 function bugReportDetails(){
   var page=((document.querySelector('.page.active')||{}).id||'').replace('page-','');
   var standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
-  var nPriv=recipes.filter(function(r){return r._priv;}).length;
+  var nPriv=recipes.filter(function(r){return r._priv;}).length,nFam=recipes.filter(function(r){return r._fam;}).length;
   return[
     'Versione: '+APP_VERSION,
     'Data: '+new Date().toLocaleString('it-IT'),
     'Utente: '+(currentUser?(currentUser.displayName||'')+' <'+(currentUser.email||'')+'>':'non connesso'),
     'Pagina: '+page+' · Lingua: '+LANG,
     'App installata: '+(standalone?'sì':'no')+' · Online: '+(navigator.onLine?'sì':'no')+' · Schermo: '+window.innerWidth+'×'+window.innerHeight,
-    'Ricette: '+(recipes.length-nPriv)+' condivise ('+recipesState.pub+'), '+nPriv+' private ('+recipesState.priv+')',
+    'Ricette: '+(recipes.length-nPriv-nFam)+' condivise ('+recipesState.pub+'), '+nPriv+' private ('+recipesState.priv+')'+(nFam?', '+nFam+' di famiglia':''),
     'Browser: '+navigator.userAgent.slice(0,160),
     'Errori recenti: '+(_errLog.length?'\n'+_errLog.map(function(e){return e.slice(0,200);}).join('\n'):'nessuno')
   ].join('\n');
@@ -3480,7 +3503,7 @@ function cwRowHTML(x){
   var r=x.r,rid=safeId(r.id),emoji=RECIPE_CAT_EMOJI[r.categoria]||'\u{1F37D}️',n=x.missing.length;
   var meta=n?t('cw.haveN',{n:x.owned.length,total:x.owned.length+n})+' \xb7 '+t('cw.missing',{list:esc(x.missing.slice(0,4).map(ingLabel).join(', '))+(n>4?'…':'')}):t('cw.all');
   return'<div class="recipe-list-item" onclick="openRecipe(\''+rid+'\')"><span class="recipe-li-emoji">'+emoji+'</span>'+
-    '<div class="recipe-li-main"><span class="recipe-li-name">'+(r._priv?'&#128274; ':'')+esc(recipeName(r))+'</span><span class="recipe-li-meta">'+meta+'</span></div>'+
+    '<div class="recipe-li-main"><span class="recipe-li-name">'+(r._priv?'&#128274; ':r._fam?'&#127968; ':'')+esc(recipeName(r))+'</span><span class="recipe-li-meta">'+meta+'</span></div>'+
     (n?'<button class="btn btn-outline btn-sm" style="flex-shrink:0" onclick="event.stopPropagation();cwToShop(\''+rid+'\')">+ '+t('recipe.shop')+'</button>':'')+'</div>';
 }
 // + Spesa: la solita finestra "aggiungi alla spesa", con già spuntato quello che hai

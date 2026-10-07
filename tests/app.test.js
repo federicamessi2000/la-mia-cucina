@@ -800,6 +800,57 @@ test('catalogue: Ravioli is there; the ingredient search finds singular and plur
   assert(!names('pasta').some(n => /^Pastiglie/.test(n)), 'no unrelated words');
 });
 
+test('family recipes: "Famiglia" shows with a family code; new ones go to the family; every member edits and moves them', () => {
+  const rules = JSON.parse(fs.readFileSync(path.join(ROOT, 'database.rules.json'), 'utf8')).rules;
+  assert.strictEqual(rules.families.$code.recipes.$recipeId['.validate'], rules.users.$uid.recipes.$recipeId['.validate'], 'same checks as the other recipes');
+  run('resetRecipeForm()');
+  assert.strictEqual(el('r-vis-fam').style.display, 'none', 'no family: two choices');
+  fire('users/friendUid/familyCode', 'value', null, 'FAMR12');
+  assert.strictEqual(el('r-vis-fam').style.display, '', 'in a family: "Famiglia" too');
+  assert(listeners.some(l => l.path === 'families/FAMR12/recipes' && l.ev === 'child_added'), 'listening to the family recipes');
+  run("setRecipeVis('fam')"); el('r-nome').value = 'Torta di casa';
+  writes.length = 0; run('saveRecipe()');
+  const w = writes.find(w => w.op === 'push');
+  assert(w && w.path.startsWith('families/FAMR12/recipes/') && w.v.ownerUid === 'friendUid', JSON.stringify(writes));
+  assert.strictEqual(store['lmc_recipe_vis'], 'fam', 'the choice is remembered');
+  fire('families/FAMR12/recipes', 'child_added', 'famX', { nome: 'Lasagne della nonna', ownerUid: 'otherUid', addedBy: 'Dany' });
+  const r = "recipes.find(r=>r.id==='famX')";
+  assert.strictEqual(run(r + '._fam'), true);
+  assert.strictEqual(run(`canEdit(${r})`), true, 'every member can edit');
+  run("openRecipe('famX')");
+  assert(el('modal-body').innerHTML.includes('Famiglia') && el('modal-body').innerHTML.includes('Modifica'), 'badge and edit button');
+  run("openEditRecipe('famX')");
+  assert.strictEqual(run('recipeVis'), 'fam');
+  assert.strictEqual(el('r-vis-pub').disabled, false, 'every member can change who sees it');
+  writes.length = 0; el('r-nome').value = 'Lasagne della nonna'; run('saveRecipe()');
+  const u = writes.find(w => w.op === 'update' && w.path === 'families/FAMR12/recipes/famX');
+  assert(u && u.v.nome === 'Lasagne della nonna' && !('ownerUid' in u.v), 'a plain edit keeps the author: ' + JSON.stringify(writes));
+  run("openEditRecipe('famX')"); run("setRecipeVis('pub')"); el('r-nome').value = 'Lasagne della nonna';
+  writes.length = 0; run('saveRecipe()');
+  const m = writes.find(w => w.op === 'update' && w.path === '');
+  assert(m && m.v['families/FAMR12/recipes/famX'] === null && m.v['recipes/famX'].ownerUid === 'friendUid', 'moved with the same key: ' + JSON.stringify(writes));
+  assert(!('_fam' in m.v['recipes/famX']), 'app-only fields are not saved');
+});
+
+test('family recipes: deleting warns the whole family; leaving keeps a private copy of mine; then they disappear', () => {
+  fire('families/FAMR12/recipes', 'child_added', 'famMine', { nome: 'Pane di casa', ownerUid: 'friendUid' });
+  const asked = []; sandbox.confirm = m => { asked.push(m); return false; };
+  run("deleteRecipe('famMine')");
+  sandbox.confirm = () => true;
+  assert(/famiglia/.test(asked[0]), asked[0]);
+  writes.length = 0;
+  run('leaveFamily()');
+  const c = writes.find(w => w.op === 'update' && w.path === 'users/friendUid/recipes');
+  assert(c && c.v.famMine && c.v.famMine.nome === 'Pane di casa' && !c.v.famX, 'only mine are copied: ' + JSON.stringify(writes));
+  assert(!('_fam' in c.v.famMine) && !('id' in c.v.famMine));
+  assert(writes.indexOf(c) < writes.findIndex(w => w.op === 'remove' && w.path === 'families/FAMR12/members/friendUid'), 'copied before leaving');
+  fire('users/friendUid/familyCode', 'value', null, null);
+  assert.strictEqual(run('recipes.filter(r=>r._fam).length'), 0, 'family recipes leave the list');
+  assert(!listeners.some(l => l.path === 'families/FAMR12/recipes'), 'listener detached');
+  assert.strictEqual(el('r-vis-fam').style.display, 'none');
+  assert.strictEqual(run('recipeVisNow()'), 'priv', 'a saved "Famiglia" counts as "Solo per me" outside a family');
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);

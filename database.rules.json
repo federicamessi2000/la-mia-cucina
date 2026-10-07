@@ -58,6 +58,11 @@
           "$uid": {
             ".write": "auth != null && auth.uid === $uid"
           }
+        },
+        "recipes": {
+          "$recipeId": {
+            ".validate": "$recipeId.matches(/^[A-Za-z0-9_-]+$/) && $recipeId.length <= 40 && newData.child('nome').isString() && newData.child('nome').val().length > 0 && newData.child('nome').val().length <= 200 && (!newData.child('fonte').exists() || newData.child('fonte').val() === 'mamma' || newData.child('fonte').val() === 'internet' || newData.child('fonte').val() === 'libro') && (!newData.child('procedimento').isString() || newData.child('procedimento').val().length <= 20000) && (!newData.child('note').isString() || newData.child('note').val().length <= 5000)"
+          }
         }
       }
     }
