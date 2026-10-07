@@ -43,8 +43,11 @@ self.addEventListener('fetch', function(e) {
     url.includes('corsproxy')
   ) { return; }
 
+  // File dell'app: sempre l'ultima versione dalla rete, saltando la cache HTTP del browser (GitHub Pages la tiene
+  // 10 minuti): così dopo un aggiornamento pagina e testi (i18n.js) non restano di versioni diverse
+  var own = url.indexOf(self.location.origin + '/') === 0;
   e.respondWith(
-    fetch(e.request).then(function(r) {
+    fetch(own ? new Request(url, { cache: 'no-cache', credentials: 'same-origin' }) : e.request).then(function(r) {
       if (r.ok) {
         var clone = r.clone();
         caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
