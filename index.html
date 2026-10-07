@@ -932,7 +932,7 @@ window.addEventListener('online',updateOnline);window.addEventListener('offline'
 <script>
 firebase.initializeApp({apiKey:"AIzaSyCw9yAhdgvJjQZ1h7NLMZnyMfIJpfvgeTM",authDomain:"la-mia-cucina-48a48.firebaseapp.com",databaseURL:"https://la-mia-cucina-48a48-default-rtdb.europe-west1.firebasedatabase.app",projectId:"la-mia-cucina-48a48",storageBucket:"la-mia-cucina-48a48.firebasestorage.app",messagingSenderId:"910368629176",appId:"1:910368629176:web:ed98ca7a8e0e0165602f4d"});
 const auth=firebase.auth(),db=firebase.database(),provider=new firebase.auth.GoogleAuthProvider();
-var APP_VERSION='2026-10-07.6';console.log('Al Dente',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});});
+var APP_VERSION='2026-10-07.7';console.log('Al Dente',APP_VERSION);document.addEventListener('DOMContentLoaded',function(){var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});});
 
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
