@@ -431,6 +431,7 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
         <button onclick="openCatOrder()" style="background:none;border:0.5px solid var(--border-mid);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-size:12px;color:var(--charcoal-mid);font-family:var(--font-body);">&#9881; <span data-i18n="shop.order">Ordine</span></button>
       </div>
     </div>
+    <div class="filter-tabs" id="shop-scope" role="group" aria-label="Lista" style="display:none"></div>
     <div class="shop-week-nav">
       <button aria-label="Settimana precedente" data-i18n-aria="aria.prevWeek" onclick="changeShopWeek(-1)">&#8592;</button>
       <span class="week-label" id="shop-week-label"></span>
@@ -949,7 +950,7 @@ function dbErr(e){console.error('Firebase write error',e);logErr('scrittura: '+(
 // telefono (lmc_cache_<uid>): senza rete si vedono gli ultimi dati e, finché il database non ha risposto, le modifiche
 // si applicano subito anche lì (senza i dati del database Firebase non avviserebbe la lista).
 var OB_KEY='lmc_outbox',_obSeq=0,_cacheRaw={},_cacheLive={};
-var CACHE_PARTS=['shopping','planner','freezer','favorites','pantry'];
+var CACHE_PARTS=['shopping','shoppingMine','planner','freezer','favorites','pantry'];
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function refPath(r){return typeof r.path==='string'?r.path:decodeURIComponent(String(r).replace(/^[a-z]+:\/\/[^\/]+\/?/i,''));}
@@ -997,7 +998,7 @@ function rawList(raw){return raw?Object.keys(raw).map(function(id){return Object
 function pantryFrom(v){v=v||{};return{items:v.items||[],basics:v.basics||CW_BASICS.slice(),freezer:v.freezer!==false};}
 function showRaw(part){
   var raw=_cacheRaw[part];
-  if(part==='shopping'){shopping=rawList(raw);renderShopping();}
+  if(part==='shopping'||part==='shoppingMine'){if(part===shopPart()){shopping=rawList(raw);renderShopping();}}
   else if(part==='planner'){planner=raw||{};renderPlanner();}
   else if(part==='freezer'){freezer=rawList(raw);renderFreezer();if(cwOpen())renderCookWhat();}
   else if(part==='favorites'){userFavorites=raw||{};renderRecipes();}
@@ -1012,9 +1013,9 @@ function rawSet(o,parts,v){
 }
 function localApply(op,path,v){
   if(!currentUser)return;
-  var u='users/'+currentUser.uid+'/',secs={shopping:refPath(shopRef()),planner:refPath(plannerRef()),freezer:refPath(freezerRef()),favorites:u+'favorites',pantry:u+'pantry'};
+  var u='users/'+currentUser.uid+'/',secs={shopping:familyCode?'families/'+familyCode+'/shopping':u+'shopping',shoppingMine:familyCode?u+'shopping':null,planner:refPath(plannerRef()),freezer:refPath(freezerRef()),favorites:u+'favorites',pantry:u+'pantry'};
   CACHE_PARTS.forEach(function(part){
-    if(_cacheLive[part])return;
+    if(_cacheLive[part]||!secs[part])return;
     var sp=secs[part],hit=false;
     function put(full,val){
       if(full===sp){_cacheRaw[part]=val==null?null:val;hit=true;}
@@ -1184,7 +1185,7 @@ window.setLang=function(l){
   try{localStorage.setItem('lmc_lang',l);}catch(e){}
   buildDateNames();applyI18n(document);renderLangSwitch();
   var v=document.getElementById('app-version');if(v)v.textContent=t('user.version',{v:APP_VERSION});
-  refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();
+  refreshFormTitles();renderPlannerViewBtn();renderRecipeVis();initTagChips();renderShopScope();
   renderCatSelect(document.getElementById('r-categoria').value);
   if(!currentUser)return;
   loadTrIdx();
@@ -1590,13 +1591,25 @@ function onRecipesChanged(){_nutriCache={};_trNameMap=null;scheduleRecipeRender(
 var _recipeRenderTimer=null;
 function scheduleRecipeRender(){clearTimeout(_recipeRenderTimer);_recipeRenderTimer=setTimeout(function(){renderRecipes();if(document.getElementById('recipe-cat-page').style.display==='flex')filterRecipeCatModal();if(currentUser)renderPlanner();},80);}
 
-function shopRef(){return familyCode?db.ref('families/'+familyCode+'/shopping'):db.ref('users/'+currentUser.uid+'/shopping');}
+// In famiglia due liste: "Famiglia" (condivisa) e "Solo mia" (users/<uid>/shopping, la lista personale di sempre).
+// Ogni azione della spesa vale per la lista sullo schermo; la scelta resta su questo telefono.
+var shopScope=lsGet('lmc_shop_scope','family');
+function shopMine(){return!familyCode||shopScope==='mine';}
+function shopRef(){return shopMine()?db.ref('users/'+currentUser.uid+'/shopping'):db.ref('families/'+familyCode+'/shopping');}
+function shopPart(){return familyCode&&shopScope==='mine'?'shoppingMine':'shopping';}
+window.setShopScope=function(s){shopScope=s;lsSet('lmc_shop_scope',s);setupShopListener();showRaw(shopPart());renderShopScope();};
+function renderShopScope(){
+  var el=document.getElementById('shop-scope');if(!el)return;
+  if(!familyCode){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='flex';
+  el.innerHTML=['family','mine'].map(function(s){return'<button class="filter-tab'+(shopScope===s?' active':'')+'" aria-pressed="'+(shopScope===s)+'" onclick="setShopScope(\''+s+'\')">'+t(s==='family'?'shop.scopeFamily':'shop.scopeMine')+'</button>';}).join('');
+}
 function setupShopListener(){
   if(_shopListener)_shopListener.off();
   _shopListener=shopRef();
-  var _firstSnap=true;
+  var _firstSnap=true,part=shopPart();
   _shopListener.on('value',function(snap){
-    var v=snap.val();cachePut('shopping',v);
+    var v=snap.val();cachePut(part,v);
     shopping=rawList(v);
     if(_firstSnap){
       _firstSnap=false;
@@ -1666,10 +1679,11 @@ function initPrivate(){
   // ultimi dati salvati sul telefono: subito visibili, anche senza rete; poi le modifiche rimaste in sospeso
   _cacheRaw=lsGet('lmc_cache_'+uid,null)||{};_cacheLive={};
   if(_cacheRaw.familyCode)familyCode=_cacheRaw.familyCode;
+  renderShopScope();
   CACHE_PARTS.forEach(function(p){if(_cacheRaw[p]!==undefined)showRaw(p);});
   obReplay();
   db.ref('users/'+uid+'/shopPlanner').remove(); // pulizia vecchio sistema a due ref
-  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;_cacheRaw.familyCode=familyCode;cacheSave();setupShopListener();setupPlannerListener();setupFreezerListener();if(familyCode)familyMigrate(familyCode);renderFamilySection();});
+  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;_cacheRaw.familyCode=familyCode;cacheSave();setupShopListener();setupPlannerListener();setupFreezerListener();if(familyCode)familyMigrate(familyCode);renderShopScope();renderFamilySection();});
   track('favorites').on('value',function(snap){var v=snap.val();cachePut('favorites',v);userFavorites=v||{};renderRecipes();});
   track('pantry').on('value',function(snap){var v=snap.val();cachePut('pantry',v);pantry=pantryFrom(v);if(cwOpen())renderCookWhat();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){

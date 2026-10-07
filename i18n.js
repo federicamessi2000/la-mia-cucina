@@ -345,6 +345,8 @@ var TEXTS={
  "shop.fromRecipe":["Da ricetta","From a recipe","Aus einem Rezept"],
  "shop.inCart":["GIÀ NEL CARRELLO","ALREADY IN THE BASKET","SCHON IM KORB"],
  "shop.order":["Ordine","Order","Reihenfolge"],
+ "shop.scopeFamily":["Famiglia","Family","Familie"],
+ "shop.scopeMine":["Solo mia","Just mine","Nur meine"],
  "shop.share":["Condividi","Share","Teilen"],
  "shop.srcCatalog":["catalogo","catalogue","Katalog"],
  "shop.srcPlannerIngs":["Ingredienti (planner)","Ingredients (planner)","Zutaten (Planer)"],

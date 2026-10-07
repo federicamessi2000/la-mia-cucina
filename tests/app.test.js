@@ -763,6 +763,31 @@ test('family: an existing family member is merged once, at the first open of the
   fire('users/friendUid/familyCode', 'value', null, null);
 });
 
+test('shopping: in a family there is also a private list; every action works on the list on screen', () => {
+  run("shopScope='family'");
+  fire('users/friendUid/familyCode', 'value', null, 'FAM890');
+  assert.strictEqual(run('refPath(shopRef())'), 'families/FAM890/shopping', 'the family list first');
+  assert(el('shop-scope').innerHTML.includes('Solo mia') && el('shop-scope').style.display === 'flex', 'two tabs');
+  fire('families/FAM890/shopping', 'value', null, { f1: { name: 'pane', weekSort: '2026-10-05' } });
+  run("setShopScope('mine')");
+  assert.strictEqual(run('refPath(shopRef())'), 'users/friendUid/shopping', 'Solo mia = my personal list');
+  assert(/filter-tab active" aria-pressed="true" onclick="setShopScope\('mine'\)/.test(el('shop-scope').innerHTML), el('shop-scope').innerHTML);
+  assert(listeners.some(l => l.path === 'users/friendUid/shopping' && l.ev === 'value'));
+  fire('users/friendUid/shopping', 'value', null, { m1: { name: 'regalo', weekSort: '2026-10-05' } });
+  assert.strictEqual(run("shopping.map(x=>x.name).join()"), 'regalo', 'only my items on screen');
+  writes.length = 0;
+  el('shop-input').value = 'cioccolato'; run('addShopItem()');
+  assert(writes.length && writes.every(w => w.path.startsWith('users/friendUid/shopping')), 'added to my list: ' + JSON.stringify(writes));
+  const saved = JSON.parse(store['lmc_cache_friendUid']);
+  assert(saved.shopping.f1 && saved.shoppingMine.m1, 'both lists kept on the phone, separately');
+  run("setShopScope('family')");
+  assert.strictEqual(run("shopping.map(x=>x.name).join()"), 'pane', 'back to the family list at once');
+  assert.strictEqual(store['lmc_shop_scope'], '"family"', 'the choice stays on the phone');
+  fire('users/friendUid/familyCode', 'value', null, null);
+  assert.strictEqual(el('shop-scope').style.display, 'none', 'no family: no tabs');
+  assert.strictEqual(run('refPath(shopRef())'), 'users/friendUid/shopping');
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);
