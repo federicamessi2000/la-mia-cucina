@@ -266,6 +266,7 @@ var TEXTS={
  "planner.inPlan":["Nel planner: {when}","In the planner: {when}","Im Planer: {when}"],
  "planner.lunch":["Pranzo","Lunch","Mittag"],
  "planner.monthView":["Vista mese","Month view","Monatsansicht"],
+ "planner.today":["Oggi","Today","Heute"],
  "planner.weekView":["Vista settimana","Week view","Wochenansicht"],
  "rcat.Altro":["Altro","Other","Sonstiges"],
  "rcat.Antipasti":["Antipasti","Starters","Vorspeisen"],

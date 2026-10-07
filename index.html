@@ -132,6 +132,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .month-nav h2{font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;}
 .month-nav button{background:var(--warm-white);border:2.5px solid var(--line);border-radius:12px;padding:5px 14px;cursor:pointer;font-size:18px;color:var(--charcoal);box-shadow:2px 2px 0 var(--line);transition:transform .14s var(--ease-out),box-shadow .14s;}
 .month-nav button:active{transform:translate(2px,2px);box-shadow:none;}
+.month-nav .planner-today{font-family:var(--font-body);font-size:12px;font-weight:700;padding:3px 14px;background:var(--sun);color:#071F33;}
 .planner-wrap{background:var(--warm-white);border-radius:var(--radius);border:2.5px solid var(--line);overflow:hidden;box-shadow:var(--shadow-sm);}
 .planner-table{width:100%;border-collapse:collapse;}
 .planner-table th{font-size:10.5px;font-weight:700;color:var(--charcoal-mid);text-transform:uppercase;letter-spacing:0.06em;padding:9px 8px;text-align:left;border-bottom:2px solid var(--line);}
@@ -272,7 +273,7 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .week-meal-label{font-size:10.5px;font-weight:700;color:var(--charcoal-light);width:48px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.05em;}
 .week-meal-text{flex:1;font-size:13.5px;color:var(--charcoal);cursor:pointer;line-height:1.35;}
 .week-meal-text.empty{color:var(--charcoal-light);font-style:italic;}
-.meal-alt-btn{background:none;border:none;font-size:15px;line-height:1;color:var(--terracotta);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.6;transition:opacity .2s;}
+.meal-alt-btn{background:none;border:none;font-size:17px;font-weight:700;line-height:1;color:var(--terracotta);cursor:pointer;flex-shrink:0;padding:0 3px;}
 .meal-alt-btn:hover{opacity:1;}
 .meal-rm-btn{background:none;border:none;font-size:14px;line-height:1;color:var(--charcoal-light);cursor:pointer;flex-shrink:0;padding:0 2px;opacity:0.6;}
 .meal-rm-btn:hover{color:var(--danger);opacity:1;}
@@ -409,7 +410,10 @@ button:focus-visible,[role=checkbox]:focus-visible,input:focus-visible+*,a:focus
   <div class="page active" id="page-planner">
     <div class="month-nav">
       <button aria-label="Periodo precedente" data-i18n-aria="aria.prevPeriod" onclick="changeMonth(-1)">&#8249;</button>
-      <h2 id="month-title"></h2>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <h2 id="month-title"></h2>
+        <button id="planner-today-btn" class="planner-today" onclick="changeMonth(0)" style="display:none" data-i18n="planner.today">Oggi</button>
+      </div>
       <button aria-label="Periodo successivo" data-i18n-aria="aria.nextPeriod" onclick="changeMonth(1)">&#8250;</button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -2190,6 +2194,7 @@ window.saveRecipe=function(){
 var MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 var DAYS=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
 window.changeMonth=function(d){
+  if(!d){currentMonth=new Date();renderPlanner();return;}
   if(plannerView==='week'){var n=new Date(currentMonth);n.setDate(currentMonth.getDate()+d*7);currentMonth=n;}
   else{currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+d,1);}
   renderPlanner();
@@ -2246,20 +2251,20 @@ function monthMealCell(key,entry,base){
   var html='<div class="meal-cell"><span class="meal-cell-text"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="tapDish(\''+key+'\',\''+first+'\')">'+esc(dishLabel(entry,first))+
     (!fc&&entry[first+'_porzioni']?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry[first+'_porzioni']+'</span>':'');
   if(!fc)slots.slice(1).forEach(function(s){html+='<span style="font-size:10px;color:var(--charcoal-light);display:block" onclick="event.stopPropagation();tapDish(\''+key+'\',\''+s+'\')"> / '+esc(dishLabel(entry,s))+(entry[s+'_porzioni']?'&times;'+entry[s+'_porzioni']:'')+'</span>';});
-  return html+'</span><button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button></div>';
+  return html+'</span><button class="meal-alt-btn" aria-label="'+esc(t('planner.changeDish'))+'" onclick="openPickModal(\''+key+'\',\''+first+'\')">&#8644;</button><button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button></div>';
 }
-// Blocco del pasto nella vista settimana: una riga per piatto (tocca per aprire la ricetta, ✕ per toglierlo) + "altro piatto"
+// Blocco del pasto nella vista settimana: una riga per piatto (tocca per aprire la ricetta, ⇄ per cambiarlo, ✕ per toglierlo) + "altro piatto"
 function weekMealBlock(key,entry,base,label){
   var slots=mealSlots(entry,base),fc=entry[base]==='__fuori_casa',first=slots[0]||base;
   function por(s){return!fc&&entry[s+'_porzioni']?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry[s+'_porzioni']+'</span>':'';}
   var html='<div class="week-meal-row"><span class="week-meal-label">'+label+'</span>'+
     '<span class="week-meal-text'+(slots.length?'':' empty')+'"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="'+(slots.length?'tapDish':'openPickModal')+'(\''+key+'\',\''+first+'\')">'+(slots.length?esc(dishLabel(entry,first)):t('btn.add'))+por(first)+'</span>'+
-    (slots.length?'<button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="'+esc(t('aria.pickMeal'))+'" onclick="openPickModal(\''+key+'\',\''+base+'\')">+</button>')+
+    (slots.length?'<button class="meal-alt-btn" aria-label="'+esc(t('planner.changeDish'))+'" onclick="openPickModal(\''+key+'\',\''+first+'\')">&#8644;</button><button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="'+esc(t('aria.pickMeal'))+'" onclick="openPickModal(\''+key+'\',\''+base+'\')">+</button>')+
     '</div>';
   if(fc||!slots.length)return html;
   slots.slice(1).forEach(function(s){
     html+='<div class="week-meal-alt"><span style="flex:1;font-size:13px;cursor:pointer;color:var(--charcoal);line-height:1.35" onclick="tapDish(\''+key+'\',\''+s+'\')">'+esc(dishLabel(entry,s))+por(s)+'</span>'+
-      '<button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+s+'\')">&#x2715;</button></div>';
+      '<button class="meal-alt-btn" aria-label="'+esc(t('planner.changeDish'))+'" onclick="openPickModal(\''+key+'\',\''+s+'\')">&#8644;</button><button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+s+'\')">&#x2715;</button></div>';
   });
   var nx=nextSlot(entry,base);
   if(nx)html+='<div class="week-meal-alt"><button class="extra-add-btn" style="width:auto" onclick="openPickModal(\''+key+'\',\''+nx+'\')">+ '+t('planner.anotherDish')+'</button></div>';
@@ -2269,6 +2274,8 @@ function renderPlanner(){if(plannerView==='week')renderPlannerWeek();else render
 function renderPlannerMonth(){
   var y=currentMonth.getFullYear(),m=currentMonth.getMonth();
   document.getElementById('month-title').textContent=MONTHS[m]+' '+y;
+  var now=new Date();
+  document.getElementById('planner-today-btn').style.display=(y===now.getFullYear()&&m===now.getMonth())?'none':'inline-block';
   var days=new Date(y,m+1,0).getDate(),today=new Date();
   var rows='';
   for(var d=1;d<=days;d++){
@@ -2287,6 +2294,8 @@ function renderPlannerWeek(){
   var mon=new Date(currentMonth);mon.setDate(currentMonth.getDate()-dow+1);
   var sun=new Date(mon);sun.setDate(mon.getDate()+6);
   document.getElementById('month-title').textContent=fmtDayMonth(mon)+' – '+fmtDayMonth(sun);
+  var curMon=new Date(today);curMon.setDate(today.getDate()-(today.getDay()||7)+1);
+  document.getElementById('planner-today-btn').style.display=mon.toDateString()===curMon.toDateString()?'none':'inline-block';
   var html='';
   for(var i=0;i<7;i++){
     var date=new Date(mon);date.setDate(mon.getDate()+i);
