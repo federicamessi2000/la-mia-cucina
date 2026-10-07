@@ -631,6 +631,69 @@ test('planner: "Oggi" shows only away from the current week or month and brings 
   assert.strictEqual(el('planner-today-btn').style.display, 'none');
 });
 
+test('offline: every write is noted on the phone until the database confirms it', async () => {
+  run(`(function(){
+    function FR(p){this.path=p;}
+    FR.prototype.set=function(){return Promise.resolve();};
+    FR.prototype.update=function(){return Promise.resolve();};
+    FR.prototype.remove=function(){return new Promise(function(){});};   // never confirmed: no signal
+    FR.prototype.push=function(){var r=new FR(this.path+'/k1'),p=Promise.resolve(r);r.then=p.then.bind(p);return r;};
+    patchRefWrites(FR.prototype);window._FR=FR;
+  })()`);
+  run("new _FR('users/friendUid/shopping/a').set({name:'latte'})");
+  run("new _FR('users/friendUid/shopping/b').remove()");
+  run("new _FR('users/friendUid/shopping').push({name:'pane'})");
+  run("new _FR('users/friendUid/planner').update({'2026-10-9/cena':'Risotto'})");
+  await flush();
+  const ob = JSON.parse(store['lmc_outbox']);
+  assert.deepStrictEqual(ob.map(x => x.op + ' ' + x.path + ' ' + x.uid), ['remove users/friendUid/shopping/b friendUid'], 'only the unconfirmed write stays');
+});
+
+test('offline: unconfirmed writes are sent again at the next start, only for this account', () => {
+  store['lmc_outbox'] = JSON.stringify([
+    { id: 'x1', uid: 'friendUid', op: 'set', path: 'users/friendUid/shopping/a/checked', v: true },
+    { id: 'x2', uid: 'otherUid', op: 'remove', path: 'users/otherUid/planner/x', v: null },
+    { id: 'x3', uid: 'friendUid', op: 'update', path: 'users/friendUid/planner', v: { '2026-10-9/cena': 'Risotto' } },
+  ]);
+  writes.length = 0;
+  run('obReplay()');
+  assert(writes.some(w => w.op === 'set' && w.path === 'users/friendUid/shopping/a/checked' && w.v === true), JSON.stringify(writes));
+  assert(writes.some(w => w.op === 'update' && w.path === 'users/friendUid/planner' && w.v['2026-10-9/cena'] === 'Risotto'));
+  assert(!writes.some(w => w.path.startsWith('users/otherUid')), "another account's changes are not sent");
+  const left = JSON.parse(store['lmc_outbox']).map(x => x.id);
+  assert.deepStrictEqual(left, ['x2'], 'sent ones leave the list, the other account keeps its own');
+});
+
+test('offline: with no signal the last data shows; a tick shows at once; then the database takes over', () => {
+  authCb(null);
+  store['lmc_cache_friendUid'] = JSON.stringify({
+    shopping: { s1: { name: 'latte', checked: false, weekSort: '2026-10-05' } },
+    planner: { '2026-10-7': { cena: 'Pasta al pomodoro' } },
+    freezer: { f1: { name: 'Ragù', qty: 2 } },
+  });
+  authCb({ uid: 'friendUid', email: 'amica@gmail.com', displayName: 'Amica Test' });
+  assert.strictEqual(run('shopping.length'), 1, 'last shopping list shown');
+  assert.strictEqual(run("planner['2026-10-7'].cena"), 'Pasta al pomodoro', 'last planner shown');
+  assert.strictEqual(run('freezer[0].name'), 'Ragù', 'last freezer shown');
+  run("obTrack('set','users/friendUid/shopping/s1/checked',true)");  // what ticking does, before the database answers
+  assert.strictEqual(run('shopping[0].checked'), true, 'the tick shows at once');
+  assert.strictEqual(JSON.parse(store['lmc_cache_friendUid']).shopping.s1.checked, true, 'and is kept on the phone');
+  run("obTrack('remove','users/friendUid/freezer/f1',null)");
+  assert.strictEqual(run('freezer.length'), 0, 'removing from the freezer shows at once too');
+  fire('users/friendUid/familyCode', 'value', null, null);
+  fire('users/friendUid/shopping', 'value', null, { s1: { name: 'latte', checked: true, weekSort: '2026-10-05' }, s2: { name: 'pane', checked: false, weekSort: '2026-10-05' } });
+  assert.strictEqual(run('shopping.length'), 2, "the database's data replaces the saved one");
+  run("obTrack('set','users/friendUid/shopping/s2/checked',true)");
+  assert.strictEqual(run("shopping.find(x=>x.id==='s2').checked"), false, 'after that, Firebase updates the list (no double update)');
+});
+
+test('offline: signing out removes the saved data from the phone', () => {
+  assert(store['lmc_cache_friendUid'] && store['lmc_cache_friendUid'] !== 'null');
+  authCb(null);
+  assert.strictEqual(store['lmc_cache_friendUid'], 'null');
+  authCb({ uid: 'friendUid', email: 'amica@gmail.com', displayName: 'Amica Test' });
+});
+
 (async () => {
   for (const [name, fn] of queue) { await fn(); passed++; console.log('ok -', name); }
   console.log('\n' + passed + ' tests passed'); process.exit(0);

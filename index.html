@@ -942,6 +942,89 @@ function normalizeUnit(u){if(!u)return '';u=u.trim().toLowerCase();if(u==='n'||u
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function safeUrl(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?u:'';}
 function dbErr(e){console.error('Firebase write error',e);logErr('scrittura: '+(e&&(e.code||e.message)||e));showToast(t('toast.saveFailed'));}
+// ── Offline ──────────────────────────────────────────────────────────────────────────────────────────────
+// Firebase sul web tiene in memoria le modifiche fatte senza rete: se l'app si chiude prima che la rete torni, si
+// perdono. Ogni scrittura viene quindi annotata sul telefono (lmc_outbox) finché il database non la conferma, e alla
+// riapertura quelle rimaste si rimandano. Spesa, planner, congelatore, preferiti e dispensa restano anche salvati sul
+// telefono (lmc_cache_<uid>): senza rete si vedono gli ultimi dati e, finché il database non ha risposto, le modifiche
+// si applicano subito anche lì (senza i dati del database Firebase non avviserebbe la lista).
+var OB_KEY='lmc_outbox',_obSeq=0,_cacheRaw={},_cacheLive={};
+var CACHE_PARTS=['shopping','planner','freezer','favorites','pantry'];
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function refPath(r){return typeof r.path==='string'?r.path:decodeURIComponent(String(r).replace(/^[a-z]+:\/\/[^\/]+\/?/i,''));}
+function obTrack(op,path,v){
+  if(!currentUser)return null;
+  var id=Date.now().toString(36)+'.'+(++_obSeq),a=lsGet(OB_KEY,[]);
+  a.push({id:id,uid:currentUser.uid,op:op,path:path,v:v===undefined?null:v});lsSet(OB_KEY,a);
+  localApply(op,path,v);
+  return id;
+}
+function obDone(id){if(id)lsSet(OB_KEY,lsGet(OB_KEY,[]).filter(function(x){return x.id!==id;}));}
+// rimanda le modifiche di questo account rimaste in sospeso (ognuna si riannota finché non è confermata)
+function obReplay(){
+  if(!currentUser)return;
+  var uid=currentUser.uid,old=lsGet(OB_KEY,[]).filter(function(x){return x.uid===uid;});
+  old.forEach(function(x){var r=db.ref(x.path);(x.op==='remove'?r.remove():x.op==='update'?r.update(x.v):r.set(x.v)).catch(function(){});});
+  var ids=old.map(function(x){return x.id;});
+  if(ids.length)lsSet(OB_KEY,lsGet(OB_KEY,[]).filter(function(x){return ids.indexOf(x.id)<0;}));
+}
+// set/update/remove/push di ogni riferimento passano da qui (il prototipo è lo stesso per tutti i ref)
+function patchRefWrites(RP){
+  if(!RP||RP===Object.prototype||typeof RP.set!=='function'||RP._obPatched)return;
+  RP._obPatched=true;
+  function settle(p,id){if(p&&typeof p.then==='function')p.then(function(){obDone(id);},function(){obDone(id);});else obDone(id);}
+  [['set',true],['update',true],['remove',false]].forEach(function(m){
+    var orig=RP[m[0]];
+    RP[m[0]]=function(){
+      var id=obTrack(m[0],refPath(this),m[1]?arguments[0]:null),p;
+      try{p=orig.apply(this,arguments);}catch(e){obDone(id);throw e;}
+      settle(p,id);return p;
+    };
+  });
+  var origPush=RP.push;
+  RP.push=function(v){
+    var ref=origPush.apply(this,arguments);
+    if(v!==undefined&&ref)settle(ref,obTrack('set',refPath(ref),v));
+    return ref;
+  };
+}
+patchRefWrites(Object.getPrototypeOf(db.ref()));
+function cacheSave(){if(currentUser)lsSet('lmc_cache_'+currentUser.uid,_cacheRaw);}
+// dato arrivato dal database: da qui in poi gli aggiornamenti li porta Firebase
+function cachePut(part,raw){_cacheRaw[part]=raw==null?null:raw;_cacheLive[part]=true;cacheSave();}
+function rawList(raw){return raw?Object.keys(raw).map(function(id){return Object.assign({id:id},raw[id]);}):[];}
+function pantryFrom(v){v=v||{};return{items:v.items||[],basics:v.basics||CW_BASICS.slice(),freezer:v.freezer!==false};}
+function showRaw(part){
+  var raw=_cacheRaw[part];
+  if(part==='shopping'){shopping=rawList(raw);renderShopping();}
+  else if(part==='planner'){planner=raw||{};renderPlanner();}
+  else if(part==='freezer'){freezer=rawList(raw);renderFreezer();if(cwOpen())renderCookWhat();}
+  else if(part==='favorites'){userFavorites=raw||{};renderRecipes();}
+  else if(part==='pantry'){pantry=pantryFrom(raw);if(cwOpen())renderCookWhat();}
+}
+function rawSet(o,parts,v){
+  if(!parts.length)return v===undefined?null:v;
+  o=(o&&typeof o==='object'&&!Array.isArray(o))?o:{};
+  var c=rawSet(o[parts[0]],parts.slice(1),v);
+  if(c==null)delete o[parts[0]];else o[parts[0]]=c;
+  return Object.keys(o).length?o:null;
+}
+function localApply(op,path,v){
+  if(!currentUser)return;
+  var u='users/'+currentUser.uid+'/',secs={shopping:refPath(shopRef()),planner:u+'planner',freezer:u+'freezer',favorites:u+'favorites',pantry:u+'pantry'};
+  CACHE_PARTS.forEach(function(part){
+    if(_cacheLive[part])return;
+    var sp=secs[part],hit=false;
+    function put(full,val){
+      if(full===sp){_cacheRaw[part]=val==null?null:val;hit=true;}
+      else if(full.indexOf(sp+'/')===0){_cacheRaw[part]=rawSet(_cacheRaw[part],full.slice(sp.length+1).split('/'),val);hit=true;}
+    }
+    if(op==='update'&&v&&typeof v==='object')Object.keys(v).forEach(function(k){put(path?path+'/'+k:k,v[k]);});
+    else put(path,op==='remove'?null:v);
+    if(hit){cacheSave();showRaw(part);}
+  });
+}
 function normTxt(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 // Gli id finiscono dentro onclick="...('id')": accetta solo caratteri da chiave Firebase
 function safeId(id){id=String(id==null?'':id);return /^[A-Za-z0-9_-]+$/.test(id)?id:'';}
@@ -1456,7 +1539,8 @@ auth.onAuthStateChanged(function(user){
     initRecipes();
     initPrivate();
   }else{
-    currentUser=null;
+    if(currentUser)lsSet('lmc_cache_'+currentUser.uid,null); // telefono condiviso: via anche gli ultimi dati salvati
+    currentUser=null;_cacheRaw={};_cacheLive={};
     // Stacca i listener dell'account uscito e dimentica le sue ricette private (telefono condiviso)
     _privateRefs.forEach(function(r){r.off();});_privateRefs=[];
     if(_shopListener){_shopListener.off();_shopListener=null;}
@@ -1507,8 +1591,8 @@ function setupShopListener(){
   _shopListener=shopRef();
   var _firstSnap=true;
   _shopListener.on('value',function(snap){
-    shopping=[];
-    if(snap.exists())snap.forEach(function(c){shopping.push(Object.assign({id:c.key},c.val()));});
+    var v=snap.val();cachePut('shopping',v);
+    shopping=rawList(v);
     if(_firstSnap){
       _firstSnap=false;
       // Pulisci tutti gli item senza weekSort (dati vecchi da sessioni precedenti)
@@ -1521,12 +1605,17 @@ var _privateRefs=[];
 function initPrivate(){
   var uid=currentUser.uid;
   function track(path){var r=db.ref('users/'+uid+'/'+path);_privateRefs.push(r);return r;}
-  track('planner').on('value',function(snap){planner=snap.exists()?snap.val():{};renderPlanner();});
+  // ultimi dati salvati sul telefono: subito visibili, anche senza rete; poi le modifiche rimaste in sospeso
+  _cacheRaw=lsGet('lmc_cache_'+uid,null)||{};_cacheLive={};
+  if(_cacheRaw.familyCode)familyCode=_cacheRaw.familyCode;
+  CACHE_PARTS.forEach(function(p){if(_cacheRaw[p]!==undefined)showRaw(p);});
+  obReplay();
+  track('planner').on('value',function(snap){var v=snap.val();cachePut('planner',v);planner=v||{};renderPlanner();});
   db.ref('users/'+uid+'/shopPlanner').remove(); // pulizia vecchio sistema a due ref
-  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;setupShopListener();renderFamilySection();});
-  track('favorites').on('value',function(snap){userFavorites=snap.exists()?snap.val():{};renderRecipes();});
-  track('freezer').on('value',function(snap){freezer=[];if(snap.exists())snap.forEach(function(c){freezer.push(Object.assign({id:c.key},c.val()));});renderFreezer();if(cwOpen())renderCookWhat();});
-  track('pantry').on('value',function(snap){var v=snap.val()||{};pantry={items:v.items||[],basics:v.basics||CW_BASICS.slice(),freezer:v.freezer!==false};if(cwOpen())renderCookWhat();});
+  track('familyCode').on('value',function(snap){familyCode=snap.val()||null;_cacheRaw.familyCode=familyCode;cacheSave();setupShopListener();renderFamilySection();});
+  track('favorites').on('value',function(snap){var v=snap.val();cachePut('favorites',v);userFavorites=v||{};renderRecipes();});
+  track('freezer').on('value',function(snap){var v=snap.val();cachePut('freezer',v);freezer=rawList(v);renderFreezer();if(cwOpen())renderCookWhat();});
+  track('pantry').on('value',function(snap){var v=snap.val();cachePut('pantry',v);pantry=pantryFrom(v);if(cwOpen())renderCookWhat();});
   db.ref('users/'+uid+'/catOrder').once('value',function(snap){
     if(snap.exists()){
       var saved=snap.val();
