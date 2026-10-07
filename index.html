@@ -329,6 +329,8 @@ textarea{resize:vertical;min-height:100px;line-height:1.55;}
 .modal-close:active{transform:translate(1px,1px);}
 .modal-actions{display:flex;gap:8px;margin-bottom:14px;}
 .modal-actions .btn{flex:1;padding:11px 4px;font-size:13.5px;white-space:nowrap;}
+.plan-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--sage-pale);border:2px solid var(--line);border-radius:var(--radius-sm);padding:6px 6px 6px 12px;margin:4px 0 12px;font-size:12.5px;font-weight:700;color:var(--charcoal);}
+.plan-bar .btn{flex-shrink:0;}
 .modal-section-title{font-size:14px;margin:18px 0 10px;display:flex;align-items:baseline;gap:8px;text-transform:uppercase;letter-spacing:.02em;}
 .modal-section-sub{font-size:11.5px;color:var(--charcoal-light);font-family:var(--font-body);font-weight:600;letter-spacing:.02em;text-transform:none;}
 .ingredients-list li{display:flex;gap:10px;align-items:baseline;}
@@ -923,7 +925,7 @@ var APP_VERSION='2026-10-06.1';console.log('Al Dente',APP_VERSION);document.addE
 let currentUser=null,recipes=[],planner={},shopping=[];
 let currentMonth=new Date(),pickTarget=null;
 var plannerView='week';
-let currentRecipeId=null,currentPortions=4,plannerPortions=1;
+let currentRecipeId=null,currentPortions=4,plannerPortions=1,recipePlanCtx=null;
 var shopWeek=new Date(),catalogAddItem=null,shopAddRecipeId=null,shopAddPortions=1;
 var userCatOrder=[],freezer=[],userFavorites={},freezerEditId=null,shopEditGroup=null;
 var editingRecipeId=null;
@@ -1710,9 +1712,12 @@ window.toggleFavorite=function(recipeId,e){
 };
 function renderRecipeList(list){renderRecipeHome();}
 
-window.openRecipe=function(id){
+window.openRecipe=function(id,plan){
   var r=recipes.find(function(x){return x.id===id;});if(!r)return;
-  currentRecipeId=id;currentPortions=parseInt(r.porzioni)||4;
+  // aperta dal planner: porzioni del planner e la riga con "Cambia piatto"
+  recipePlanCtx=plan||null;
+  var pp=plan?parseInt((planner[plan.key]||{})[plan.slot+'_porzioni']):0;
+  currentRecipeId=id;currentPortions=pp||parseInt(r.porzioni)||4;
   renderRecipeModal(r,currentPortions);
   document.getElementById('recipe-modal').style.display='flex';
   // traduzione non ancora scaricata: la scheda dice "carico" e si ridisegna appena arriva (dopo 4 s intanto l'originale)
@@ -1757,9 +1762,15 @@ function renderRecipeModal(r,portions){
   var linkUrl=safeUrl(r.link);
   var nutri=(function(){var n=calcNutrition(r,portions);return n.coverage>=0.5&&n.kcal>0?'<div class="nutri-bar"><span class="nutri-kcal">&#x1F525; ~'+n.kcal+' kcal</span><span>'+n.p+'g '+t('nutri.prot')+'</span><span>'+n.c+'g '+t('nutri.carb')+'</span><span>'+n.f+'g '+t('nutri.fat')+'</span></div>':'';})();
   var rid=safeId(r.id),fi=fonteInfo(r),trRow=trSwitchHTML(r,d,pending);
+  var planBar='';
+  if(recipePlanCtx){
+    var pk=String(recipePlanCtx.key).split('-'),pr=mealRecipe(planner[recipePlanCtx.key]||{},recipePlanCtx.slot);
+    if(pr&&pr.id===r.id)planBar='<div class="plan-bar"><span>&#128197; '+esc(t('planner.inPlan',{when:fmtWeekdayDayMonth(new Date(+pk[0],+pk[1]-1,+pk[2]))+' \u00b7 '+t(slotBase(recipePlanCtx.slot)==='pranzo'?'planner.lunch':'planner.dinner')}))+'</span><button class="btn btn-secondary btn-sm" onclick="changePlannedDish()">'+t('planner.changeDish')+'</button></div>';
+  }
   document.getElementById('modal-body').innerHTML=
     photoHtml+
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;padding-right:40px"><h2 style="flex:1;margin:0">'+esc(d.nome)+'</h2><button id="fav-heart-btn" class="fav-heart" aria-pressed="'+(userFavorites[r.id]?'true':'false')+'" aria-label="'+esc(t('aria.toggleFav'))+'" onclick="toggleFavorite(\''+rid+'\',event)">'+(userFavorites[r.id]?'❤️':'♡')+'</button><span class="tag tag-'+fi.cls+'" style="margin-top:4px">'+fi.long+'</span></div>'+
+    planBar+
     (meta.length?'<div class="recipe-meta" style="margin-bottom:8px">'+meta.map(function(m){return'<span>'+m+'</span>';}).join('')+'</div>':'')+
     (chips.length?'<div class="recipe-tags" style="margin-bottom:14px">'+chips.join('')+'</div>':'')+
     trRow+
@@ -2232,22 +2243,22 @@ function monthMealCell(key,entry,base){
   var slots=mealSlots(entry,base);
   if(!slots.length)return'<div class="meal-cell"><span class="meal-cell-text empty" onclick="openPickModal(\''+key+'\',\''+base+'\')">&mdash;</span><button class="meal-add-btn" aria-label="'+esc(t('aria.pickMeal'))+'" onclick="openPickModal(\''+key+'\',\''+base+'\')">+</button></div>';
   var fc=entry[base]==='__fuori_casa',first=slots[0];
-  var html='<div class="meal-cell"><span class="meal-cell-text"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="openPickModal(\''+key+'\',\''+first+'\')">'+esc(dishLabel(entry,first))+
+  var html='<div class="meal-cell"><span class="meal-cell-text"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="tapDish(\''+key+'\',\''+first+'\')">'+esc(dishLabel(entry,first))+
     (!fc&&entry[first+'_porzioni']?'<span style="font-size:10px;color:var(--charcoal-light)">&times;'+entry[first+'_porzioni']+'</span>':'');
-  if(!fc)slots.slice(1).forEach(function(s){html+='<span style="font-size:10px;color:var(--charcoal-light);display:block"> / '+esc(dishLabel(entry,s))+(entry[s+'_porzioni']?'&times;'+entry[s+'_porzioni']:'')+'</span>';});
+  if(!fc)slots.slice(1).forEach(function(s){html+='<span style="font-size:10px;color:var(--charcoal-light);display:block" onclick="event.stopPropagation();tapDish(\''+key+'\',\''+s+'\')"> / '+esc(dishLabel(entry,s))+(entry[s+'_porzioni']?'&times;'+entry[s+'_porzioni']:'')+'</span>';});
   return html+'</span><button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button></div>';
 }
-// Blocco del pasto nella vista settimana: una riga per piatto (tocca per cambiarlo, ✕ per toglierlo) + "altro piatto"
+// Blocco del pasto nella vista settimana: una riga per piatto (tocca per aprire la ricetta, ✕ per toglierlo) + "altro piatto"
 function weekMealBlock(key,entry,base,label){
   var slots=mealSlots(entry,base),fc=entry[base]==='__fuori_casa',first=slots[0]||base;
   function por(s){return!fc&&entry[s+'_porzioni']?' <span style="font-size:11px;color:var(--charcoal-light)">&times;'+entry[s+'_porzioni']+'</span>':'';}
   var html='<div class="week-meal-row"><span class="week-meal-label">'+label+'</span>'+
-    '<span class="week-meal-text'+(slots.length?'':' empty')+'"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="openPickModal(\''+key+'\',\''+first+'\')">'+(slots.length?esc(dishLabel(entry,first)):t('btn.add'))+por(first)+'</span>'+
+    '<span class="week-meal-text'+(slots.length?'':' empty')+'"'+(fc?' style="color:var(--sage);font-style:italic"':'')+' onclick="'+(slots.length?'tapDish':'openPickModal')+'(\''+key+'\',\''+first+'\')">'+(slots.length?esc(dishLabel(entry,first)):t('btn.add'))+por(first)+'</span>'+
     (slots.length?'<button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+first+'\')">&#x2715;</button>':'<button class="meal-add-btn" aria-label="'+esc(t('aria.pickMeal'))+'" onclick="openPickModal(\''+key+'\',\''+base+'\')">+</button>')+
     '</div>';
   if(fc||!slots.length)return html;
   slots.slice(1).forEach(function(s){
-    html+='<div class="week-meal-alt"><span style="flex:1;font-size:13px;cursor:pointer;color:var(--charcoal);line-height:1.35" onclick="openPickModal(\''+key+'\',\''+s+'\')">'+esc(dishLabel(entry,s))+por(s)+'</span>'+
+    html+='<div class="week-meal-alt"><span style="flex:1;font-size:13px;cursor:pointer;color:var(--charcoal);line-height:1.35" onclick="tapDish(\''+key+'\',\''+s+'\')">'+esc(dishLabel(entry,s))+por(s)+'</span>'+
       '<button class="meal-rm-btn" aria-label="'+esc(t('aria.removeDish'))+'" onclick="quickClearMeal(\''+key+'\',\''+s+'\')">&#x2715;</button></div>';
   });
   var nx=nextSlot(entry,base);
@@ -2318,6 +2329,16 @@ window.renderPickList=function(q){
   document.getElementById('pick-list').innerHTML=!f.length?'<p style="text-align:center;color:var(--charcoal-light);font-size:14px;padding:20px 0">'+t('pick.noRecipes')+'</p>':f.slice(0,80).map(function(r){return pickCardHTML(r,'selectMeal');}).join('')+extra;
 };
 window.changePlannerPortions=function(d){plannerPortions=Math.max(1,plannerPortions+d);document.getElementById('planner-portions-num').textContent=plannerPortions;};
+// Tocco su un piatto del planner: se è una ricetta si apre (alle porzioni del planner);
+// fuori casa, dal freezer o lista di ingredienti: si cambia il piatto come prima
+window.tapDish=function(key,slot){
+  var r=mealRecipe(planner[key]||{},slot);
+  if(r)openRecipe(r.id,{key:key,slot:slot});else openPickModal(key,slot);
+};
+window.changePlannedDish=function(){
+  var c=recipePlanCtx;if(!c)return;
+  closeRecipeModal();openPickModal(c.key,c.slot);
+};
 window.openPickModal=function(key,meal){
   pickTarget={key:key,meal:meal};
   plannerPortions=(planner[key]||{})[meal+'_porzioni']||1;
